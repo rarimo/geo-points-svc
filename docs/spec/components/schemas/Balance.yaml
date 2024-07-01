@@ -1,0 +1,52 @@
+allOf:
+  - $ref: '#/components/schemas/BalanceKey'
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - amount
+          - created_at
+          - updated_at
+          - level
+        properties:
+          amount:
+            type: integer
+            format: int64
+            description: Amount of points
+            example: 580
+          is_disabled:
+            type: boolean
+            description: |
+              Whether the user was not referred by anybody, but the balance with some
+              events was reserved. It happens when the user fulfills some event
+              before the balance creation.
+            example: false
+          created_at:
+            type: integer
+            description: Unix timestamp of balance creation
+            example: 1706531218
+          updated_at:
+            type: integer
+            description: Unix timestamp of the last points accruing
+            example: 1706531218
+          rank:
+            type: integer
+            format: int
+            description: Rank of the user in the full leaderboard. Returned only for the single user.
+            example: 294
+          referral_code:
+            type: string
+            description: User referral code. Returned only for the single user.
+            example: "6xM70VgX4eh"
+          level:
+            type: integer
+            format: int
+            description: The level indicates user permissions and features 
+            example: 2
+          is_verified:
+            type: boolean
+            description: |
+              Whether the user has scanned passport. Returned only for the single user.

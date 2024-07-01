@@ -1,0 +1,8 @@
+openapi: 3.0.0
+info:
+  version: 1.2.0
+  title: geo-points-svc
+  description: ''
+servers:
+  - url: 'https://api.stage.rarime.com'
+    description: TokenD Developer Environment
