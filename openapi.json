@@ -1,0 +1,1444 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.2.0",
+    "title": "geo-points-svc",
+    "description": ""
+  },
+  "servers": [
+    {
+      "url": "https://api.stage.rarime.com",
+      "description": "TokenD Developer Environment"
+    }
+  ],
+  "paths": {
+    "/integrations/geo-points-svc/v1/public/balances": {
+      "post": {
+        "tags": [
+          "Points balance"
+        ],
+        "summary": "Create points balance",
+        "description": "Create an empty balance for authorized user who makes the request. Rank is included\nin response.\n\nThis operation might be time-consuming, because `open` events should be added for\nthe new account synchronously (to display them right after the request).\n\nIf balance already exists, but it is disabled (it was not referred by another user,\nbut has fulfilled some event), you should use PATCH balances/{nullifier} endpoint as well.\n",
+        "operationId": "createPointsBalance",
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "$ref": "#/components/schemas/CreateBalance"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Balance"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          },
+          "409": {
+            "description": "Balance already exists for provided nullifier",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Points balance"
+        ],
+        "summary": "Get leaderboard",
+        "description": "Returns leaders sorted by points in descending order.",
+        "operationId": "getLeaderboard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pageLimit"
+          },
+          {
+            "$ref": "#/components/parameters/pageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/pageOrder"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Balance"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "409": {
+            "description": "Balance already exists and it is not disabled",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    },
+    "/integrations/geo-points-svc/v1/public/balances/{nullifier}": {
+      "get": {
+        "tags": [
+          "Points balance"
+        ],
+        "summary": "Get points balance",
+        "description": "Balance of authorized user who makes the request. Rank in leaderboard is included.\nYou should create new balance for the new user by making POST request.\n",
+        "operationId": "getPointsBalance",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pathNullifier"
+          },
+          {
+            "in": "query",
+            "name": "rank",
+            "description": "Specifies whether to return the rank",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "example": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "referral_codes",
+            "description": "Specifies whether to return the referral codes",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Balance"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    },
+    "/integrations/geo-points-svc/v1/public/balances/{nullifier}/join_program": {
+      "post": {
+        "tags": [
+          "Points balance"
+        ],
+        "summary": "Join rewards program",
+        "description": "Join rewards program",
+        "operationId": "joinRewardsProgram",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pathNullifier"
+          },
+          {
+            "in": "header",
+            "name": "Signature",
+            "description": "Signature of the request",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/vnd.api+json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "$ref": "#/components/schemas/VerifyPassport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PassportEventState"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "404": {
+            "description": "Balance not exists.",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Passport already verified or event absent for user.",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    },
+    "/integrations/geo-points-svc/v1/public/balances/{nullifier}/verifypassport": {
+      "post": {
+        "tags": [
+          "Points balance"
+        ],
+        "summary": "Verify passport",
+        "description": "Verify passport with ZKP, fulfilling the event.\nOne passport can't be verified twice.\n",
+        "operationId": "verifyPassport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pathNullifier"
+          },
+          {
+            "in": "header",
+            "name": "Signature",
+            "description": "Signature of the request",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/vnd.api+json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "$ref": "#/components/schemas/VerifyPassport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PassportEventState"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "404": {
+            "description": "Balance not exists.",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Passport already verified or event absent for user.",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    },
+    "/integrations/geo-points-svc/v1/public/event_types": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "List event types",
+        "description": "Returns public configuration of all event types.\nBasically, it is event static metadata (model `EventStaticMeta`)\nfor each event type in the system.\n",
+        "operationId": "getEventTypes",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter[name]",
+            "description": "Filter by type name. Possible values should be hard-coded in the client.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "passport_scan"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter[name][not]",
+            "description": "Inverted filter by type name: excludes provided values\n",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "referral_specific"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter[flag]",
+            "description": "Filter by configuration flags. Values are disjunctive (OR).",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "not_started",
+                  "expired",
+                  "disabled"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EventType"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    },
+    "/integrations/geo-points-svc/v1/public/events": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "List events",
+        "description": "Returns events for a single user.",
+        "operationId": "getEvents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filterNullifier"
+          },
+          {
+            "in": "query",
+            "name": "filter[status]",
+            "description": "Filter by event status, which is:\n  - `open` - you need to do something on the platform\n  - `fulfilled` - you have done something and are eligible to claim the reward\n  - `claimed` - you have claimed the reward\n",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "fulfilled",
+                  "claimed"
+                ]
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter[meta.static.name]",
+            "description": "Filter by event type name. Possible values should be hard-coded in the client.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "passport_scan"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter[meta.static.name][not]",
+            "description": "Inverted filter by event type name: excludes provided values\n",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "referral_specific"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter[has_expiration]",
+            "description": "Filter events by type which has or hasn't expiration.",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "count",
+            "description": "Count total number of events for a single user, applying filters.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "example": true
+            }
+          },
+          {
+            "$ref": "#/components/parameters/pageLimit"
+          },
+          {
+            "$ref": "#/components/parameters/pageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/pageOrder"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Event"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "required": [
+                        "events_count"
+                      ],
+                      "properties": {
+                        "events_count": {
+                          "type": "integer",
+                          "description": "Appears when `count=true` is specified",
+                          "example": 18
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    },
+    "/integrations/geo-points-svc/v1/public/events/{id}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Get event",
+        "description": "Returns a single event by ID.",
+        "operationId": "getEvent",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Event"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Claim points for event",
+        "description": "Update event status to _claimed_ and accrue points.\nUser must be authorized, and event must be _fulfilled_ by him.\n",
+        "operationId": "claimEvent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "059c81dd-2a54-44a8-8142-c15ad8f88949"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/vnd.api+json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "$ref": "#/components/schemas/ClaimEventKey"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Event claimed, points accrued",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "included"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Event"
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Balance"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "403": {
+            "description": "This event type was disabled and cannot be claimed",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Balance": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BalanceKey"
+          },
+          {
+            "type": "object",
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "created_at",
+                  "updated_at",
+                  "level"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Amount of points",
+                    "example": 580
+                  },
+                  "is_disabled": {
+                    "type": "boolean",
+                    "description": "Whether the user was not referred by anybody, but the balance with some\nevents was reserved. It happens when the user fulfills some event\nbefore the balance creation.\n",
+                    "example": false
+                  },
+                  "created_at": {
+                    "type": "integer",
+                    "description": "Unix timestamp of balance creation",
+                    "example": 1706531218
+                  },
+                  "updated_at": {
+                    "type": "integer",
+                    "description": "Unix timestamp of the last points accruing",
+                    "example": 1706531218
+                  },
+                  "rank": {
+                    "type": "integer",
+                    "format": "int",
+                    "description": "Rank of the user in the full leaderboard. Returned only for the single user.",
+                    "example": 294
+                  },
+                  "referral_code": {
+                    "type": "string",
+                    "description": "User referral code. Returned only for the single user.",
+                    "example": "6xM70VgX4eh"
+                  },
+                  "level": {
+                    "type": "integer",
+                    "format": "int",
+                    "description": "The level indicates user permissions and features",
+                    "example": 2
+                  },
+                  "is_verified": {
+                    "type": "boolean",
+                    "description": "Whether the user has scanned passport. Returned only for the single user.\n"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "BalanceKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Nullifier of the points owner",
+            "example": "0x123...abc",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "balance"
+            ]
+          }
+        }
+      },
+      "ClaimEventKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "059c81dd-2a54-44a8-8142-c15ad8f88949"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "claim_event"
+            ]
+          }
+        }
+      },
+      "CreateBalance": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateBalanceKey"
+          },
+          {
+            "type": "object",
+            "x-go-is-request": true,
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "required": [
+                  "referred_by"
+                ],
+                "properties": {
+                  "referred_by": {
+                    "type": "string",
+                    "description": "referrer code from the link",
+                    "example": "rCx18MZ4"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CreateBalanceKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Nullifier of the points owner",
+            "example": "0x123...abc",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "create_balance",
+              "update_balance"
+            ]
+          }
+        }
+      },
+      "Errors": {
+        "description": "Standard JSON:API error",
+        "type": "object",
+        "required": [
+          "errors"
+        ],
+        "properties": {
+          "errors": {
+            "type": "array",
+            "description": "Non empty array of errors occurred during request processing",
+            "items": {
+              "type": "object",
+              "required": [
+                "title",
+                "status"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Title is a short, human-readable summary of the problem",
+                  "example": "Bad Request"
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "Detail is a human-readable explanation specific to this occurrence of the problem",
+                  "example": "Request body was expected"
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Status is the HTTP status code applicable to this problem",
+                  "example": 400,
+                  "enum": [
+                    400,
+                    401,
+                    403,
+                    404,
+                    409,
+                    500
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Event": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EventKey"
+          },
+          {
+            "type": "object",
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "required": [
+                  "status",
+                  "created_at",
+                  "updated_at",
+                  "has_expiration",
+                  "meta"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "description": "See `filter[status]` parameter for explanation",
+                    "enum": [
+                      "open",
+                      "fulfilled",
+                      "claimed"
+                    ]
+                  },
+                  "created_at": {
+                    "type": "integer",
+                    "description": "Unix timestamp of event creation",
+                    "example": 1706531218
+                  },
+                  "updated_at": {
+                    "type": "integer",
+                    "description": "Unix timestamp of the event status change",
+                    "example": 1706531218
+                  },
+                  "has_expiration": {
+                    "type": "boolean",
+                    "description": "Whether this event may become expired."
+                  },
+                  "meta": {
+                    "$ref": "#/components/schemas/EventMeta"
+                  },
+                  "points_amount": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "How many points were accrued. Required only for `claimed` events.\nThis is necessary, as the reward might change over time, while\nthe certain balance should be left intact.\n",
+                    "example": 50
+                  }
+                }
+              },
+              "relationships": {
+                "type": "object",
+                "required": [
+                  "balance"
+                ],
+                "properties": {
+                  "balance": {
+                    "type": "object",
+                    "required": [
+                      "data"
+                    ],
+                    "properties": {
+                      "data": {
+                        "$ref": "#/components/schemas/BalanceKey"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EventKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "059c81dd-2a54-44a8-8142-c15ad8f88949"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          }
+        }
+      },
+      "EventMeta": {
+        "type": "object",
+        "required": [
+          "static"
+        ],
+        "properties": {
+          "static": {
+            "$ref": "#/components/schemas/EventStaticMeta"
+          },
+          "dynamic": {
+            "type": "string",
+            "format": "json.RawMessage",
+            "description": "Some events require dynamic data, which can be filled into `static` template.",
+            "example": {
+              "id": "123"
+            }
+          }
+        }
+      },
+      "EventStaticMeta": {
+        "type": "object",
+        "description": "Primary event metadata in plain JSON. This is a template\nto be filled by `dynamic` when it's present.\n",
+        "required": [
+          "name",
+          "reward",
+          "title",
+          "description",
+          "short_description",
+          "frequency",
+          "flag"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique event code name",
+            "example": "get_poh"
+          },
+          "reward": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Reward amount in points",
+            "example": 50
+          },
+          "title": {
+            "type": "string",
+            "example": "Get PoH credential"
+          },
+          "description": {
+            "type": "string",
+            "example": "Lorem ipsum dolor sit amet"
+          },
+          "short_description": {
+            "type": "string",
+            "example": "Short description"
+          },
+          "frequency": {
+            "type": "string",
+            "description": "Event frequency, which means how often you can fulfill\ncertain task and claim the reward.\n",
+            "enum": [
+              "one-time",
+              "daily",
+              "weekly",
+              "unlimited"
+            ]
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "time.Time",
+            "description": "General event starting date (UTC RFC3339)",
+            "example": "2020-01-01T00:00:00.000Z"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "time.Time",
+            "description": "General event expiration date (UTC RFC3339)",
+            "example": "2020-01-01T00:00:00.000Z"
+          },
+          "action_url": {
+            "type": "string",
+            "description": "Page where you can fulfill the event",
+            "example": "https://robotornot.rarimo.com"
+          },
+          "logo": {
+            "type": "string",
+            "description": "Event logo",
+            "example": "https://logo.com/some_logo.svg"
+          },
+          "flag": {
+            "type": "string",
+            "description": "Event configuration flag:\n  - active: Events can be opened, fulfilled, claimed\n  - not_started: Event are not available yet, see `starts_at`\n  - expired: Event is not available, as it has already expired, see `expires_at`\n  - disabled: Event is disabled in the system\n\nIf event is disabled, it doesn't matter if it's expired or not started:\nit has `disabled` flag.\n",
+            "enum": [
+              "active",
+              "not_started",
+              "expired",
+              "disabled"
+            ]
+          }
+        }
+      },
+      "EventType": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EventTypeKey"
+          },
+          {
+            "type": "object",
+            "description": "Event type configuration and metadata",
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "format": "EventStaticMeta",
+                "$ref": "#/components/schemas/EventStaticMeta"
+              }
+            }
+          }
+        ]
+      },
+      "EventTypeKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Event type unique code name",
+            "example": "passport_scan"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "event_type"
+            ]
+          }
+        }
+      },
+      "JoinProgram": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JoinProgramKey"
+          },
+          {
+            "type": "object",
+            "x-go-is-request": true,
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "required": [
+                  "country"
+                ],
+                "properties": {
+                  "country": {
+                    "type": "string",
+                    "example": "5589842"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "JoinProgramKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Nullifier of the points owner",
+            "example": "0x123...abc",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "join_program"
+            ]
+          }
+        }
+      },
+      "PassportEventState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PassportEventStateKey"
+          },
+          {
+            "type": "object",
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "required": [
+                  "claimed"
+                ],
+                "type": "object",
+                "properties": {
+                  "claimed": {
+                    "type": "bool",
+                    "example": true,
+                    "description": "If passport scan event was automatically claimed"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PassportEventStateKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Nullifier of the points owner",
+            "example": "0x123...abc",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "passport_event_state"
+            ]
+          }
+        }
+      },
+      "VerifyPassport": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VerifyPassportKey"
+          },
+          {
+            "type": "object",
+            "x-go-is-request": true,
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "required": [
+                  "anonymous_id",
+                  "country"
+                ],
+                "type": "object",
+                "properties": {
+                  "anonymous_id": {
+                    "type": "string",
+                    "description": "Unique identifier of the passport.",
+                    "example": "2bd3a2532096fee10a45a40e444a11b4d00a707f3459376087747de05996fbf5"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "ISO 3166-1 alpha-3 country code, must match the one provided in `proof`.\n",
+                    "example": "UKR"
+                  },
+                  "proof": {
+                    "type": "object",
+                    "format": "types.ZKProof",
+                    "description": "Query ZK passport verification proof.\nRequired for endpoint `/v2/balances/{nullifier}/verifypassport`.\n"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "VerifyPassportKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Nullifier of the points owner",
+            "example": "0x123...abc",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "verify_passport"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "internalError": {
+        "description": "Internal server error",
+        "content": {
+          "application/vnd.api+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        }
+      },
+      "invalidAuth": {
+        "description": "You must provide a valid authorization params.",
+        "content": {
+          "application/vnd.api+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        }
+      },
+      "invalidParameter": {
+        "description": "One of the parameters is invalid. Refer to the response body for details.",
+        "content": {
+          "application/vnd.api+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        }
+      },
+      "notFound": {
+        "description": "Requested resource does not exist.",
+        "content": {
+          "application/vnd.api+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "filterNullifier": {
+        "in": "query",
+        "name": "filter[nullifier]",
+        "required": true,
+        "description": "Filter by single nullifier. Auth is required for this filter.",
+        "schema": {
+          "type": "string",
+          "example": "0x123...abc",
+          "pattern": "^0x[0-9a-fA-F]{64}$"
+        }
+      },
+      "pageCursor": {
+        "in": "query",
+        "name": "page[cursor]",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "example": 1706531218
+        },
+        "description": "Cursor position"
+      },
+      "pageLimit": {
+        "in": "query",
+        "name": "page[limit]",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 15,
+          "description": "Numbers of items per page to return."
+        }
+      },
+      "pageNumber": {
+        "in": "query",
+        "name": "page[number]",
+        "description": "The number of the page to return.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "example": 3
+        }
+      },
+      "pageOrder": {
+        "in": "query",
+        "name": "page[order]",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc",
+          "description": "Order of records on the page."
+        }
+      },
+      "pathNullifier": {
+        "in": "path",
+        "name": "nullifier",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "0x123...abc",
+          "pattern": "^0x[0-9a-fA-F]{64}$"
+        }
+      }
+    }
+  }
+}
