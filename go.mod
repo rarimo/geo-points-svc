@@ -12,7 +12,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/jsonapi v1.0.0
 	github.com/iden3/go-rapidsnark/types v0.0.3
-	github.com/rarimo/decentralized-auth-svc v0.0.0-20240522134350-2694eafa9509
+	github.com/rarimo/geo-auth-svc v0.0.0-20240702095344-abb69068a6bb
 	github.com/rarimo/saver-grpc-lib v1.0.0
 	github.com/rarimo/zkverifier-kit v1.0.0
 	github.com/rubenv/sql-migrate v1.6.1

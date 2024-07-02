@@ -2113,8 +2113,8 @@ github.com/rarimo/broadcaster-svc v1.0.2 h1:ExQcjjWCRP5+POLDlZHrTD1ffUsBH+Dgv5FA
 github.com/rarimo/broadcaster-svc v1.0.2/go.mod h1:lYIHy+X4IqQt4eBdtMN/V352H3EV0/gO8G+32SFwUWI=
 github.com/rarimo/cosmos-sdk v0.46.7 h1:jU2PiWzc+19SF02cXM0O0puKPeH1C6Q6t2lzJ9s1ejc=
 github.com/rarimo/cosmos-sdk v0.46.7/go.mod h1:fqKqz39U5IlEFb4nbQ72951myztsDzFKKDtffYJ63nk=
-github.com/rarimo/decentralized-auth-svc v0.0.0-20240522134350-2694eafa9509 h1:U3gu/Z61tVIVEVoWL1YdwiNzkaXlkgd7cSeEslVfsLI=
-github.com/rarimo/decentralized-auth-svc v0.0.0-20240522134350-2694eafa9509/go.mod h1:V9XSqZSBN/YmLdI6PW6GL2xNeJ94IXAnhcuvyQfVBL8=
+github.com/rarimo/geo-auth-svc v0.0.0-20240702095344-abb69068a6bb h1:Mnlyv8KbeWr2gR5zjOaMcF6p54zBizwQ5o9F0scTavc=
+github.com/rarimo/geo-auth-svc v0.0.0-20240702095344-abb69068a6bb/go.mod h1:H48kg9HogejpGP92SbtwQ8vukcORytFPZTu72cXXz6g=
 github.com/rarimo/saver-grpc-lib v1.0.0 h1:MGUVjYg7unmodYczVsLqlqZNkT4CIgKqdo6aQtL1qdE=
 github.com/rarimo/saver-grpc-lib v1.0.0/go.mod h1:DpugWK5B7Hi0bdC3MPe/9FD2zCxaRwsyykdwxtF1Zgg=
 github.com/rarimo/zkverifier-kit v1.0.0 h1:zMW85hyDP3Uk6p9Dk9U4TBzOf0Pry+RNlWpli1tUZ1Q=
