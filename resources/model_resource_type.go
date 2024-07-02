@@ -12,9 +12,10 @@ const (
 	CLAIM_EVENT          ResourceType = "claim_event"
 	CREATE_BALANCE       ResourceType = "create_balance"
 	UPDATE_BALANCE       ResourceType = "update_balance"
+	EVENT_CLAIMING_STATE ResourceType = "event_claiming_state"
 	EVENT                ResourceType = "event"
 	EVENT_TYPE           ResourceType = "event_type"
+	FULFILL_QR_EVENT     ResourceType = "fulfill_qr_event"
 	JOIN_PROGRAM         ResourceType = "join_program"
-	PASSPORT_EVENT_STATE ResourceType = "passport_event_state"
 	VERIFY_PASSPORT      ResourceType = "verify_passport"
 )

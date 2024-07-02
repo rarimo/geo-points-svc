@@ -40,6 +40,7 @@ func Run(ctx context.Context, cfg config.Config) {
 				r.Use(handlers.AuthMiddleware(cfg.Auth(), cfg.Log()))
 				r.Get("/", handlers.ListEvents)
 				r.Get("/{id}", handlers.GetEvent)
+				r.Patch("/{id}/qrcode", handlers.FulfillQREvent)
 				r.Patch("/{id}", handlers.ClaimEvent)
 			})
 			r.Get("/balances", handlers.Leaderboard)

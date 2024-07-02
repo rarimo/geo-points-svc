@@ -1,0 +1,16 @@
+allOf:
+  - $ref: '#/components/schemas/FulfillQREventKey'
+  - type: object
+    x-go-is-request: true
+    required:
+      - attributes
+    properties:
+      attributes:
+        required:
+          - qr_code
+        type: object
+        properties:
+          qr_code:
+            type: string
+            description: Base64-encoded QR code
+            example: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABaElEQVR4AWP4//8/AyUYw"

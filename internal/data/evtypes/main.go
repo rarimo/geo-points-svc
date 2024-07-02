@@ -49,6 +49,7 @@ type EventConfig struct {
 	Disabled         bool       `fig:"disabled"`
 	ActionURL        *url.URL   `fig:"action_url"`
 	Logo             *url.URL   `fig:"logo"`
+	QRCodeValue      string     `fig:"qr_code_value"`
 }
 
 func (e EventConfig) Flag() string {
@@ -73,6 +74,11 @@ func (e EventConfig) Resource() resources.EventStaticMeta {
 		return &s
 	}
 
+	var qrValue *string
+	if e.QRCodeValue != "" {
+		qrValue = &e.QRCodeValue
+	}
+
 	return resources.EventStaticMeta{
 		Name:             e.Name,
 		Description:      e.Description,
@@ -85,6 +91,7 @@ func (e EventConfig) Resource() resources.EventStaticMeta {
 		ActionUrl:        safeConv(e.ActionURL),
 		Logo:             safeConv(e.Logo),
 		Flag:             e.Flag(),
+		QrCodeValue:      qrValue,
 	}
 }
 

@@ -133,10 +133,7 @@ func updateReferralUserEvents(db *pgdb.DB, types evtypes.Types) error {
 // friends which have passport scanned, if it possible
 func claimReferralSpecificEvents(db *pgdb.DB, types evtypes.Types, levels config.Levels) error {
 	evType := types.Get(evtypes.TypeReferralSpecific, evtypes.FilterInactive)
-	if evType == nil {
-		return nil
-	}
-	if !evType.AutoClaim {
+	if evType == nil || !evType.AutoClaim {
 		return nil
 	}
 

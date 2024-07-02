@@ -122,7 +122,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ape.Render(w, newPassportEventStateResponse(req.Data.ID, nil))
+		ape.Render(w, newEventClaimingStateResponse(req.Data.ID, true))
 		return
 	}
 
@@ -145,14 +145,14 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newPassportEventStateResponse(req.Data.ID, event))
+	ape.Render(w, newEventClaimingStateResponse(req.Data.ID, event != nil))
 }
 
-func newPassportEventStateResponse(id string, event *data.Event) resources.PassportEventStateResponse {
+func newEventClaimingStateResponse(id string, isClaimed bool) resources.PassportEventStateResponse {
 	var res resources.PassportEventStateResponse
 	res.Data.ID = id
-	res.Data.Type = resources.PASSPORT_EVENT_STATE
-	res.Data.Attributes.Claimed = event != nil
+	res.Data.Type = resources.EVENT_CLAIMING_STATE
+	res.Data.Attributes.Claimed = isClaimed
 	return res
 }
 

@@ -46,6 +46,15 @@ event_types:
       short_description: Short description
       no_auto_open: true
       auto_claim: true
+    - name: meetup_participation
+      title: Prove your participation by scanning QR code
+      reward: 5
+      frequency: unlimited
+      description: Prove your participation by scanning QR code
+      short_description: Short description
+      no_auto_open: true
+      auto_claim: true
+      qr_code_value: "qr_code_base64_string"
 
 levels:
   levels:
