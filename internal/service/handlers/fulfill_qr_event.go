@@ -71,6 +71,12 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !balance.IsVerified {
+		Log(r).Infof("Balance nullifier=%s is not verified, fulfill or claim not allowed", event.Nullifier)
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+
 	err = EventsQ(r).Transaction(func() error {
 		event, err = claimEvent(r, event, balance)
 		return err

@@ -48,6 +48,7 @@ func updatePassportScanEvents(db *pgdb.DB, types evtypes.Types, levels config.Le
 		return nil
 	}
 
+	// ensured in query that all balances are verified
 	balances, err := pg.NewBalances(db).WithoutPassportEvent()
 	if err != nil {
 		return fmt.Errorf("failed to select balances without points for passport scan: %w", err)
@@ -146,19 +147,12 @@ func claimReferralSpecificEvents(db *pgdb.DB, types evtypes.Types, levels config
 	}
 
 	// we need to have maps which link nullifiers to events slice
-	toClaim := make([]string, 0, len(events))
 	nullifiers := make([]string, 0, len(events))
 	for _, event := range events {
-		toClaim = append(toClaim, event.ID)
 		nullifiers = append(nullifiers, event.Nullifier)
 	}
-	if len(toClaim) == 0 {
+	if len(nullifiers) == 0 {
 		return nil
-	}
-
-	_, err = pg.NewEvents(db).FilterByID(toClaim...).Update(data.EventClaimed, nil, &evType.Reward)
-	if err != nil {
-		return fmt.Errorf("update event status: %w", err)
 	}
 
 	balances, err := pg.NewBalances(db).FilterByNullifier(nullifiers...).Select()
@@ -167,6 +161,26 @@ func claimReferralSpecificEvents(db *pgdb.DB, types evtypes.Types, levels config
 	}
 	if len(balances) == 0 {
 		return errors.New("critical: events present, but no balances with nullifier")
+	}
+
+	toClaim := make([]string, 0, len(events))
+	// select events to claim only for verified balances
+	for _, event := range events {
+		for _, balance := range balances {
+			if event.Nullifier != balance.Nullifier || !balance.IsVerified {
+				continue
+			}
+			toClaim = append(toClaim, event.ID)
+			break
+		}
+	}
+	if len(toClaim) == 0 {
+		return nil
+	}
+
+	_, err = pg.NewEvents(db).FilterByID(toClaim...).Update(data.EventClaimed, nil, &evType.Reward)
+	if err != nil {
+		return fmt.Errorf("update event status: %w", err)
 	}
 
 	for _, balance := range balances {
