@@ -21,6 +21,7 @@ type Config interface {
 
 	Levels() Levels
 	Verifier() *zk.Verifier
+	SigVerifier() []byte
 }
 
 type config struct {
@@ -32,9 +33,10 @@ type config struct {
 	identity.VerifierProvider
 	evtypes.EventTypeser
 
-	levels   comfig.Once
-	verifier comfig.Once
-	getter   kv.Getter
+	levels      comfig.Once
+	verifier    comfig.Once
+	sigVerifier comfig.Once
+	getter      kv.Getter
 }
 
 func New(getter kv.Getter) Config {

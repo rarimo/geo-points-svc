@@ -45,12 +45,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		proof       = req.Data.Attributes.Proof
 
 		gotSig  = r.Header.Get("Signature")
-		wantSig = calculatePassportVerificationSignature(
-			nil, // TODO: add correct verification key
-			req.Data.ID,
-			country,
-			anonymousID,
-		)
+		wantSig = calculatePassportVerificationSignature(SigVerifier(r), req.Data.ID, country, anonymousID)
 	)
 
 	if gotSig != wantSig {

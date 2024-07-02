@@ -44,12 +44,7 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		gotSig  = r.Header.Get("Signature")
-		wantSig = calculateQREventSignature(
-			nil, // TODO: add correct verification key
-			event.Nullifier,
-			event.ID,
-			req.Data.Attributes.QrCode,
-		)
+		wantSig = calculateQREventSignature(SigVerifier(r), event.Nullifier, event.ID, req.Data.Attributes.QrCode)
 	)
 
 	if gotSig != wantSig {

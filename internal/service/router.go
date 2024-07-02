@@ -22,6 +22,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxEventTypes(cfg.EventTypes()),
 			handlers.CtxLevels(cfg.Levels()),
 			handlers.CtxVerifier(cfg.Verifier()),
+			handlers.CtxSigVerifier(cfg.SigVerifier()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)
