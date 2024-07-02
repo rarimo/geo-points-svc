@@ -28,7 +28,7 @@ patch:
             - data
           properties:
             data:
-              $ref: '#/components/schemas/ClaimEventKey'
+              $ref: '#/components/schemas/FulfillQREvent'
   responses:
     200:
       description: Success

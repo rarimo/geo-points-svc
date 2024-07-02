@@ -82,13 +82,5 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// balance should exist cause of previous logic
-	balance, err = BalancesQ(r).GetWithRank(event.Nullifier)
-	if err != nil {
-		Log(r).WithError(err).Error("Failed to get balance by nullifier with rank")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	ape.Render(w, newClaimEventResponse(*event, evType.Resource(), *balance))
+	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true))
 }

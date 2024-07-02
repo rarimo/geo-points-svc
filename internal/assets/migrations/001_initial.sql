@@ -5,15 +5,15 @@ AS $$ BEGIN NEW.updated_at = EXTRACT('EPOCH' FROM NOW()); RETURN NEW; END; $$;
 
 CREATE TABLE IF NOT EXISTS balances
 (
-    nullifier             TEXT PRIMARY KEY,
-    amount                bigint  NOT NULL default 0,
-    created_at            integer NOT NULL default EXTRACT('EPOCH' FROM NOW()),
-    updated_at            integer NOT NULL default EXTRACT('EPOCH' FROM NOW()),
-    referred_by           text UNIQUE,
-    level                 INT NOT NULL,
-    anonymous_id          TEXT UNIQUE,
-    is_verified          BOOLEAN NOT NULL default FALSE,
-    is_passport_proven   BOOLEAN NOT NULL default FALSE
+    nullifier          TEXT PRIMARY KEY,
+    amount             bigint  NOT NULL default 0,
+    created_at         integer NOT NULL default EXTRACT('EPOCH' FROM NOW()),
+    updated_at         integer NOT NULL default EXTRACT('EPOCH' FROM NOW()),
+    referred_by        text,
+    level              INT     NOT NULL,
+    anonymous_id       TEXT UNIQUE,
+    is_verified        BOOLEAN NOT NULL default FALSE,
+    is_passport_proven BOOLEAN NOT NULL default FALSE
 );
 
 CREATE INDEX IF NOT EXISTS balances_page_index ON balances (amount, updated_at) WHERE referred_by IS NOT NULL;
@@ -27,8 +27,8 @@ EXECUTE FUNCTION trigger_set_updated_at();
 
 CREATE TABLE IF NOT EXISTS referrals
 (
-    id          text PRIMARY KEY,
-    nullifier   TEXT    NOT NULL REFERENCES balances (nullifier),
+    id         text PRIMARY KEY,
+    nullifier  TEXT    NOT NULL REFERENCES balances (nullifier),
     usage_left INTEGER NOT NULL DEFAULT 1
 );
 
@@ -40,7 +40,7 @@ CREATE TYPE event_status AS ENUM ('open', 'fulfilled', 'claimed');
 CREATE TABLE IF NOT EXISTS events
 (
     id            uuid PRIMARY KEY NOT NULL default gen_random_uuid(),
-    nullifier     TEXT    NOT NULL REFERENCES balances (nullifier),
+    nullifier     TEXT             NOT NULL REFERENCES balances (nullifier),
     type          text             NOT NULL,
     status        event_status     NOT NULL,
     created_at    integer          NOT NULL default EXTRACT('EPOCH' FROM NOW()),

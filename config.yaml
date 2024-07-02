@@ -52,7 +52,6 @@ event_types:
       frequency: unlimited
       description: Prove your participation by scanning QR code
       short_description: Short description
-      no_auto_open: true
       auto_claim: true
       qr_code_value: "qr_code_base64_string"
 
@@ -60,16 +59,7 @@ levels:
   levels:
     - lvl: 1
       threshold: 0
-      referrals: 5
-      withdrawal_allowed: false
-    - lvl: 2
-      threshold: 5
-      referrals: 5
-      withdrawal_allowed: true
-    - lvl: 3
-      threshold: 6
-      referrals: 5
-      withdrawal_allowed: true
+      referrals: 1
 
 countries:
   verification_key: "37bc75afc97f8bdcd21cda85ae7b2885b5f1205ae3d79942e56457230f1636a037cc7ebfe42998d66a3dd3446b9d29366271b4f2bd8e0d307db1d320b38fc02f"

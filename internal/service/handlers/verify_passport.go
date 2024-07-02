@@ -122,7 +122,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ape.Render(w, newEventClaimingStateResponse(req.Data.ID, true))
+		ape.Render(w, newEventClaimingStateResponse(req.Data.ID, false))
 		return
 	}
 
