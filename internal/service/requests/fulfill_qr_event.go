@@ -18,7 +18,7 @@ func NewFulfillQREvent(r *http.Request) (req resources.FulfillQrEventRequest, er
 	}
 
 	return req, validation.Errors{
-		"data/id":                 validation.Validate(req.Data.ID, validation.Required, validation.In(id)),
+		"data/id":                 validation.Validate(req.Data.ID, validation.Required, validation.In(id), is.UUID),
 		"data/type":               validation.Validate(req.Data.Type, validation.Required, validation.In(resources.FULFILL_QR_EVENT)),
 		"data/attributes/qr_code": validation.Validate(req.Data.Attributes.QrCode, validation.Required, is.Base64),
 	}.Filter()

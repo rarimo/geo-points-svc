@@ -1,8 +1,15 @@
 package handlers
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
+	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
+	"github.com/labstack/gommon/log"
 	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -32,6 +39,22 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(event.Nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
+
+	var (
+		gotSig  = r.Header.Get("Signature")
+		wantSig = calculateQREventSignature(
+			nil, // TODO: add correct verification key
+			event.Nullifier,
+			event.ID,
+			req.Data.Attributes.QrCode,
+		)
+	)
+
+	if gotSig != wantSig {
+		log.Warnf("QR event fulfillment unauthorized access: HMAC signature mismatch: got %s, want %s", gotSig, wantSig)
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
@@ -89,4 +112,28 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true))
+}
+
+func calculateQREventSignature(key []byte, nullifier, eventID, qrCode string) string {
+	bNull, err := hex.DecodeString(nullifier[2:])
+	if err != nil {
+		panic(fmt.Errorf("nullifier was not properly validated as hex: %w", err))
+	}
+
+	bID, err := uuid.Parse(eventID)
+	if err != nil {
+		panic(fmt.Errorf("eventID was not properly validated as uuid: %w", err))
+	}
+
+	bQR, err := base64.StdEncoding.DecodeString(qrCode)
+	if err != nil {
+		panic(fmt.Errorf("qrCode was not properly validated as base64: %w", err))
+	}
+
+	h := hmac.New(sha256.New, key)
+	msg := append(bNull, bID[:]...)
+	msg = append(msg, bQR...)
+	h.Write(msg)
+
+	return hex.EncodeToString(h.Sum(nil))
 }

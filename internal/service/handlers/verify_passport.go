@@ -54,7 +54,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if gotSig != wantSig {
-		log.Warnf("Unauthorized access: HMAC signature mismatch: got %s, want %s", gotSig, wantSig)
+		log.Warnf("Passport verification unauthorized access: HMAC signature mismatch: got %s, want %s", gotSig, wantSig)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
