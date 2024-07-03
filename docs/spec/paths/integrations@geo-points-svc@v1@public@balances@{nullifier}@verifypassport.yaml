@@ -37,7 +37,7 @@ post:
               - data
             properties:
               data:
-                $ref: '#/components/schemas/PassportEventState'
+                $ref: '#/components/schemas/EventClaimingState'
     400:
       $ref: '#/components/responses/invalidParameter'
     401:

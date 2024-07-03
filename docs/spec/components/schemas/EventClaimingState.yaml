@@ -1,5 +1,5 @@
 allOf:
-  - $ref: '#/components/schemas/PassportEventStateKey'
+  - $ref: '#/components/schemas/EventClaimingStateKey'
   - type: object
     required:
       - attributes

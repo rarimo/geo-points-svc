@@ -68,14 +68,19 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	referral, err = ReferralsQ(r).Get(nullifier)
-	if err != nil || referral == nil {
+	referrals, err := ReferralsQ(r).FilterByNullifier(nullifier).Select()
+	if err != nil {
 		Log(r).WithError(err).Error("Failed to get referral code by nullifier")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
+	if len(referrals) != 1 {
+		Log(r).WithError(err).Error("There must be only 1 referral code")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
 
-	ape.Render(w, newBalanceResponse(*balance, referral))
+	ape.Render(w, newBalanceResponse(*balance, &referrals[0]))
 }
 
 func prepareEventsWithRef(nullifier, refBy string, r *http.Request) []data.Event {

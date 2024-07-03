@@ -46,44 +46,23 @@ event_types:
       short_description: Short description
       no_auto_open: true
       auto_claim: true
+    - name: meetup_participation
+      title: Prove your participation by scanning QR code
+      reward: 5
+      frequency: unlimited
+      description: Prove your participation by scanning QR code
+      short_description: Short description
+      auto_claim: true
+      qr_code_value: "qr_code_base64_string"
 
 levels:
   levels:
     - lvl: 1
       threshold: 0
-      referrals: 5
-      withdrawal_allowed: false
-    - lvl: 2
-      threshold: 5
-      referrals: 5
-      withdrawal_allowed: true
-    - lvl: 3
-      threshold: 6
-      referrals: 5
-      withdrawal_allowed: true
-
-countries:
-  verification_key: "37bc75afc97f8bdcd21cda85ae7b2885b5f1205ae3d79942e56457230f1636a037cc7ebfe42998d66a3dd3446b9d29366271b4f2bd8e0d307db1d320b38fc02f"
-  countries:
-    - code: "UKR"
-      reserve_limit: 100000
-      reserve_allowed: true
-      withdrawal_allowed: true
-    - code: "USA"
-      reserve_limit: 0
-      reserve_allowed: false
-      withdrawal_allowed: false
-    - code: "default"
-      reserve_limit: 100
-      reserve_allowed: true
-      withdrawal_allowed: true
+      referrals: 1
 
 auth:
   addr: http://rarime-auth
-
-broadcaster:
-  addr: broadcaster
-  sender_account: "rarimo15hcd6tv7pe8hk2re7hu0zg0aphqdm2dtjrs0ds"
 
 verifier:
   verification_key_path: "./verification_key.json"
@@ -95,5 +74,5 @@ root_verifier:
   contract: registration_contract_address
   request_timeout: 10s
 
-withdrawal:
-  point_price_urmo: 1000000
+sig_verifier:
+  verification_key: "37bc75afc97f8bdcd21cda85ae7b2885b5f1205ae3d79942e56457230f1636a037cc7ebfe42998d66a3dd3446b9d29366271b4f2bd8e0d307db1d320b38fc02f"

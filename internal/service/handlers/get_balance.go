@@ -43,12 +43,18 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	var referral *data.Referral
 	if req.ReferralCodes {
-		referral, err = ReferralsQ(r).Get(req.Nullifier)
-		if err != nil || referral == nil {
-			Log(r).WithError(err).Error("Failed to get referral by code nullifier")
+		referrals, err := ReferralsQ(r).FilterByNullifier(req.Nullifier).Select()
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to get referral code by nullifier")
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
+		if len(referrals) != 1 {
+			Log(r).WithError(err).Error("There must be exactly 1 referral code")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		referral = &referrals[0]
 	}
 
 	ape.Render(w, newBalanceResponse(*balance, referral))

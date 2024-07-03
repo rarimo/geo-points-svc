@@ -10,10 +10,9 @@ import (
 )
 
 type Level struct {
-	Level             int  `fig:"lvl,required"`
-	Threshold         int  `fig:"threshold,required"`
-	Referrals         int  `fig:"referrals,required"`
-	WithdrawalAllowed bool `fig:"withdrawal_allowed"`
+	Level     int `fig:"lvl,required"`
+	Threshold int `fig:"threshold,required"`
+	Referrals int `fig:"referrals,required"`
 }
 
 type Levels map[int]Level

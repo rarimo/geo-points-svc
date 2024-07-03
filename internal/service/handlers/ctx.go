@@ -21,8 +21,9 @@ const (
 	referralsQCtxKey
 	eventTypesCtxKey
 	userClaimsCtxKey
-	verifierCtxKey
 	levelsCtxKey
+	verifierCtxKey
+	sigVerifierCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -93,6 +94,16 @@ func CtxVerifier(verifier *zk.Verifier) func(context.Context) context.Context {
 
 func Verifier(r *http.Request) *zk.Verifier {
 	return r.Context().Value(verifierCtxKey).(*zk.Verifier)
+}
+
+func CtxSigVerifier(sigVerifier []byte) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, sigVerifierCtxKey, sigVerifier)
+	}
+}
+
+func SigVerifier(r *http.Request) []byte {
+	return r.Context().Value(sigVerifierCtxKey).([]byte)
 }
 
 func CtxLevels(levels config.Levels) func(context.Context) context.Context {

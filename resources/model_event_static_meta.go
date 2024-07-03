@@ -21,6 +21,8 @@ type EventStaticMeta struct {
 	Logo *string `json:"logo,omitempty"`
 	// Unique event code name
 	Name string `json:"name"`
+	// Base64-encoded QR code. Must match the code provided in event type.
+	QrCodeValue *string `json:"qr_code_value,omitempty"`
 	// Reward amount in points
 	Reward           int64  `json:"reward"`
 	ShortDescription string `json:"short_description"`
