@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"net/http"
@@ -17,6 +14,7 @@ import (
 	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/service/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	zk "github.com/rarimo/zkverifier-kit"
@@ -43,16 +41,22 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		country     = req.Data.Attributes.Country
 		anonymousID = req.Data.Attributes.AnonymousId
 		proof       = req.Data.Attributes.Proof
-
-		gotSig  = r.Header.Get("Signature")
-		wantSig = calculatePassportVerificationSignature(SigVerifier(r), req.Data.ID, country, anonymousID)
 	)
+
+	gotSig := r.Header.Get("Signature")
+	wantSig, err := hmacsig.CalculatePassportVerificationSignature(SigVerifier(r), req.Data.ID, country, anonymousID)
+	if err != nil { // must never happen due to preceding validation
+		Log(r).WithError(err).Error("Failed to calculate HMAC signature")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
 
 	if gotSig != wantSig {
 		log.Warnf("Passport verification unauthorized access: HMAC signature mismatch: got %s, want %s", gotSig, wantSig)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
+
 	if proof == nil {
 		log.Debug("Proof is not provided: performing logic of joining program instead of full verification")
 	}
@@ -149,24 +153,6 @@ func newEventClaimingStateResponse(id string, isClaimed bool) resources.Passport
 	res.Data.Type = resources.EVENT_CLAIMING_STATE
 	res.Data.Attributes.Claimed = isClaimed
 	return res
-}
-
-func calculatePassportVerificationSignature(key []byte, nullifier, country, anonymousID string) string {
-	bNull, err := hex.DecodeString(nullifier[2:])
-	if err != nil {
-		panic(fmt.Errorf("nullifier was not properly validated as hex: %w", err))
-	}
-	bAID, err := hex.DecodeString(anonymousID)
-	if err != nil {
-		panic(fmt.Errorf("anonymousID was not properly validated as hex: %w", err))
-	}
-
-	h := hmac.New(sha256.New, key)
-	msg := append(bNull, []byte(country)...)
-	msg = append(msg, bAID...)
-	h.Write(msg)
-
-	return hex.EncodeToString(h.Sum(nil))
 }
 
 // getAndVerifyBalanceEligibility provides shared logic to verify that the user
