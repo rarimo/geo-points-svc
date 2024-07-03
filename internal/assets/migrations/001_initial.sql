@@ -60,7 +60,26 @@ CREATE TRIGGER set_updated_at
     FOR EACH ROW
 EXECUTE FUNCTION trigger_set_updated_at();
 
+CREATE TABLE IF NOT EXISTS event_types
+(
+    name              text PRIMARY KEY NOT NULL,
+    short_description text             NOT NULL,
+    description       text             NOT NULL,
+    reward            integer          NOT NULL,
+    title             text             NOT NULL,
+    frequency         text             NOT NULL,
+    starts_at         timestamp,
+    expires_at        timestamp,
+    no_auto_open      BOOLEAN          NOT NULL DEFAULT FALSE,
+    auto_claim        BOOLEAN          NOT NULL DEFAULT FALSE,
+    disabled          BOOLEAN          NOT NULL DEFAULT FALSE,
+    action_url        text,
+    logo              text,
+    qr_code_value     text
+);
+
 -- +migrate Down
+DROP TABLE IF EXISTS event_types;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS referrals;
 DROP TABLE IF EXISTS balances;

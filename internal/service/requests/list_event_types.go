@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	val "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"gitlab.com/distributed_lab/urlval/v4"
 )
 
@@ -22,10 +22,10 @@ func NewListEventTypes(r *http.Request) (req ListExpiredEvents, err error) {
 
 	err = val.Errors{
 		"filter[flag]": val.Validate(req.FilterFlag, val.Each(val.In(
-			evtypes.FlagActive,
-			evtypes.FlagNotStarted,
-			evtypes.FlagExpired,
-			evtypes.FlagDisabled,
+			models.FlagActive,
+			models.FlagNotStarted,
+			models.FlagExpired,
+			models.FlagDisabled,
 		))),
 		"filter[name][not]": val.Validate(req.FilterNotName, val.When(len(req.FilterName) > 0, val.Nil, val.Empty)),
 	}.Filter()

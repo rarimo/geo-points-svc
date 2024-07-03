@@ -7,6 +7,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/handlers"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -42,8 +43,8 @@ func Run(cfg config.Config, sig chan struct{}) {
 // possible and to fulfill the rest of the events.
 //
 // Event will not be claimed if AutoClaim is disabled.
-func updatePassportScanEvents(db *pgdb.DB, types evtypes.Types, levels config.Levels) error {
-	evType := types.Get(evtypes.TypePassportScan, evtypes.FilterInactive)
+func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
+	evType := types.Get(models.TypePassportScan, evtypes.FilterInactive)
 	if evType == nil {
 		return nil
 	}
@@ -98,8 +99,8 @@ func updatePassportScanEvents(db *pgdb.DB, types evtypes.Types, levels config.Le
 // for friends who have scanned the passport, if they have not been added.
 //
 // Events are not added if the event type is inactive
-func updateReferralUserEvents(db *pgdb.DB, types evtypes.Types) error {
-	evTypeRef := types.Get(evtypes.TypeReferralSpecific, evtypes.FilterInactive)
+func updateReferralUserEvents(db *pgdb.DB, types *evtypes.Types) error {
+	evTypeRef := types.Get(models.TypeReferralSpecific, evtypes.FilterInactive)
 	if evTypeRef == nil {
 		return nil
 	}
@@ -113,7 +114,7 @@ func updateReferralUserEvents(db *pgdb.DB, types evtypes.Types) error {
 	for _, ref := range refPairs {
 		toInsert = append(toInsert, data.Event{
 			Nullifier: ref.Referrer,
-			Type:      evtypes.TypeReferralSpecific,
+			Type:      models.TypeReferralSpecific,
 			Status:    data.EventFulfilled,
 			Meta:      data.Jsonb(fmt.Sprintf(`{"nullifier": "%s"}`, ref.Referred)),
 		})
@@ -132,14 +133,14 @@ func updateReferralUserEvents(db *pgdb.DB, types evtypes.Types) error {
 
 // claimReferralSpecificEvents claim fulfilled events for invited
 // friends which have passport scanned, if it possible
-func claimReferralSpecificEvents(db *pgdb.DB, types evtypes.Types, levels config.Levels) error {
-	evType := types.Get(evtypes.TypeReferralSpecific, evtypes.FilterInactive)
+func claimReferralSpecificEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
+	evType := types.Get(models.TypeReferralSpecific, evtypes.FilterInactive)
 	if evType == nil || !evType.AutoClaim {
 		return nil
 	}
 
 	events, err := pg.NewEvents(db).
-		FilterByType(evtypes.TypeReferralSpecific).
+		FilterByType(models.TypeReferralSpecific).
 		FilterByStatus(data.EventFulfilled).
 		Select()
 	if err != nil {

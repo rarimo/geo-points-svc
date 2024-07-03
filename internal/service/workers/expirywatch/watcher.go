@@ -7,6 +7,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/running"
@@ -14,7 +15,7 @@ import (
 
 type watcher struct {
 	q     data.EventsQ
-	types evtypes.Types
+	types *evtypes.Types
 	log   *logan.Entry
 }
 
@@ -27,7 +28,7 @@ func newWatcher(cfg config.Config) *watcher {
 }
 
 func (w *watcher) initialRun() error {
-	expired := w.types.Names(func(ev evtypes.EventConfig) bool {
+	expired := w.types.Names(func(ev models.EventType) bool {
 		return !ev.Disabled && !evtypes.FilterExpired(ev)
 	})
 

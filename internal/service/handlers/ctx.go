@@ -66,14 +66,14 @@ func ReferralsQ(r *http.Request) data.ReferralsQ {
 	return r.Context().Value(referralsQCtxKey).(data.ReferralsQ).New()
 }
 
-func CtxEventTypes(types evtypes.Types) func(context.Context) context.Context {
+func CtxEventTypes(types *evtypes.Types) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, eventTypesCtxKey, types)
 	}
 }
 
-func EventTypes(r *http.Request) evtypes.Types {
-	return r.Context().Value(eventTypesCtxKey).(evtypes.Types)
+func EventTypes(r *http.Request) *evtypes.Types {
+	return r.Context().Value(eventTypesCtxKey).(*evtypes.Types)
 }
 
 func CtxUserClaims(claim []resources.Claim) func(context.Context) context.Context {

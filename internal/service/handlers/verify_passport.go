@@ -14,6 +14,7 @@ import (
 	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -135,7 +136,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	event, err := EventsQ(r).FilterByNullifier(balance.Nullifier).
-		FilterByType(evtypes.TypePassportScan).
+		FilterByType(models.TypePassportScan).
 		FilterByStatus(data.EventClaimed).
 		Get()
 	if err != nil {
@@ -226,7 +227,7 @@ func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID st
 		return fmt.Errorf("fulfill passport scan event: %w", err)
 	}
 
-	evTypeRef := EventTypes(r).Get(evtypes.TypeReferralSpecific, evtypes.FilterInactive)
+	evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
 	if evTypeRef == nil {
 		Log(r).Debug("Referral specific event type is inactive")
 		return nil
@@ -271,14 +272,14 @@ func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousI
 }
 
 func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) error {
-	evTypePassport := EventTypes(r).Get(evtypes.TypePassportScan, evtypes.FilterInactive)
+	evTypePassport := EventTypes(r).Get(models.TypePassportScan, evtypes.FilterInactive)
 	if evTypePassport == nil {
 		Log(r).Debug("Passport scan event type is inactive")
 		return nil
 	}
 
 	event, err := EventsQ(r).FilterByNullifier(balance.Nullifier).
-		FilterByType(evtypes.TypePassportScan).
+		FilterByType(models.TypePassportScan).
 		FilterByStatus(data.EventOpen).Get()
 	if err != nil {
 		return fmt.Errorf("get open passport scan event: %w", err)
@@ -318,7 +319,7 @@ func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) erro
 }
 
 // evTypeRef must not be nil
-func claimReferralSpecificEvents(r *http.Request, evTypeRef *evtypes.EventConfig, nullifier string) error {
+func claimReferralSpecificEvents(r *http.Request, evTypeRef *models.EventType, nullifier string) error {
 	if !evTypeRef.AutoClaim {
 		Log(r).Debugf("auto claim for referral specific disabled")
 		return nil
@@ -332,7 +333,7 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef *evtypes.EventConfig
 
 	events, err := EventsQ(r).
 		FilterByNullifier(balance.Nullifier).
-		FilterByType(evtypes.TypeReferralSpecific).
+		FilterByType(models.TypeReferralSpecific).
 		FilterByStatus(data.EventFulfilled).
 		Select()
 	if err != nil {
@@ -362,7 +363,7 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef *evtypes.EventConfig
 	return nil
 }
 
-func addEventForReferrer(r *http.Request, evTypeRef *evtypes.EventConfig, balance data.Balance) error {
+func addEventForReferrer(r *http.Request, evTypeRef *models.EventType, balance data.Balance) error {
 	if evTypeRef == nil {
 		return nil
 	}

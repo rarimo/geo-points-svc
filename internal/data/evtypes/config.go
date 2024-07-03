@@ -3,13 +3,14 @@ package evtypes
 import (
 	"fmt"
 
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
 )
 
 type EventTypeser interface {
-	EventTypes() Types
+	EventTypes() *Types
 }
 
 type config struct {
@@ -21,10 +22,10 @@ func NewConfig(getter kv.Getter) EventTypeser {
 	return &config{getter: getter}
 }
 
-func (c *config) EventTypes() Types {
+func (c *config) EventTypes() *Types {
 	return c.once.Do(func() interface{} {
 		var raw struct {
-			Types []EventConfig `fig:"types,required"`
+			Types []models.EventType `fig:"types,required"`
 		}
 
 		err := figure.Out(&raw).
@@ -34,7 +35,7 @@ func (c *config) EventTypes() Types {
 			panic(fmt.Errorf("failed to figure out event_types: %s", err))
 		}
 
-		m := make(map[string]EventConfig, len(raw.Types))
+		m := make(map[string]models.EventType, len(raw.Types))
 		for _, t := range raw.Types {
 			if !checkFreqValue(t.Frequency) {
 				panic(fmt.Errorf("invalid frequency: %s", t.Frequency))
@@ -48,13 +49,13 @@ func (c *config) EventTypes() Types {
 			m[t.Name] = t
 		}
 
-		return Types{m, raw.Types}
-	}).(Types)
+		return &Types{m: m, list: raw.Types}
+	}).(*Types)
 }
 
-func checkFreqValue(f Frequency) bool {
+func checkFreqValue(f models.Frequency) bool {
 	switch f {
-	case OneTime, Daily, Weekly, Unlimited:
+	case models.OneTime, models.Daily, models.Weekly, models.Unlimited:
 		return true
 	}
 	return false
