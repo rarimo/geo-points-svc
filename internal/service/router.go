@@ -45,7 +45,13 @@ func Run(ctx context.Context, cfg config.Config) {
 				r.Patch("/{id}", handlers.ClaimEvent)
 			})
 			r.Get("/balances", handlers.Leaderboard)
-			r.Get("/event_types", handlers.ListEventTypes)
+			r.Route("/event_types", func(r chi.Router) {
+				r.Get("/", handlers.ListEventTypes)
+				// TODO: add admin auth to create/update endpoints
+				r.Post("/", handlers.CreateEventType)
+				r.Get("/{name}", handlers.GetEventType)
+				r.Patch("/{name}", handlers.UpdateEventType)
+			})
 		})
 		// must be accessible only within the cluster
 		r.Route("/private", func(r chi.Router) {

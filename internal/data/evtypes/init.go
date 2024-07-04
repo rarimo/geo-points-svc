@@ -38,5 +38,5 @@ func Init(_ context.Context, cfg extConfig, sig chan struct{}) {
 	}
 
 	log.Debugf("Adding/overwriting event types from DB: %+v", dbTypes)
-	types.push(dbTypes...)
+	types.Push(dbTypes...)
 }

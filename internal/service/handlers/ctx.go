@@ -76,6 +76,16 @@ func EventTypes(r *http.Request) *evtypes.Types {
 	return r.Context().Value(eventTypesCtxKey).(*evtypes.Types)
 }
 
+func CtxEventTypesQ(q data.EventTypesQ) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, eventTypesCtxKey, q)
+	}
+}
+
+func EventTypesQ(r *http.Request) data.EventTypesQ {
+	return r.Context().Value(eventTypesCtxKey).(data.EventTypesQ).New()
+}
+
 func CtxUserClaims(claim []resources.Claim) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, userClaimsCtxKey, claim)

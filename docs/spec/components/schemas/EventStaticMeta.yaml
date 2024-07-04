@@ -10,6 +10,7 @@ required:
   - short_description
   - frequency
   - flag
+  - auto_claim
 properties:
   name:
     type: string
@@ -69,6 +70,9 @@ properties:
       - not_started
       - expired
       - disabled
+  auto_claim:
+    type: boolean
+    description: Whether the event is automatically claimed on fulfillment, or requires manual claim
   qr_code_value:
     type: string
     description: Base64-encoded QR code. Must match the code provided in event type.

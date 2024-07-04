@@ -24,6 +24,32 @@ type EventType struct {
 	QRCodeValue      *string    `fig:"qr_code_value" db:"qr_code_value"`
 }
 
+func ResourceToModel(r resources.EventStaticMeta) EventType {
+	uConv := func(s *string) *url.URL {
+		if s == nil {
+			return nil
+		}
+		u, _ := url.Parse(*s)
+		return u
+	}
+
+	// intended that disabled or no_auto_open fields are not accessible through API
+	return EventType{
+		Name:             r.Name,
+		Description:      r.Description,
+		ShortDescription: r.ShortDescription,
+		Reward:           r.Reward,
+		Title:            r.Title,
+		Frequency:        Frequency(r.Frequency),
+		StartsAt:         r.StartsAt,
+		ExpiresAt:        r.ExpiresAt,
+		AutoClaim:        r.AutoClaim,
+		ActionURL:        uConv(r.ActionUrl),
+		Logo:             uConv(r.Logo),
+		QRCodeValue:      r.QrCodeValue,
+	}
+}
+
 func (e EventType) Flag() string {
 	switch {
 	case e.Disabled:
@@ -55,9 +81,26 @@ func (e EventType) Resource() resources.EventStaticMeta {
 		Frequency:        e.Frequency.String(),
 		StartsAt:         e.StartsAt,
 		ExpiresAt:        e.ExpiresAt,
+		AutoClaim:        e.AutoClaim,
 		ActionUrl:        safeConv(e.ActionURL),
 		Logo:             safeConv(e.Logo),
 		Flag:             e.Flag(),
 		QrCodeValue:      e.QRCodeValue,
+	}
+}
+
+func (e EventType) ForUpdate() map[string]any {
+	return map[string]any{
+		"description":       e.Description,
+		"short_description": e.ShortDescription,
+		"reward":            e.Reward,
+		"title":             e.Title,
+		"frequency":         e.Frequency,
+		"starts_at":         e.StartsAt,
+		"expires_at":        e.ExpiresAt,
+		"auto_claim":        e.AutoClaim,
+		"action_url":        e.ActionURL,
+		"logo":              e.Logo,
+		"qr_code_value":     e.QRCodeValue,
 	}
 }

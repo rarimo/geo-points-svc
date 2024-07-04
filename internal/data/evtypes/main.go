@@ -70,11 +70,11 @@ func (t *Types) PrepareEvents(nullifier string, filters ...filter) []data.Event 
 	return events
 }
 
-func (t *Types) push(types ...models.EventType) {
+// Push adds new event type or overwrites existing one
+func (t *Types) Push(types ...models.EventType) {
 	for _, et := range types {
 		_, ok := t.m[et.Name]
 		t.m[et.Name] = et
-		// append new type or overwrite existing one
 		if !ok {
 			t.list = append(t.list, et)
 			continue

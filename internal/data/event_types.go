@@ -7,7 +7,7 @@ import (
 type EventTypesQ interface {
 	New() EventTypesQ
 	Insert(...models.EventType) error
-	Update(fields map[string]any) error
+	Update(fields map[string]any) (*models.EventType, error)
 	Transaction(func() error) error
 
 	Select() ([]models.EventType, error)
