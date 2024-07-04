@@ -33,7 +33,8 @@ func ResourceToModel(r resources.EventStaticMeta) EventType {
 		return u
 	}
 
-	// intended that disabled or no_auto_open fields are not accessible through API
+	// intended that no_auto_open field is not accessible through API due to being
+	// related only to back-end
 	return EventType{
 		Name:             r.Name,
 		Description:      r.Description,
@@ -44,6 +45,7 @@ func ResourceToModel(r resources.EventStaticMeta) EventType {
 		StartsAt:         r.StartsAt,
 		ExpiresAt:        r.ExpiresAt,
 		AutoClaim:        r.AutoClaim,
+		Disabled:         r.Disabled,
 		ActionURL:        uConv(r.ActionUrl),
 		Logo:             uConv(r.Logo),
 		QRCodeValue:      r.QrCodeValue,
@@ -99,6 +101,7 @@ func (e EventType) ForUpdate() map[string]any {
 		"starts_at":         e.StartsAt,
 		"expires_at":        e.ExpiresAt,
 		"auto_claim":        e.AutoClaim,
+		"disabled":          e.Disabled,
 		"action_url":        e.ActionURL,
 		"logo":              e.Logo,
 		"qr_code_value":     e.QRCodeValue,

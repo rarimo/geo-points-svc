@@ -11,6 +11,7 @@ required:
   - frequency
   - flag
   - auto_claim
+  - disabled
 properties:
   name:
     type: string
@@ -73,6 +74,9 @@ properties:
   auto_claim:
     type: boolean
     description: Whether the event is automatically claimed on fulfillment, or requires manual claim
+  disabled:
+    type: boolean
+    description: Whether the event is disabled in the system. Disabled events can only be retrieved.
   qr_code_value:
     type: string
     description: Base64-encoded QR code. Must match the code provided in event type.

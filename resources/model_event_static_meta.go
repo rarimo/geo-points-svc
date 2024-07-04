@@ -13,6 +13,8 @@ type EventStaticMeta struct {
 	// Whether the event is automatically claimed on fulfillment, or requires manual claim
 	AutoClaim   bool   `json:"auto_claim"`
 	Description string `json:"description"`
+	// Whether the event is disabled in the system. Disabled events can only be retrieved.
+	Disabled bool `json:"disabled"`
 	// General event expiration date (UTC RFC3339)
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Event configuration flag:   - active: Events can be opened, fulfilled, claimed   - not_started: Event are not available yet, see `starts_at`   - expired: Event is not available, as it has already expired, see `expires_at`   - disabled: Event is disabled in the system  If event is disabled, it doesn't matter if it's expired or not started: it has `disabled` flag.
