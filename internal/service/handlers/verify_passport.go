@@ -11,7 +11,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/jsonapi"
 	zkptypes "github.com/iden3/go-rapidsnark/types"
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"

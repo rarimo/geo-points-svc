@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"

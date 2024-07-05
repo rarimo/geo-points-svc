@@ -47,7 +47,6 @@ func Run(ctx context.Context, cfg config.Config) {
 			r.Get("/balances", handlers.Leaderboard)
 			r.Route("/event_types", func(r chi.Router) {
 				r.Get("/", handlers.ListEventTypes)
-				// TODO: add admin auth to create/update endpoints
 				r.Post("/", handlers.CreateEventType)
 				r.Get("/{name}", handlers.GetEventType)
 				r.Patch("/{name}", handlers.UpdateEventType)

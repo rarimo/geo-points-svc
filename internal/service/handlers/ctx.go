@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rarimo/decentralized-auth-svc/resources"
 	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
+	"github.com/rarimo/geo-auth-svc/resources"
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"

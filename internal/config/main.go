@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/saver-grpc-lib/broadcaster"

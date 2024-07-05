@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -14,6 +15,11 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.NewUpdateEventType(r)
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
+
+	if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}
 
