@@ -21,6 +21,7 @@ const (
 	balancesQCtxKey
 	referralsQCtxKey
 	eventTypesCtxKey
+	eventTypesQCtxKey
 	userClaimsCtxKey
 	levelsCtxKey
 	verifierCtxKey
@@ -79,12 +80,12 @@ func EventTypes(r *http.Request) *evtypes.Types {
 
 func CtxEventTypesQ(q data.EventTypesQ) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, eventTypesCtxKey, q)
+		return context.WithValue(ctx, eventTypesQCtxKey, q)
 	}
 }
 
 func EventTypesQ(r *http.Request) data.EventTypesQ {
-	return r.Context().Value(eventTypesCtxKey).(data.EventTypesQ).New()
+	return r.Context().Value(eventTypesQCtxKey).(data.EventTypesQ).New()
 }
 
 func CtxUserClaims(claim []resources.Claim) func(context.Context) context.Context {
