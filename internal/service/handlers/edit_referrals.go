@@ -35,7 +35,7 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 
 		var code string
 		err = EventsQ(r).Transaction(func() error {
-			events := prepareEventsWithRef(req.Nullifier, "", r)
+			events := prepareEventsWithRef(req.Nullifier, "", true, r)
 			if err = createBalanceWithEvents(req.Nullifier, nil, events, r); err != nil {
 				return fmt.Errorf("failed to create balance with events: %w", err)
 			}
