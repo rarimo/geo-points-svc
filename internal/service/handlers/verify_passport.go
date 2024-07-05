@@ -15,7 +15,6 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
-	"github.com/rarimo/geo-points-svc/internal/service/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	zk "github.com/rarimo/zkverifier-kit"
@@ -32,20 +31,18 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log := Log(r).WithFields(map[string]any{
-		"balance.nullifier":    req.Data.ID,
-		"balance.anonymous_id": req.Data.Attributes.AnonymousId,
-		"country":              req.Data.Attributes.Country,
-	})
-
 	var (
-		country     = req.Data.Attributes.Country
 		anonymousID = req.Data.Attributes.AnonymousId
 		proof       = req.Data.Attributes.Proof
+		log         = Log(r).WithFields(map[string]any{
+			"balance.nullifier":    req.Data.ID,
+			"balance.anonymous_id": anonymousID,
+		})
+
+		gotSig = r.Header.Get("Signature")
 	)
 
-	gotSig := r.Header.Get("Signature")
-	wantSig, err := hmacsig.CalculatePassportVerificationSignature(SigVerifier(r), req.Data.ID, country, anonymousID)
+	wantSig, err := SigCalculator(r).PassportVerificationSignature(req.Data.ID, anonymousID)
 	if err != nil { // must never happen due to preceding validation
 		Log(r).WithError(err).Error("Failed to calculate HMAC signature")
 		ape.RenderErr(w, problems.InternalError())
@@ -97,15 +94,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 			balAID = *balance.AnonymousID
 		}
 
-		proofCountry, err := requests.ExtractCountry(*proof)
-		if err != nil {
-			log.WithError(err).Error("failed to extract country while proof was successfully verified")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-
 		err = validation.Errors{
-			"data/attributes/country":      validation.Validate(country, validation.Required, validation.In(proofCountry)),
 			"data/attributes/anonymous_id": validation.Validate(anonymousID, validation.Required, validation.In(balAID)),
 		}.Filter()
 		if err != nil {
@@ -148,8 +137,8 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newEventClaimingStateResponse(req.Data.ID, event != nil))
 }
 
-func newEventClaimingStateResponse(id string, isClaimed bool) resources.PassportEventStateResponse {
-	var res resources.PassportEventStateResponse
+func newEventClaimingStateResponse(id string, isClaimed bool) resources.EventClaimingStateResponse {
+	var res resources.EventClaimingStateResponse
 	res.Data.ID = id
 	res.Data.Type = resources.EVENT_CLAIMING_STATE
 	res.Data.Attributes.Claimed = isClaimed

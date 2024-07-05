@@ -15,6 +15,5 @@ const (
 	EVENT                ResourceType = "event"
 	EVENT_TYPE           ResourceType = "event_type"
 	FULFILL_QR_EVENT     ResourceType = "fulfill_qr_event"
-	JOIN_PROGRAM         ResourceType = "join_program"
 	VERIFY_PASSPORT      ResourceType = "verify_passport"
 )
