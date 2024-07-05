@@ -26,10 +26,12 @@ func Run(ctx context.Context, cfg config.Config) {
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)
+
+	authMW := handlers.AuthMiddleware(cfg.Auth(), cfg.Log())
 	r.Route("/integrations/geo-points-svc/v1", func(r chi.Router) {
 		r.Route("/public", func(r chi.Router) {
 			r.Route("/balances", func(r chi.Router) {
-				r.Use(handlers.AuthMiddleware(cfg.Auth(), cfg.Log()))
+				r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Get("/", handlers.GetBalance)
@@ -38,7 +40,7 @@ func Run(ctx context.Context, cfg config.Config) {
 				})
 			})
 			r.Route("/events", func(r chi.Router) {
-				r.Use(handlers.AuthMiddleware(cfg.Auth(), cfg.Log()))
+				r.Use(authMW)
 				r.Get("/", handlers.ListEvents)
 				r.Get("/{id}", handlers.GetEvent)
 				r.Patch("/{id}/qrcode", handlers.FulfillQREvent)
@@ -47,9 +49,9 @@ func Run(ctx context.Context, cfg config.Config) {
 			r.Get("/balances", handlers.Leaderboard)
 			r.Route("/event_types", func(r chi.Router) {
 				r.Get("/", handlers.ListEventTypes)
-				r.Post("/", handlers.CreateEventType)
+				r.With(authMW).Post("/", handlers.CreateEventType)
 				r.Get("/{name}", handlers.GetEventType)
-				r.Patch("/{name}", handlers.UpdateEventType)
+				r.With(authMW).Patch("/{name}", handlers.UpdateEventType)
 			})
 		})
 		// must be accessible only within the cluster
