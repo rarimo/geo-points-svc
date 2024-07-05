@@ -251,7 +251,7 @@ paths:
   /integrations/geo-points-svc/v1/public/event_types:
     get:
       tags:
-        - Events
+        - Event types
       summary: List event types
       description: |
         Returns public configuration of all event types.
@@ -305,6 +305,109 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/EventType'
+        '500':
+          $ref: '#/components/responses/internalError'
+    post:
+      tags:
+        - Event types
+      summary: Create event type
+      description: |
+        Creates a new event type. Requires **admin** role in JWT.
+        The type must not be present in the system.
+      operationId: createEventType
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/EventType'
+      responses:
+        '204':
+          description: No content
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '409':
+          description: Event type already exists
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
+  '/integrations/geo-points-svc/v1/public/event_types/{name}':
+    get:
+      tags:
+        - Event types
+      summary: Get event type
+      description: Returns public configuration of event type by its unique name
+      operationId: getEventType
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventType'
+        '404':
+          $ref: '#/components/responses/notFound'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      tags:
+        - Event types
+      summary: Update event type
+      description: |
+        Update an existing event type. Requires **admin** role in JWT.
+        **All attributes** are updated, ensure to pass every existing field too.
+        Although this is not JSON:API compliant, it is much easier to work with
+        in Go, because differentiating between `{}` and `{"field": null}`
+        requires custom unmarshalling implementation.
+      operationId: updateEventType
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/EventType'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventType'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '404':
+          $ref: '#/components/responses/notFound'
         '500':
           $ref: '#/components/responses/internalError'
   /integrations/geo-points-svc/v1/public/events:
@@ -805,6 +908,8 @@ components:
       description: |
         Primary event metadata in plain JSON. This is a template
         to be filled by `dynamic` when it's present.
+
+        This structure is also reused as request body to event type creation and update.
       required:
         - name
         - reward
@@ -813,6 +918,8 @@ components:
         - short_description
         - frequency
         - flag
+        - auto_claim
+        - disabled
       properties:
         name:
           type: string
@@ -871,11 +978,19 @@ components:
 
             If event is disabled, it doesn't matter if it's expired or not started:
             it has `disabled` flag.
+
+            Do not specify this field on creation: this structure is reused for request body too.
           enum:
             - active
             - not_started
             - expired
             - disabled
+        auto_claim:
+          type: boolean
+          description: 'Whether the event is automatically claimed on fulfillment, or requires manual claim'
+        disabled:
+          type: boolean
+          description: Whether the event is disabled in the system. Disabled events can only be retrieved.
         qr_code_value:
           type: string
           description: Base64-encoded QR code. Must match the code provided in event type.
@@ -937,37 +1052,6 @@ components:
           type: string
           enum:
             - fulfill_qr_event
-    JoinProgram:
-      allOf:
-        - $ref: '#/components/schemas/JoinProgramKey'
-        - type: object
-          x-go-is-request: true
-          required:
-            - attributes
-          properties:
-            attributes:
-              type: object
-              required:
-                - country
-              properties:
-                country:
-                  type: string
-                  example: '5589842'
-    JoinProgramKey:
-      type: object
-      required:
-        - id
-        - type
-      properties:
-        id:
-          type: string
-          description: Nullifier of the points owner
-          example: 0x123...abc
-          pattern: '^0x[0-9a-fA-F]{64}$'
-        type:
-          type: string
-          enum:
-            - join_program
     VerifyPassport:
       allOf:
         - $ref: '#/components/schemas/VerifyPassportKey'
@@ -979,18 +1063,12 @@ components:
             attributes:
               required:
                 - anonymous_id
-                - country
               type: object
               properties:
                 anonymous_id:
                   type: string
                   description: Unique identifier of the passport.
                   example: 2bd3a2532096fee10a45a40e444a11b4d00a707f3459376087747de05996fbf5
-                country:
-                  type: string
-                  description: |
-                    ISO 3166-1 alpha-3 country code, must match the one provided in `proof`.
-                  example: UKR
                 proof:
                   type: object
                   format: types.ZKProof
