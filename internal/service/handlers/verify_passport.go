@@ -233,6 +233,11 @@ func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID st
 		return fmt.Errorf("failed to claim referral specific events: %w", err)
 	}
 
+	// Be referred event is a welcome bonus when you created balance with non-genesis referral code
+	if err = claimBeReferredEvent(r, balance); err != nil {
+		return fmt.Errorf("failed to claim be referred event: %w", err)
+	}
+
 	// Adds a friend event for the referrer. If the event
 	// is inactive, then nothing happens. If active, the
 	// fulfilled event is added and, if possible, the event claimed
@@ -347,6 +352,42 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef *models.EventType, n
 		int64(len(events))*evTypeRef.Reward)
 	if err != nil {
 		return fmt.Errorf("failed to do claim event updates for referral specific events: %w", err)
+	}
+
+	return nil
+}
+
+func claimBeReferredEvent(r *http.Request, balance data.Balance) error {
+	evTypeBeRef := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
+	if evTypeBeRef == nil || !evTypeBeRef.AutoClaim {
+		return nil
+	}
+
+	event, err := EventsQ(r).FilterByNullifier(balance.Nullifier).
+		FilterByType(models.TypeBeReferred).
+		FilterByStatus(data.EventFulfilled).
+		Get()
+	if err != nil {
+		return fmt.Errorf("get fulfilled be referred event: %w", err)
+	}
+	if event == nil {
+		Log(r).Debug("User is not eligible for be_referred event")
+		return nil
+	}
+
+	_, err = EventsQ(r).FilterByID(event.ID).Update(data.EventClaimed, nil, &evTypeBeRef.Reward)
+	if err != nil {
+		return fmt.Errorf("update event status: %w", err)
+	}
+
+	err = DoClaimEventUpdates(
+		Levels(r),
+		ReferralsQ(r),
+		BalancesQ(r),
+		balance,
+		evTypeBeRef.Reward)
+	if err != nil {
+		return fmt.Errorf("do claim event updates for be_referred: %w", err)
 	}
 
 	return nil
