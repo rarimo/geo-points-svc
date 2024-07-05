@@ -2,6 +2,8 @@ type: object
 description: |
   Primary event metadata in plain JSON. This is a template
   to be filled by `dynamic` when it's present.
+  
+  This structure is also reused as request body to event type creation and update.
 required:
   - name
   - reward
@@ -66,6 +68,8 @@ properties:
       
       If event is disabled, it doesn't matter if it's expired or not started:
       it has `disabled` flag.
+      
+      Do not specify this field on creation: this structure is reused for request body too.
     enum:
       - active
       - not_started
