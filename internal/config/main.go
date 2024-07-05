@@ -1,7 +1,8 @@
 package config
 
 import (
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/saver-grpc-lib/broadcaster"
 	zk "github.com/rarimo/zkverifier-kit"
@@ -18,10 +19,10 @@ type Config interface {
 	auth.Auther //nolint:misspell
 	broadcaster.Broadcasterer
 	evtypes.EventTypeser
+	hmacsig.SigCalculatorProvider
 
 	Levels() Levels
 	Verifier() *zk.Verifier
-	SigVerifier() []byte
 }
 
 type config struct {
@@ -32,22 +33,23 @@ type config struct {
 	broadcaster.Broadcasterer
 	identity.VerifierProvider
 	evtypes.EventTypeser
+	hmacsig.SigCalculatorProvider
 
-	levels      comfig.Once
-	verifier    comfig.Once
-	sigVerifier comfig.Once
-	getter      kv.Getter
+	levels   comfig.Once
+	verifier comfig.Once
+	getter   kv.Getter
 }
 
 func New(getter kv.Getter) Config {
 	return &config{
-		getter:           getter,
-		Databaser:        pgdb.NewDatabaser(getter),
-		Listenerer:       comfig.NewListenerer(getter),
-		Logger:           comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		Auther:           auth.NewAuther(getter), //nolint:misspell
-		Broadcasterer:    broadcaster.New(getter),
-		VerifierProvider: identity.NewVerifierProvider(getter),
-		EventTypeser:     evtypes.NewConfig(getter),
+		getter:                getter,
+		Databaser:             pgdb.NewDatabaser(getter),
+		Listenerer:            comfig.NewListenerer(getter),
+		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
+		Auther:                auth.NewAuther(getter), //nolint:misspell
+		Broadcasterer:         broadcaster.New(getter),
+		VerifierProvider:      identity.NewVerifierProvider(getter),
+		EventTypeser:          evtypes.NewConfig(getter),
+		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
 	}
 }

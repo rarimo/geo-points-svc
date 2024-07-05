@@ -1,0 +1,69 @@
+get:
+  tags:
+    - Event types
+  summary: Get event type
+  description: Returns public configuration of event type by its unique name
+  operationId: getEventType
+  responses:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+    404:
+      $ref: '#/components/responses/notFound'
+    500:
+      $ref: '#/components/responses/internalError'
+
+patch:
+  tags:
+    - Event types
+  summary: Update event type
+  description: |
+    Update an existing event type. Requires **admin** role in JWT.
+    **All attributes** are updated, ensure to pass every existing field too.
+    Although this is not JSON:API compliant, it is much easier to work with
+    in Go, because differentiating between `{}` and `{"field": null}`
+    requires custom unmarshalling implementation.
+  operationId: updateEventType
+  requestBody:
+    required: true
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/EventType'
+  responses:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    404:
+      $ref: '#/components/responses/notFound'
+    500:
+      $ref: '#/components/responses/internalError'

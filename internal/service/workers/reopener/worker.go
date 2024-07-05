@@ -7,6 +7,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/running"
@@ -14,13 +15,13 @@ import (
 
 type worker struct {
 	name  string
-	freq  evtypes.Frequency
+	freq  models.Frequency
 	q     data.EventsQ
-	types evtypes.Types
+	types *evtypes.Types
 	log   *logan.Entry
 }
 
-func newWorker(cfg config.Config, freq evtypes.Frequency) *worker {
+func newWorker(cfg config.Config, freq models.Frequency) *worker {
 	name := fmt.Sprintf("reopener[%s]", freq.String())
 	return &worker{
 		name:  name,

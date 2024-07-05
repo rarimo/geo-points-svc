@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -20,7 +21,7 @@ func ListEventTypes(w http.ResponseWriter, r *http.Request) {
 	types := EventTypes(r).List(
 		evtypes.FilterByNames(req.FilterName...),
 		evtypes.FilterByFlags(req.FilterFlag...),
-		func(ev evtypes.EventConfig) bool {
+		func(ev models.EventType) bool {
 			return len(req.FilterNotName) > 0 && !evtypes.FilterByNames(req.FilterNotName...)(ev)
 		},
 	)

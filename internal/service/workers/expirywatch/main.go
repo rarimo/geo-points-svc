@@ -8,6 +8,7 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/cron"
 )
 
@@ -22,7 +23,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 	sig <- struct{}{}
 
 	cron.Init(cfg.Log())
-	expirable := w.types.List(func(ev evtypes.EventConfig) bool {
+	expirable := w.types.List(func(ev models.EventType) bool {
 		return ev.Disabled || ev.ExpiresAt == nil || evtypes.FilterExpired(ev)
 	})
 

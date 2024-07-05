@@ -4,32 +4,32 @@ import "testing"
 
 func TestNew(t *testing.T) {
 	tests := []struct {
-		name  string
-		did   string
-		index uint64
-		want  string
+		name      string
+		nullifier string
+		index     uint64
+		want      string
 	}{
 		{
-			name: "Valid nullifier with index 0",
-			did:  "2184ae1f990d26aa5bb84d54dc945ac3cce569cd828269802f0fa5c5c28f30a7",
-			want: "6xM70VgX4eh",
+			name:      "Valid nullifier with index 0",
+			nullifier: "2184ae1f990d26aa5bb84d54dc945ac3cce569cd828269802f0fa5c5c28f30a7",
+			want:      "6xM70VgX4eh",
 		},
 		{
-			name:  "Valid nullifier with index 1",
-			did:   "2184ae1f990d26aa5bb84d54dc945ac3cce569cd828269802f0fa5c5c28f30a7",
-			index: 1,
-			want:  "eLHv3hj5txB",
+			name:      "Valid nullifier with index 1",
+			nullifier: "2184ae1f990d26aa5bb84d54dc945ac3cce569cd828269802f0fa5c5c28f30a7",
+			index:     1,
+			want:      "eLHv3hj5txB",
 		},
 		{
-			name:  "Valid nullifier with index 258",
-			did:   "2184ae1f990d26aa5bb84d54dc945ac3cce569cd828269802f0fa5c5c28f30a7",
-			index: 258,
-			want:  "1hhJaHQB13G",
+			name:      "Valid nullifier with index 258",
+			nullifier: "2184ae1f990d26aa5bb84d54dc945ac3cce569cd828269802f0fa5c5c28f30a7",
+			index:     258,
+			want:      "1hhJaHQB13G",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.did, tt.index); got != tt.want {
+			if got := New(tt.nullifier, tt.index); got != tt.want {
 				t.Errorf("New() = %s, want %s", got, tt.want)
 			}
 		})

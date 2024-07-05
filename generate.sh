@@ -51,6 +51,11 @@ function parseArgs {
 
 function generate {
     (cd docs && npm run build)
+    if [[ ! -d "${GENERATED}" ]]; then
+        mkdir -p "${GENERATED}"
+    else
+        rm -rf "${GENERATED}"/*
+    fi
     docker run --rm -v "${OPENAPI_DIR}":/openapi -v "${GENERATED}":/generated "${GENERATOR_IMAGE}" \
         generate -pkg "${PACKAGE_NAME}" --raw-formats-as-types --meta-for-lists
     goimports -w ${GENERATED}

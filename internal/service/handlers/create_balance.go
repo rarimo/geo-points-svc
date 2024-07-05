@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -89,7 +90,7 @@ func prepareEventsWithRef(nullifier, refBy string, r *http.Request) []data.Event
 		return events
 	}
 
-	refType := EventTypes(r).Get(evtypes.TypeBeReferred, evtypes.FilterInactive)
+	refType := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
 	if refType == nil {
 		Log(r).Debug("`Be referred` event is inactive, skipping it")
 		return events
@@ -100,7 +101,7 @@ func prepareEventsWithRef(nullifier, refBy string, r *http.Request) []data.Event
 
 	return append(events, data.Event{
 		Nullifier: nullifier,
-		Type:      evtypes.TypeBeReferred,
+		Type:      models.TypeBeReferred,
 		Status:    data.EventFulfilled,
 	})
 }

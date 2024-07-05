@@ -8,7 +8,7 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
-	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/cron"
 )
 
@@ -29,7 +29,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 
 	atDayStart := gocron.NewAtTimes(gocron.NewAtTime(0, 0, 0))
 
-	daily := newWorker(cfg, evtypes.Daily)
+	daily := newWorker(cfg, models.Daily)
 	_, err := cron.NewJob(
 		gocron.DailyJob(1, atDayStart),
 		gocron.NewTask(daily.job, ctx),
@@ -39,7 +39,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 		panic(fmt.Errorf("reopener: failed to initialize daily job: %w", err))
 	}
 
-	weekly := newWorker(cfg, evtypes.Weekly)
+	weekly := newWorker(cfg, models.Weekly)
 	_, err = cron.NewJob(
 		gocron.WeeklyJob(1, gocron.NewWeekdays(time.Monday), atDayStart),
 		gocron.NewTask(weekly.job, ctx),
@@ -62,7 +62,7 @@ func prepareForReopening(events []data.ReopenableEvent) []data.Event {
 			Status:    data.EventOpen,
 		}
 
-		if ev.Type == evtypes.TypeFreeWeekly {
+		if ev.Type == models.TypeFreeWeekly {
 			res[i].Status = data.EventFulfilled
 		}
 	}

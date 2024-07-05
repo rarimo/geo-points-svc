@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/rarimo/geo-points-svc/internal/config"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/service"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/expirywatch"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/nooneisforgotten"
@@ -17,6 +18,7 @@ func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 	var (
 		reopenerSig         = make(chan struct{})
 		expiryWatchSig      = make(chan struct{})
+		evTypesSig          = make(chan struct{})
 		noOneIsForgottenSig = make(chan struct{})
 	)
 
@@ -28,7 +30,11 @@ func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 		}()
 	}
 
-	// these services can safely run in parallel and don't have dependencies
+	// all services depend on event types
+	run(func() { evtypes.Init(ctx, cfg, evTypesSig) })
+	<-evTypesSig
+
+	// these services can safely run in parallel and depend only on event types
 	run(func() { reopener.Run(ctx, cfg, reopenerSig) })
 	run(func() { expirywatch.Run(ctx, cfg, expiryWatchSig) })
 

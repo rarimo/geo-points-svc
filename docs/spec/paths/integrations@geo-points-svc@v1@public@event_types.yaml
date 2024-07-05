@@ -1,6 +1,6 @@
 get:
   tags:
-    - Events
+    - Event types
   summary: List event types
   description: |
     Returns public configuration of all event types.
@@ -54,5 +54,40 @@ get:
                 type: array
                 items:
                   $ref: '#/components/schemas/EventType'
+    500:
+      $ref: '#/components/responses/internalError'
+
+post:
+  tags:
+    - Event types
+  summary: Create event type
+  description: |
+    Creates a new event type. Requires **admin** role in JWT.
+    The type must not be present in the system.
+  operationId: createEventType
+  requestBody:
+    required: true
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/EventType'
+  responses:
+    204:
+      description: No content
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    409:
+      description: Event type already exists
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
     500:
       $ref: '#/components/responses/internalError'

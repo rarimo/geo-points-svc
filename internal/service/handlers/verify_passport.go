@@ -11,10 +11,10 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/jsonapi"
 	zkptypes "github.com/iden3/go-rapidsnark/types"
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
-	"github.com/rarimo/geo-points-svc/internal/service/hmacsig"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	zk "github.com/rarimo/zkverifier-kit"
@@ -31,20 +31,18 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log := Log(r).WithFields(map[string]any{
-		"balance.nullifier":    req.Data.ID,
-		"balance.anonymous_id": req.Data.Attributes.AnonymousId,
-		"country":              req.Data.Attributes.Country,
-	})
-
 	var (
-		country     = req.Data.Attributes.Country
 		anonymousID = req.Data.Attributes.AnonymousId
 		proof       = req.Data.Attributes.Proof
+		log         = Log(r).WithFields(map[string]any{
+			"balance.nullifier":    req.Data.ID,
+			"balance.anonymous_id": anonymousID,
+		})
+
+		gotSig = r.Header.Get("Signature")
 	)
 
-	gotSig := r.Header.Get("Signature")
-	wantSig, err := hmacsig.CalculatePassportVerificationSignature(SigVerifier(r), req.Data.ID, country, anonymousID)
+	wantSig, err := SigCalculator(r).PassportVerificationSignature(req.Data.ID, anonymousID)
 	if err != nil { // must never happen due to preceding validation
 		Log(r).WithError(err).Error("Failed to calculate HMAC signature")
 		ape.RenderErr(w, problems.InternalError())
@@ -96,15 +94,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 			balAID = *balance.AnonymousID
 		}
 
-		proofCountry, err := requests.ExtractCountry(*proof)
-		if err != nil {
-			log.WithError(err).Error("failed to extract country while proof was successfully verified")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-
 		err = validation.Errors{
-			"data/attributes/country":      validation.Validate(country, validation.Required, validation.In(proofCountry)),
 			"data/attributes/anonymous_id": validation.Validate(anonymousID, validation.Required, validation.In(balAID)),
 		}.Filter()
 		if err != nil {
@@ -135,7 +125,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	event, err := EventsQ(r).FilterByNullifier(balance.Nullifier).
-		FilterByType(evtypes.TypePassportScan).
+		FilterByType(models.TypePassportScan).
 		FilterByStatus(data.EventClaimed).
 		Get()
 	if err != nil {
@@ -147,8 +137,8 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newEventClaimingStateResponse(req.Data.ID, event != nil))
 }
 
-func newEventClaimingStateResponse(id string, isClaimed bool) resources.PassportEventStateResponse {
-	var res resources.PassportEventStateResponse
+func newEventClaimingStateResponse(id string, isClaimed bool) resources.EventClaimingStateResponse {
+	var res resources.EventClaimingStateResponse
 	res.Data.ID = id
 	res.Data.Type = resources.EVENT_CLAIMING_STATE
 	res.Data.Attributes.Claimed = isClaimed
@@ -226,7 +216,7 @@ func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID st
 		return fmt.Errorf("fulfill passport scan event: %w", err)
 	}
 
-	evTypeRef := EventTypes(r).Get(evtypes.TypeReferralSpecific, evtypes.FilterInactive)
+	evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
 	if evTypeRef == nil {
 		Log(r).Debug("Referral specific event type is inactive")
 		return nil
@@ -271,14 +261,14 @@ func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousI
 }
 
 func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) error {
-	evTypePassport := EventTypes(r).Get(evtypes.TypePassportScan, evtypes.FilterInactive)
+	evTypePassport := EventTypes(r).Get(models.TypePassportScan, evtypes.FilterInactive)
 	if evTypePassport == nil {
 		Log(r).Debug("Passport scan event type is inactive")
 		return nil
 	}
 
 	event, err := EventsQ(r).FilterByNullifier(balance.Nullifier).
-		FilterByType(evtypes.TypePassportScan).
+		FilterByType(models.TypePassportScan).
 		FilterByStatus(data.EventOpen).Get()
 	if err != nil {
 		return fmt.Errorf("get open passport scan event: %w", err)
@@ -318,7 +308,7 @@ func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) erro
 }
 
 // evTypeRef must not be nil
-func claimReferralSpecificEvents(r *http.Request, evTypeRef *evtypes.EventConfig, nullifier string) error {
+func claimReferralSpecificEvents(r *http.Request, evTypeRef *models.EventType, nullifier string) error {
 	if !evTypeRef.AutoClaim {
 		Log(r).Debugf("auto claim for referral specific disabled")
 		return nil
@@ -332,7 +322,7 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef *evtypes.EventConfig
 
 	events, err := EventsQ(r).
 		FilterByNullifier(balance.Nullifier).
-		FilterByType(evtypes.TypeReferralSpecific).
+		FilterByType(models.TypeReferralSpecific).
 		FilterByStatus(data.EventFulfilled).
 		Select()
 	if err != nil {
@@ -362,7 +352,7 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef *evtypes.EventConfig
 	return nil
 }
 
-func addEventForReferrer(r *http.Request, evTypeRef *evtypes.EventConfig, balance data.Balance) error {
+func addEventForReferrer(r *http.Request, evTypeRef *models.EventType, balance data.Balance) error {
 	if evTypeRef == nil {
 		return nil
 	}

@@ -34,15 +34,12 @@ CREATE TABLE IF NOT EXISTS referrals
 
 CREATE INDEX IF NOT EXISTS referrals_nullifier_index ON referrals (nullifier);
 
-DROP TYPE IF EXISTS event_status;
-CREATE TYPE event_status AS ENUM ('open', 'fulfilled', 'claimed');
-
 CREATE TABLE IF NOT EXISTS events
 (
     id            uuid PRIMARY KEY NOT NULL default gen_random_uuid(),
     nullifier     TEXT             NOT NULL REFERENCES balances (nullifier),
     type          text             NOT NULL,
-    status        event_status     NOT NULL,
+    status        text             NOT NULL,
     created_at    integer          NOT NULL default EXTRACT('EPOCH' FROM NOW()),
     updated_at    integer          NOT NULL default EXTRACT('EPOCH' FROM NOW()),
     meta          jsonb,
@@ -60,10 +57,28 @@ CREATE TRIGGER set_updated_at
     FOR EACH ROW
 EXECUTE FUNCTION trigger_set_updated_at();
 
+CREATE TABLE IF NOT EXISTS event_types
+(
+    name              text PRIMARY KEY NOT NULL,
+    short_description text             NOT NULL,
+    description       text             NOT NULL,
+    reward            integer          NOT NULL,
+    title             text             NOT NULL,
+    frequency         text             NOT NULL,
+    starts_at         timestamp,
+    expires_at        timestamp,
+    no_auto_open      BOOLEAN          NOT NULL DEFAULT FALSE,
+    auto_claim        BOOLEAN          NOT NULL DEFAULT FALSE,
+    disabled          BOOLEAN          NOT NULL DEFAULT FALSE,
+    action_url        text,
+    logo              text,
+    qr_code_value     text
+);
+
 -- +migrate Down
+DROP TABLE IF EXISTS event_types;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS referrals;
 DROP TABLE IF EXISTS balances;
 
-DROP TYPE IF EXISTS event_status;
 DROP FUNCTION IF EXISTS trigger_set_updated_at();

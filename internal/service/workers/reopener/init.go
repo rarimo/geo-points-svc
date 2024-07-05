@@ -9,6 +9,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/cron"
 	"gitlab.com/distributed_lab/logan/v3"
@@ -42,7 +43,7 @@ func initialRun(cfg config.Config) error {
 
 type initCollector struct {
 	q     data.EventsQ
-	types evtypes.Types
+	types *evtypes.Types
 	log   *logan.Entry
 }
 
@@ -54,12 +55,12 @@ func (c *initCollector) collect() ([]data.ReopenableEvent, error) {
 		weekStart = midnight.AddDate(0, 0, monOffset).Unix()
 	)
 
-	daily, err := c.selectReopenable(evtypes.Daily, midnight.Unix())
+	daily, err := c.selectReopenable(models.Daily, midnight.Unix())
 	if err != nil {
 		return nil, fmt.Errorf("select daily events: %w", err)
 	}
 
-	weekly, err := c.selectReopenable(evtypes.Weekly, weekStart)
+	weekly, err := c.selectReopenable(models.Weekly, weekStart)
 	if err != nil {
 		return nil, fmt.Errorf("select weekly events: %w", err)
 	}
@@ -73,7 +74,7 @@ func (c *initCollector) collect() ([]data.ReopenableEvent, error) {
 	return append(dw, absent...), nil
 }
 
-func (c *initCollector) selectReopenable(freq evtypes.Frequency, before int64) ([]data.ReopenableEvent, error) {
+func (c *initCollector) selectReopenable(freq models.Frequency, before int64) ([]data.ReopenableEvent, error) {
 	types := c.types.Names(evtypes.FilterByFrequency(freq), evtypes.FilterInactive)
 
 	if len(types) == 0 {
@@ -127,7 +128,7 @@ func (c *initCollector) selectAbsent() ([]data.ReopenableEvent, error) {
 func runStartingWatchers(ctx context.Context, cfg config.Config) error {
 	log := cfg.Log().WithField("who", "opener[initializer]")
 
-	notStartedEv := cfg.EventTypes().List(func(ev evtypes.EventConfig) bool {
+	notStartedEv := cfg.EventTypes().List(func(ev models.EventType) bool {
 		return ev.Disabled || !evtypes.FilterNotStarted(ev) || evtypes.FilterExpired(ev)
 	})
 
@@ -167,7 +168,7 @@ func startingWatcher(cfg config.Config, name string) func(context.Context) {
 
 		events := make([]data.Event, len(balances))
 		status := data.EventOpen
-		if name == evtypes.TypeFreeWeekly {
+		if name == models.TypeFreeWeekly {
 			status = data.EventFulfilled
 		}
 

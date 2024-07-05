@@ -2,6 +2,8 @@ package evtypes
 
 import (
 	"time"
+
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 )
 
 // Filter functions work in the following way:
@@ -12,32 +14,32 @@ import (
 // 2. For other Filter* functions, the configs matching the filter are excluded:
 // FilterExpired eliminates all expired events (instead of including only them)
 
-type filter func(EventConfig) bool
+type filter func(models.EventType) bool
 
-func FilterExpired(ev EventConfig) bool {
+func FilterExpired(ev models.EventType) bool {
 	return ev.ExpiresAt != nil && ev.ExpiresAt.Before(time.Now().UTC())
 }
 
-func FilterNotStarted(ev EventConfig) bool {
+func FilterNotStarted(ev models.EventType) bool {
 	return ev.StartsAt != nil && ev.StartsAt.After(time.Now().UTC())
 }
 
-func FilterInactive(ev EventConfig) bool {
+func FilterInactive(ev models.EventType) bool {
 	return ev.Disabled || FilterExpired(ev) || FilterNotStarted(ev)
 }
 
-func FilterNotOpenable(ev EventConfig) bool {
+func FilterNotOpenable(ev models.EventType) bool {
 	return FilterInactive(ev) || ev.NoAutoOpen
 }
 
-func FilterByFrequency(f Frequency) func(EventConfig) bool {
-	return func(ev EventConfig) bool {
+func FilterByFrequency(f models.Frequency) func(models.EventType) bool {
+	return func(ev models.EventType) bool {
 		return ev.Frequency != f
 	}
 }
 
-func FilterByNames(names ...string) func(EventConfig) bool {
-	return func(ev EventConfig) bool {
+func FilterByNames(names ...string) func(models.EventType) bool {
+	return func(ev models.EventType) bool {
 		if len(names) == 0 {
 			return false
 		}
@@ -50,8 +52,8 @@ func FilterByNames(names ...string) func(EventConfig) bool {
 	}
 }
 
-func FilterByFlags(flags ...string) func(EventConfig) bool {
-	return func(ev EventConfig) bool {
+func FilterByFlags(flags ...string) func(models.EventType) bool {
+	return func(ev models.EventType) bool {
 		if len(flags) == 0 {
 			return false
 		}
@@ -64,7 +66,7 @@ func FilterByFlags(flags ...string) func(EventConfig) bool {
 	}
 }
 
-func isFiltered(ev EventConfig, filters ...filter) bool {
+func isFiltered(ev models.EventType, filters ...filter) bool {
 	for _, f := range filters {
 		if f(ev) {
 			return true

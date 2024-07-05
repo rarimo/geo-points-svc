@@ -4,7 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rarimo/decentralized-auth-svc/resources"
+	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
+	"github.com/rarimo/geo-auth-svc/resources"
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -23,7 +24,7 @@ const (
 	userClaimsCtxKey
 	levelsCtxKey
 	verifierCtxKey
-	sigVerifierCtxKey
+	sigCalculatorCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -66,14 +67,24 @@ func ReferralsQ(r *http.Request) data.ReferralsQ {
 	return r.Context().Value(referralsQCtxKey).(data.ReferralsQ).New()
 }
 
-func CtxEventTypes(types evtypes.Types) func(context.Context) context.Context {
+func CtxEventTypes(types *evtypes.Types) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, eventTypesCtxKey, types)
 	}
 }
 
-func EventTypes(r *http.Request) evtypes.Types {
-	return r.Context().Value(eventTypesCtxKey).(evtypes.Types)
+func EventTypes(r *http.Request) *evtypes.Types {
+	return r.Context().Value(eventTypesCtxKey).(*evtypes.Types)
+}
+
+func CtxEventTypesQ(q data.EventTypesQ) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, eventTypesCtxKey, q)
+	}
+}
+
+func EventTypesQ(r *http.Request) data.EventTypesQ {
+	return r.Context().Value(eventTypesCtxKey).(data.EventTypesQ).New()
 }
 
 func CtxUserClaims(claim []resources.Claim) func(context.Context) context.Context {
@@ -96,14 +107,14 @@ func Verifier(r *http.Request) *zk.Verifier {
 	return r.Context().Value(verifierCtxKey).(*zk.Verifier)
 }
 
-func CtxSigVerifier(sigVerifier []byte) func(context.Context) context.Context {
+func CtxSigCalculator(calc hmacsig.Calculator) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, sigVerifierCtxKey, sigVerifier)
+		return context.WithValue(ctx, sigCalculatorCtxKey, calc)
 	}
 }
 
-func SigVerifier(r *http.Request) []byte {
-	return r.Context().Value(sigVerifierCtxKey).([]byte)
+func SigCalculator(r *http.Request) hmacsig.Calculator {
+	return r.Context().Value(sigCalculatorCtxKey).(hmacsig.Calculator)
 }
 
 func CtxLevels(levels config.Levels) func(context.Context) context.Context {

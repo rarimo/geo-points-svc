@@ -4,10 +4,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/gommon/log"
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
-	"github.com/rarimo/geo-points-svc/internal/service/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -38,7 +37,7 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gotSig := r.Header.Get("Signature")
-	wantSig, err := hmacsig.CalculateQREventSignature(SigVerifier(r), event.Nullifier, event.ID, req.Data.Attributes.QrCode)
+	wantSig, err := SigCalculator(r).QREventSignature(event.Nullifier, event.ID, req.Data.Attributes.QrCode)
 	if err != nil { // must never happen due to preceding validation
 		Log(r).WithError(err).Error("Failed to calculate HMAC signature")
 		ape.RenderErr(w, problems.InternalError())
@@ -57,7 +56,7 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
-	if evType.QRCodeValue != req.Data.Attributes.QrCode {
+	if evType.QRCodeValue == nil || *evType.QRCodeValue != req.Data.Attributes.QrCode {
 		Log(r).Debugf("QR code for event %s doesn't match: got %s, want %s", event.Type, req.Data.Attributes.QrCode, evType.QRCodeValue)
 		ape.RenderErr(w, problems.Forbidden())
 		return

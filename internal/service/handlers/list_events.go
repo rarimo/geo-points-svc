@@ -5,9 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/rarimo/decentralized-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -27,10 +28,10 @@ func ListEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.FilterHasExpiration != nil {
-		filter := func(ev evtypes.EventConfig) bool { return ev.ExpiresAt != nil }
+		filter := func(ev models.EventType) bool { return ev.ExpiresAt != nil }
 		// keep in mind that these filters eliminate values matching the condition, see evtypes/filters.go
 		if *req.FilterHasExpiration {
-			filter = func(ev evtypes.EventConfig) bool { return ev.ExpiresAt == nil }
+			filter = func(ev models.EventType) bool { return ev.ExpiresAt == nil }
 		}
 
 		types := EventTypes(r).Names(filter)
@@ -42,7 +43,7 @@ func ListEvents(w http.ResponseWriter, r *http.Request) {
 		req.FilterType = append(req.FilterType, types...)
 	}
 
-	inactiveTypes := EventTypes(r).Names(func(ev evtypes.EventConfig) bool {
+	inactiveTypes := EventTypes(r).Names(func(ev models.EventType) bool {
 		return !evtypes.FilterInactive(ev)
 	})
 
