@@ -334,6 +334,10 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef *models.EventType, n
 		eventsToClaimed[i] = events[i].ID
 	}
 
+	if len(eventsToClaimed) == 0 {
+		return nil
+	}
+
 	_, err = EventsQ(r).FilterByID(eventsToClaimed...).Update(data.EventClaimed, nil, &evTypeRef.Reward)
 	if err != nil {
 		return fmt.Errorf("update event status: %w", err)

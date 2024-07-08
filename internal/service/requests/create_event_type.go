@@ -23,7 +23,7 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/type":                         val.Validate(req.Data.Type, val.Required, val.In(resources.EVENT_TYPE)),
 		"data/attributes/action_url":        val.Validate(attr.ActionUrl, is.URL),
 		"data/attributes/description":       val.Validate(attr.Description, val.Required),
-		"data/attributes/frequency":         val.Validate(attr.Frequency, val.Required, val.In(models.Unlimited)),
+		"data/attributes/frequency":         val.Validate(attr.Frequency, val.Required, val.In(string(models.Unlimited))),
 		"data/attributes/logo":              val.Validate(attr.Logo, is.URL),
 		"data/attributes/name":              val.Validate(attr.Name, val.Required, val.In(req.Data.ID)),
 		"data/attributes/flag":              val.Validate(attr.Flag, val.Empty),
