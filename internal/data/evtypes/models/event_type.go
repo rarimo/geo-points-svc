@@ -1,7 +1,6 @@
 package models
 
 import (
-	"net/url"
 	"time"
 
 	"github.com/rarimo/geo-points-svc/resources"
@@ -19,20 +18,12 @@ type EventType struct {
 	NoAutoOpen       bool       `fig:"no_auto_open" db:"no_auto_open"`
 	AutoClaim        bool       `fig:"auto_claim" db:"auto_claim"`
 	Disabled         bool       `fig:"disabled" db:"disabled"`
-	ActionURL        *url.URL   `fig:"action_url" db:"action_url"`
-	Logo             *url.URL   `fig:"logo" db:"logo"`
+	ActionURL        *string    `fig:"action_url" db:"action_url"`
+	Logo             *string    `fig:"logo" db:"logo"`
 	QRCodeValue      *string    `fig:"qr_code_value" db:"qr_code_value"`
 }
 
 func ResourceToModel(r resources.EventStaticMeta) EventType {
-	uConv := func(s *string) *url.URL {
-		if s == nil {
-			return nil
-		}
-		u, _ := url.Parse(*s)
-		return u
-	}
-
 	// intended that no_auto_open field is not accessible through API due to being
 	// related only to back-end
 	return EventType{
@@ -46,8 +37,8 @@ func ResourceToModel(r resources.EventStaticMeta) EventType {
 		ExpiresAt:        r.ExpiresAt,
 		AutoClaim:        r.AutoClaim,
 		Disabled:         r.Disabled,
-		ActionURL:        uConv(r.ActionUrl),
-		Logo:             uConv(r.Logo),
+		ActionURL:        r.ActionUrl,
+		Logo:             r.Logo,
 		QRCodeValue:      r.QrCodeValue,
 	}
 }
@@ -66,14 +57,6 @@ func (e EventType) Flag() string {
 }
 
 func (e EventType) Resource() resources.EventStaticMeta {
-	safeConv := func(u *url.URL) *string {
-		if u == nil {
-			return nil
-		}
-		s := u.String()
-		return &s
-	}
-
 	return resources.EventStaticMeta{
 		Name:             e.Name,
 		Description:      e.Description,
@@ -84,8 +67,8 @@ func (e EventType) Resource() resources.EventStaticMeta {
 		StartsAt:         e.StartsAt,
 		ExpiresAt:        e.ExpiresAt,
 		AutoClaim:        e.AutoClaim,
-		ActionUrl:        safeConv(e.ActionURL),
-		Logo:             safeConv(e.Logo),
+		ActionUrl:        e.ActionURL,
+		Logo:             e.Logo,
 		Flag:             e.Flag(),
 		QrCodeValue:      e.QRCodeValue,
 	}
