@@ -45,6 +45,7 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 				ID:        code,
 				Nullifier: req.Nullifier,
 				UsageLeft: int32(req.Count),
+				Infinity:  req.Infinity,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to insert referral for nullifier [%s]: %w", req.Nullifier, err)
@@ -61,7 +62,8 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 		ape.Render(w, struct {
 			Ref       string `json:"referral"`
 			UsageLeft uint64 `json:"usage_left"`
-		}{code, req.Count})
+			Infinity  bool   `json:"infinity"`
+		}{code, req.Count, req.Infinity})
 		return
 	}
 
@@ -82,7 +84,7 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	referral, err := ReferralsQ(r).FilterByNullifier(req.Nullifier).Update(int(req.Count))
+	referral, err := ReferralsQ(r).FilterByNullifier(req.Nullifier).Update(int(req.Count), req.Infinity)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to update referral usage count for nullifier [%s]", req.Nullifier)
 		ape.RenderErr(w, problems.InternalError())
@@ -97,9 +99,11 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, struct {
 		Ref       string `json:"referral"`
 		UsageLeft uint64 `json:"usage_left"`
+		Infinity  bool   `json:"infinity"`
 	}{
 		referral.ID,
 		uint64(referral.UsageLeft),
+		req.Infinity,
 	})
 
 }

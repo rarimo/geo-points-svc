@@ -39,7 +39,7 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	referral, err := ReferralsQ(r).Get(req.Data.Attributes.ReferredBy) // infinite referrals allowed
+	referral, err := ReferralsQ(r).FilterInactive().Get(req.Data.Attributes.ReferredBy)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to get referral by ID")
 		ape.RenderErr(w, problems.InternalError())
@@ -76,19 +76,17 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	referrals, err := ReferralsQ(r).FilterByNullifier(nullifier).Select()
+	referrals, err := ReferralsQ(r).
+		FilterByNullifier(nullifier).
+		WithStatus().
+		Select()
 	if err != nil {
-		Log(r).WithError(err).Error("Failed to get referral code by nullifier")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-	if len(referrals) != 1 {
-		Log(r).WithError(err).Error("There must be only 1 referral code")
+		Log(r).WithError(err).Error("Failed to get referrals by nullifier with rewarding field")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	ape.Render(w, newBalanceResponse(*balance, &referrals[0]))
+	ape.Render(w, newBalanceResponse(*balance, referrals))
 }
 
 func prepareEventsWithRef(nullifier, refBy string, isGenesisRef bool, r *http.Request) []data.Event {
@@ -159,6 +157,14 @@ func createBalanceWithEventsAndReferrals(nullifier string, refBy *string, events
 		})
 		if err != nil {
 			return fmt.Errorf("update balance amount and level: %w", err)
+		}
+
+		if refBy == nil {
+			return nil
+		}
+
+		if err = ReferralsQ(r).Consume(*refBy); err != nil {
+			return fmt.Errorf("failed to consume referral")
 		}
 
 		return nil

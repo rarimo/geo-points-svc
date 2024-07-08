@@ -37,10 +37,11 @@ allOf:
             format: int
             description: Rank of the user in the full leaderboard. Returned only for the single user.
             example: 294
-          referral_code:
-            type: string
-            description: User referral code. Returned only for the single user.
-            example: "6xM70VgX4eh"
+          referral_codes:
+            type: array
+            description: Referral codes. Returned only for the single user.
+            items:
+              $ref: '#/components/schemas/ReferralCode'
           level:
             type: integer
             format: int

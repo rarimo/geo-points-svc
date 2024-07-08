@@ -17,8 +17,8 @@ type BalanceAttributes struct {
 	Level int `json:"level"`
 	// Rank of the user in the full leaderboard. Returned only for the single user.
 	Rank *int `json:"rank,omitempty"`
-	// User referral code. Returned only for the single user.
-	ReferralCode *string `json:"referral_code,omitempty"`
+	// Referral codes. Returned only for the single user.
+	ReferralCodes *[]ReferralCode `json:"referral_codes,omitempty"`
 	// Unix timestamp of the last points accruing
 	UpdatedAt int32 `json:"updated_at"`
 }

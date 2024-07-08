@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS referrals
 (
     id         text PRIMARY KEY,
     nullifier  TEXT    NOT NULL REFERENCES balances (nullifier),
-    usage_left INTEGER NOT NULL DEFAULT 1
+    usage_left INTEGER NOT NULL DEFAULT 1,
+    infinity   BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX IF NOT EXISTS referrals_nullifier_index ON referrals (nullifier);

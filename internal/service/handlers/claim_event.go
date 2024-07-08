@@ -9,6 +9,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
+	"github.com/rarimo/geo-points-svc/internal/service/referralid"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -141,16 +142,26 @@ func DoClaimEventUpdates(
 
 func doLvlUpAndReferralsUpdate(levels config.Levels, referralsQ data.ReferralsQ, balance data.Balance, reward int64) (level int, err error) {
 	refsCount, level := levels.LvlUp(balance.Level, reward+balance.Amount)
-	if refsCount > 0 {
-		count, err := referralsQ.New().FilterByNullifier(balance.Nullifier).Count()
-		if err != nil {
-			return 0, fmt.Errorf("failed to get referral count: %w", err)
-		}
+	// we need +2 because refsCount can be -1
+	referrals := make([]data.Referral, 0, refsCount+2)
 
-		refToAdd := prepareReferralsToAdd(balance.Nullifier, uint64(refsCount), count)
-		if err = referralsQ.New().Insert(refToAdd...); err != nil {
-			return 0, fmt.Errorf("failed to insert referrals: %w", err)
-		}
+	// count used to calculate ref code
+	count, err := referralsQ.New().FilterByNullifier(balance.Nullifier).Count()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get referral count: %w", err)
+	}
+	switch {
+	case refsCount > 0:
+		referrals = append(referrals, prepareReferralsToAdd(balance.Nullifier, uint64(refsCount), count)...)
+	case refsCount == -1:
+		referrals = append(referrals, data.Referral{
+			ID:        referralid.New(balance.Nullifier, count),
+			Nullifier: balance.Nullifier,
+			Infinity:  true,
+		})
+	}
+	if err = referralsQ.New().Insert(referrals...); err != nil {
+		return 0, fmt.Errorf("failed to insert referrals: %w", err)
 	}
 
 	return level, nil

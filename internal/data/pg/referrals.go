@@ -39,9 +39,9 @@ func (q *referrals) Insert(referrals ...data.Referral) error {
 		return nil
 	}
 
-	stmt := squirrel.Insert(referralsTable).Columns("id", "nullifier", "usage_left")
+	stmt := squirrel.Insert(referralsTable).Columns("id", "nullifier", "usage_left", "infinity")
 	for _, ref := range referrals {
-		stmt = stmt.Values(ref.ID, ref.Nullifier, ref.UsageLeft)
+		stmt = stmt.Values(ref.ID, ref.Nullifier, ref.UsageLeft, ref.Infinity)
 	}
 
 	if err := q.db.Exec(stmt); err != nil {
@@ -51,10 +51,13 @@ func (q *referrals) Insert(referrals ...data.Referral) error {
 	return nil
 }
 
-func (q *referrals) Update(usageLeft int) (*data.Referral, error) {
+func (q *referrals) Update(usageLeft int, infinity bool) (*data.Referral, error) {
 	var res data.Referral
 
-	if err := q.db.Get(&res, q.updater.Set("usage_left", usageLeft).Suffix("RETURNING *")); err != nil {
+	if err := q.db.Get(&res, q.updater.SetMap(map[string]interface{}{
+		"usage_left": usageLeft,
+		"infinity":   infinity,
+	}).Suffix("RETURNING *")); err != nil {
 		return nil, fmt.Errorf("update referral: %w", err)
 	}
 
@@ -96,8 +99,46 @@ func (q *referrals) Count() (uint64, error) {
 	return res.Count, nil
 }
 
+func (q *referrals) WithStatus() data.ReferralsQ {
+	var (
+		joinReferrer = fmt.Sprintf("JOIN %s rr ON %s.nullifier = rr.nullifier", balancesTable, referralsTable)
+		joinReferee  = fmt.Sprintf("LEFT JOIN %s re ON %s.id = re.referred_by", balancesTable, referralsTable)
+
+		status = fmt.Sprintf(`CASE
+			WHEN infinity = TRUE THEN '%s'
+			WHEN usage_left > 0 THEN '%s'
+			WHEN rr.is_verified = FALSE AND re.is_verified = TRUE THEN '%s'
+			WHEN rr.is_verified = TRUE AND re.is_verified = TRUE THEN '%s'
+			ELSE '%s'
+		END AS status`,
+			data.StatusInfinity, data.StatusActive, data.StatusAwaiting,
+			data.StatusRewarded, data.StatusConsumed,
+		)
+	)
+
+	q.selector = q.selector.Column(status).
+		JoinClause(joinReferrer).
+		JoinClause(joinReferee)
+
+	return q
+}
+
+func (q *referrals) Consume(id string) error {
+	stmt := q.consumer.Where(squirrel.Eq{"id": id})
+
+	if err := q.db.Exec(stmt); err != nil {
+		return fmt.Errorf("consume referral [%v]: %w", id, err)
+	}
+
+	return nil
+}
+
 func (q *referrals) FilterByNullifier(nullifier string) data.ReferralsQ {
 	return q.applyCondition(squirrel.Eq{fmt.Sprintf("%s.nullifier", referralsTable): nullifier})
+}
+
+func (q *referrals) FilterInactive() data.ReferralsQ {
+	return q.applyCondition(squirrel.Or{squirrel.Gt{fmt.Sprintf("%s.usage_left", referralsTable): 0}, squirrel.Eq{fmt.Sprintf("%s.infinity", referralsTable): true}})
 }
 
 func (q *referrals) applyCondition(cond squirrel.Sqlizer) data.ReferralsQ {

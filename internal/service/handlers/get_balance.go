@@ -41,23 +41,20 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var referral *data.Referral
+	var referrals []data.Referral
 	if req.ReferralCodes {
-		referrals, err := ReferralsQ(r).FilterByNullifier(req.Nullifier).Select()
+		referrals, err = ReferralsQ(r).
+			FilterByNullifier(req.Nullifier).
+			WithStatus().
+			Select()
 		if err != nil {
-			Log(r).WithError(err).Error("Failed to get referral code by nullifier")
+			Log(r).WithError(err).Error("Failed to get referrals by nullifier with rewarding field")
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
-		if len(referrals) != 1 {
-			Log(r).WithError(err).Error("There must be exactly 1 referral code")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-		referral = &referrals[0]
 	}
 
-	ape.Render(w, newBalanceResponse(*balance, referral))
+	ape.Render(w, newBalanceResponse(*balance, referrals))
 }
 
 // newBalanceModel forms a balance response without referral fields, which must
@@ -78,15 +75,25 @@ func newBalanceModel(balance data.Balance) resources.Balance {
 	}
 }
 
-func newBalanceResponse(balance data.Balance, referral *data.Referral) resources.BalanceResponse {
+func newBalanceResponse(balance data.Balance, referrals []data.Referral) resources.BalanceResponse {
 	resp := resources.BalanceResponse{Data: newBalanceModel(balance)}
 	boolP := func(b bool) *bool { return &b }
 
 	resp.Data.Attributes.IsDisabled = boolP(balance.ReferredBy == nil)
 	resp.Data.Attributes.IsVerified = boolP(balance.IsVerified)
 
-	if referral != nil {
-		resp.Data.Attributes.ReferralCode = &referral.ID
+	if len(referrals) == 0 {
+		return resp
 	}
+
+	res := make([]resources.ReferralCode, len(referrals))
+	for i, r := range referrals {
+		res[i] = resources.ReferralCode{
+			Id:     r.ID,
+			Status: r.Status,
+		}
+	}
+
+	resp.Data.Attributes.ReferralCodes = &res
 	return resp
 }

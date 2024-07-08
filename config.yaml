@@ -60,6 +60,9 @@ levels:
     - lvl: 1
       threshold: 0
       referrals: 1
+    - lvl: 2
+      threshold: 10
+      infinity: true
 
 auth:
   addr: http://rarime-auth
