@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"gitlab.com/distributed_lab/ape"
@@ -44,5 +46,30 @@ func CreateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 	EventTypes(r).Push(typeModel)
 
+	if evtypes.FilterNotOpenable(typeModel) {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	balances, err := BalancesQ(r).FilterDisabled().Select()
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to select balances")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	eventsToInsert := make([]data.Event, 0, len(balances))
+	for _, b := range balances {
+		eventsToInsert = append(eventsToInsert, data.Event{
+			Nullifier: b.Nullifier,
+			Status:    data.EventOpen,
+			Type:      typeModel.Name,
+		})
+	}
+	if err = EventsQ(r).Insert(eventsToInsert...); err != nil {
+		Log(r).WithError(err).Error("Failed to insert qr-code events")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }

@@ -70,7 +70,6 @@ func (e EventType) Resource() resources.EventStaticMeta {
 		ActionUrl:        e.ActionURL,
 		Logo:             e.Logo,
 		Flag:             e.Flag(),
-		QrCodeValue:      e.QRCodeValue,
 	}
 }
 
