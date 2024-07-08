@@ -148,6 +148,7 @@ func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) er
 		return fmt.Errorf("failed to select fulfilled events: %w", err)
 	}
 
+	// nullifiers var is used only for selection, so we don't care about duplicates
 	nullifiers := make([]string, 0, len(events))
 	for _, event := range events {
 		nullifiers = append(nullifiers, event.Nullifier)
