@@ -38,6 +38,12 @@ func FilterByFrequency(f models.Frequency) func(models.EventType) bool {
 	}
 }
 
+func FilterByAutoClaim(autoClaim bool) func(models.EventType) bool {
+	return func(ev models.EventType) bool {
+		return ev.AutoClaim != autoClaim
+	}
+}
+
 func FilterByNames(names ...string) func(models.EventType) bool {
 	return func(ev models.EventType) bool {
 		if len(names) == 0 {
