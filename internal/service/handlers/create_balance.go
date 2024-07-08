@@ -45,13 +45,20 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
 	if referral == nil {
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	events := prepareEventsWithRef(nullifier, req.Data.Attributes.ReferredBy, r)
+	refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
+	if err != nil || refBalance == nil { // must exist due to FK constraint
+		Log(r).WithError(err).Error("Failed to get referrer balance by nullifier")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	isGenesisRef := refBalance.ReferredBy == nil
+
+	events := prepareEventsWithRef(nullifier, req.Data.Attributes.ReferredBy, isGenesisRef, r)
 	if err = createBalanceWithEventsAndReferrals(nullifier, &req.Data.Attributes.ReferredBy, events, r); err != nil {
 		Log(r).WithError(err).Error("Failed to create balance with events")
 		ape.RenderErr(w, problems.InternalError())
@@ -84,15 +91,11 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newBalanceResponse(*balance, &referrals[0]))
 }
 
-func prepareEventsWithRef(nullifier, refBy string, r *http.Request) []data.Event {
+func prepareEventsWithRef(nullifier, refBy string, isGenesisRef bool, r *http.Request) []data.Event {
 	events := EventTypes(r).PrepareEvents(nullifier, evtypes.FilterNotOpenable)
-	if refBy == "" {
-		return events
-	}
-
 	refType := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
-	if refType == nil {
-		Log(r).Debug("`Be referred` event is inactive, skipping it")
+
+	if refBy == "" || isGenesisRef || refType == nil {
 		return events
 	}
 

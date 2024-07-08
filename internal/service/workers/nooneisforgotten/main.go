@@ -28,7 +28,7 @@ func Run(cfg config.Config, sig chan struct{}) {
 	}
 
 	if err := pg.NewEvents(db).Transaction(func() error {
-		return claimReferralSpecificEvents(db, cfg.EventTypes(), cfg.Levels())
+		return autoClaimEvents(db, cfg.EventTypes(), cfg.Levels())
 	}); err != nil {
 		panic(fmt.Errorf("failed to claim referral specific events: %w", err))
 	}
@@ -131,23 +131,24 @@ func updateReferralUserEvents(db *pgdb.DB, types *evtypes.Types) error {
 	return nil
 }
 
-// claimReferralSpecificEvents claim fulfilled events for invited
-// friends which have passport scanned, if it possible
-func claimReferralSpecificEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
-	evType := types.Get(models.TypeReferralSpecific, evtypes.FilterInactive)
-	if evType == nil || !evType.AutoClaim {
+// autoClaimEvents claim fulfilled events which have auto-claim enabled. This is
+// useful if some events were inactive, then became active and must be claimed
+// automatically.
+func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
+	claimTypes := types.Names(evtypes.FilterByAutoClaim(true))
+	if len(claimTypes) == 0 {
 		return nil
 	}
 
 	events, err := pg.NewEvents(db).
-		FilterByType(models.TypeReferralSpecific).
+		FilterByType(claimTypes...).
 		FilterByStatus(data.EventFulfilled).
 		Select()
 	if err != nil {
-		return fmt.Errorf("failed to select passport scan events: %w", err)
+		return fmt.Errorf("failed to select fulfilled events: %w", err)
 	}
 
-	// we need to have maps which link nullifiers to events slice
+	// nullifiers var is used only for selection, so we don't care about duplicates
 	nullifiers := make([]string, 0, len(events))
 	for _, event := range events {
 		nullifiers = append(nullifiers, event.Nullifier)
@@ -164,24 +165,38 @@ func claimReferralSpecificEvents(db *pgdb.DB, types *evtypes.Types, levels confi
 		return errors.New("critical: events present, but no balances with nullifier")
 	}
 
-	toClaim := make([]string, 0, len(events))
-	// select events to claim only for verified balances
+	// select events to claim only for verified balances, group by type name
+	claimByTypes := make(map[string][]data.Event, len(claimTypes))
 	for _, event := range events {
 		for _, balance := range balances {
 			if event.Nullifier != balance.Nullifier || !balance.IsVerified {
 				continue
 			}
-			toClaim = append(toClaim, event.ID)
+			claimByTypes[event.Type] = append(claimByTypes[event.Type], event)
 			break
 		}
 	}
-	if len(toClaim) == 0 {
+	if len(claimByTypes) == 0 {
 		return nil
 	}
 
-	_, err = pg.NewEvents(db).FilterByID(toClaim...).Update(data.EventClaimed, nil, &evType.Reward)
-	if err != nil {
-		return fmt.Errorf("update event status: %w", err)
+	rewardByNullifier := make(map[string]int64, len(balances))
+	for _, evType := range types.List(evtypes.FilterByAutoClaim(true)) {
+		byType := claimByTypes[evType.Name]
+		if len(byType) == 0 {
+			continue
+		}
+
+		ids := make([]string, 0, len(byType))
+		for _, ev := range byType {
+			ids = append(ids, ev.ID)
+			rewardByNullifier[ev.Nullifier] += evType.Reward
+		}
+
+		_, err = pg.NewEvents(db).FilterByID(ids...).Update(data.EventClaimed, nil, &evType.Reward)
+		if err != nil {
+			return fmt.Errorf("update event status: %w", err)
+		}
 	}
 
 	for _, balance := range balances {
@@ -190,7 +205,7 @@ func claimReferralSpecificEvents(db *pgdb.DB, types *evtypes.Types, levels confi
 			pg.NewReferrals(db),
 			pg.NewBalances(db),
 			balance,
-			evType.Reward)
+			rewardByNullifier[balance.Nullifier])
 		if err != nil {
 			return fmt.Errorf("failed to do claim event updates for referral specific event: %w", err)
 		}
