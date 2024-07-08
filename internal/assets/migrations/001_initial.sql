@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS balances
     referred_by        text,
     level              INT     NOT NULL,
     anonymous_id       TEXT UNIQUE,
-    is_verified        BOOLEAN NOT NULL default FALSE,
-    is_passport_proven BOOLEAN NOT NULL default FALSE
+    shared_hash        TEXT UNIQUE,
+    is_verified        BOOLEAN NOT NULL default FALSE
 );
 
 CREATE INDEX IF NOT EXISTS balances_page_index ON balances (amount, updated_at) WHERE referred_by IS NOT NULL;

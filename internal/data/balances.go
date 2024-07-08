@@ -7,22 +7,22 @@ import (
 const (
 	ColAmount      = "amount"
 	ColLevel       = "level"
-	ColIsVerified  = "is_verified"
-	ColIsPassport  = "is_passport_proven"
 	ColAnonymousID = "anonymous_id"
+	ColSharedHash  = "shared_hash"
+	ColIsVerified  = "is_verified"
 )
 
 type Balance struct {
-	Nullifier        string  `db:"nullifier"`
-	Amount           int64   `db:"amount"`
-	CreatedAt        int32   `db:"created_at"`
-	UpdatedAt        int32   `db:"updated_at"`
-	ReferredBy       *string `db:"referred_by"`
-	Rank             *int    `db:"rank"`
-	Level            int     `db:"level"`
-	IsVerified       bool    `db:"is_verified"`
-	IsPassportProven bool    `db:"is_passport_proven"`
-	AnonymousID      *string `db:"anonymous_id"`
+	Nullifier   string  `db:"nullifier"`
+	Amount      int64   `db:"amount"`
+	CreatedAt   int32   `db:"created_at"`
+	UpdatedAt   int32   `db:"updated_at"`
+	ReferredBy  *string `db:"referred_by"`
+	Level       int     `db:"level"`
+	AnonymousID *string `db:"anonymous_id"`
+	SharedHash  *string `db:"shared_hash"`
+	IsVerified  bool    `db:"is_verified"`
+	Rank        *int    `db:"rank"`
 }
 
 type BalancesQ interface {
