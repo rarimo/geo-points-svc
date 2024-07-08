@@ -3,16 +3,16 @@ log:
   disable_sentry: true
 
 db:
-  url: postgres://points:points@localhost:5432/points?sslmode=disable
+  url: postgres://points:points@geo-points-db:5432/points?sslmode=disable
 
 listener:
-  addr: localhost:8000
+  addr: :80
 
 event_types:
   types:
     - name: passport_scan
       title: Points for passport scan
-      reward: 5
+      reward: 10
       description: Get points for scan passport and share data
       short_description: Short description
       frequency: one-time
@@ -53,19 +53,19 @@ event_types:
       description: Prove your participation by scanning QR code
       short_description: Short description
       auto_claim: true
-      qr_code_value: "qr_code_base64_string"
+      qr_code_value: "aawdiojawndgawjhkdla"
 
 levels:
   levels:
     - lvl: 1
       threshold: 0
-      referrals: 1
+      referrals: 10
     - lvl: 2
       threshold: 10
       infinity: true
 
 auth:
-  addr: http://rarime-auth
+  addr: http://geo-auth
 
 verifier:
   verification_key_path: "./verification_key.json"
@@ -73,9 +73,9 @@ verifier:
   allowed_identity_timestamp: 1715698750
 
 root_verifier:
-  rpc: evm_rpc_url
-  contract: registration_contract_address
+  rpc: https://rpc.evm.node1.mainnet-beta.rarimo.com:443
+  contract: 0x59123B0D0f95EB23183879f476B6939cEFd2cF3B
   request_timeout: 10s
 
 sig_verifier:
-  verification_key: "37bc75afc97f8bdcd21cda85ae7b2885b5f1205ae3d79942e56457230f1636a037cc7ebfe42998d66a3dd3446b9d29366271b4f2bd8e0d307db1d320b38fc02f"
+  verification_key: "bcb14d08dc1472b80f49eaf72f0873ac314a7146083bbf3694df8c3238949f2ec0971427f5509382a2812c700e541e328cd6ec65a1383c3ca435cdf55862dc4b"

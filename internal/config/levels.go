@@ -10,9 +10,10 @@ import (
 )
 
 type Level struct {
-	Level     int `fig:"lvl,required"`
-	Threshold int `fig:"threshold,required"`
-	Referrals int `fig:"referrals,required"`
+	Level     int  `fig:"lvl,required"`
+	Threshold int  `fig:"threshold,required"`
+	Referrals int  `fig:"referrals"`
+	Infinity  bool `fig:"infinity"`
 }
 
 type Levels map[int]Level
@@ -63,6 +64,9 @@ func (l Levels) LvlUp(currentLevel int, totalAmount int64) (refCoundToAdd int, n
 	}
 
 	newLevel = slices.Max(lvls)
+	if l[newLevel].Infinity {
+		refCoundToAdd = -1
+	}
 	return
 }
 
