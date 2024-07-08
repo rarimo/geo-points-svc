@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	proofEventIDValue  = "211985299740800702300256033401632392934377086534111448880928528431996790315"
-	proofSelectorValue = "23073"
+	proofEventIDValue  = "111186066134341633902189494613533900917417361106374681011849132651019822199"
+	proofSelectorValue = "219681"
 	maxIdentityCount   = 1
+	documentTypeID     = "ID"
 )
 
 func (c *config) Verifier() *zk.Verifier {
@@ -30,7 +31,8 @@ func (c *config) Verifier() *zk.Verifier {
 			panic(fmt.Errorf("failed to figure out verifier: %w", err))
 		}
 
-		v, err := zk.NewPassportVerifier(nil,
+		v, err := zk.NewVerifier(nil,
+			zk.WithProofType(zk.GeorgianPassport),
 			zk.WithVerificationKeyFile(cfg.VerificationKeyPath),
 			zk.WithAgeAbove(cfg.AllowedAge),
 			zk.WithIdentityVerifier(c.ProvideVerifier()),
@@ -38,6 +40,7 @@ func (c *config) Verifier() *zk.Verifier {
 			zk.WithEventID(proofEventIDValue),
 			zk.WithIdentitiesCounter(maxIdentityCount),
 			zk.WithIdentitiesCreationTimestampLimit(cfg.AllowedIdentityTimestamp),
+			zk.WithDocumentType(documentTypeID),
 		)
 
 		if err != nil {

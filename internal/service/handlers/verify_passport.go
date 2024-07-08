@@ -77,8 +77,23 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var sharedHash *string
+	if proof != nil {
+		sig := zk.PubSignalGetter{
+			ProofType: zk.GeorgianPassport,
+			Signals:   proof.PubSignals,
+		}
+		h := sig.Get(zk.PersonalNumberHash)
+		if h == "" {
+			log.Errorf("Proof verification succeeded, but shared hash was not obtained: proof: %+v", proof)
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		sharedHash = &h
+	}
+
 	if balance.IsVerified {
-		if balance.IsPassportProven {
+		if balance.SharedHash != nil {
 			log.Warnf("Balance %s already verified", balance.Nullifier)
 			ape.RenderErr(w, problems.TooManyRequests())
 			return
@@ -103,7 +118,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
-			data.ColIsPassport: true,
+			data.ColSharedHash: *sharedHash,
 		})
 		if err != nil {
 			log.WithError(err).Error("Failed to update balance")
@@ -116,7 +131,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = EventsQ(r).Transaction(func() error {
-		return doPassportScanUpdates(r, *balance, anonymousID, proof != nil)
+		return doPassportScanUpdates(r, *balance, anonymousID, sharedHash)
 	})
 	if err != nil {
 		log.WithError(err).Error("Failed to execute transaction")
@@ -204,8 +219,8 @@ func checkVerificationEligibility(r *http.Request, balance *data.Balance) (errs 
 // doPassportScanUpdates performs all the necessary updates when the passport
 // scan proof is provided. This logic is shared between verification and
 // withdrawal handlers.
-func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID string, proven bool) error {
-	err := updateBalanceVerification(r, balance, anonymousID, proven)
+func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID string, sharedHash *string) error {
+	err := updateBalanceVerification(r, balance, anonymousID, sharedHash)
 	if err != nil {
 		return fmt.Errorf("update balance country: %w", err)
 	}
@@ -248,13 +263,13 @@ func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID st
 	return nil
 }
 
-func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousID string, proven bool) error {
+func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousID string, sharedHash *string) error {
 	toUpd := map[string]any{
 		data.ColIsVerified:  true,
 		data.ColAnonymousID: anonymousID,
 	}
-	if proven {
-		toUpd[data.ColIsPassport] = true
+	if sharedHash != nil {
+		toUpd[data.ColSharedHash] = *sharedHash
 	}
 
 	err := BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(toUpd)

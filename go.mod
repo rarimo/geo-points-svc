@@ -15,7 +15,7 @@ require (
 	github.com/labstack/gommon v0.4.0
 	github.com/rarimo/geo-auth-svc v0.2.0
 	github.com/rarimo/saver-grpc-lib v1.0.0
-	github.com/rarimo/zkverifier-kit v1.0.0
+	github.com/rarimo/zkverifier-kit v1.1.0-rc.1
 	github.com/rubenv/sql-migrate v1.6.1
 	gitlab.com/distributed_lab/ape v1.7.1
 	gitlab.com/distributed_lab/figure/v3 v3.1.4
