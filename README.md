@@ -42,20 +42,23 @@ Body:
 ```json
 {
     "nullifier": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "count": 2
+    "count": 2,
+    "infinity": true
 }
 ```
 Response:
 ```json
 {
   "referral": "kPRQYQUcWzW",
-  "usage_left": 2
+  "usage_left": 2,
+  "infinity": true
 }
 ```
 
 Parameters:
 - `nullifier` - nullifier to create or edit referrals for
 - `count` - number of referral usage
+- `infinity` - specify if referrals code have unlimited usage count
 
 ### Local build
 
