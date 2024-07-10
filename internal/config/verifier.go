@@ -10,7 +10,7 @@ import (
 
 const (
 	proofEventIDValue  = "111186066134341633902189494613533900917417361106374681011849132651019822199"
-	proofSelectorValue = "219681"
+	proofSelectorValue = "236065"
 	maxIdentityCount   = 1
 	documentTypeID     = "ID"
 )
