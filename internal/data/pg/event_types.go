@@ -78,10 +78,10 @@ func (q *eventTypes) Insert(eventTypes ...models.EventType) error {
 	return nil
 }
 
-func (q *eventTypes) Update(fields map[string]any) (res *models.EventType, err error) {
+func (q *eventTypes) Update(fields map[string]any) (res []models.EventType, err error) {
 	stmt := q.updater.SetMap(fields).Suffix("RETURNING *")
 
-	if err = q.db.Get(&res, stmt); err != nil {
+	if err = q.db.Select(&res, stmt); err != nil {
 		return nil, fmt.Errorf("update event type with map %+v: %w", fields, err)
 	}
 

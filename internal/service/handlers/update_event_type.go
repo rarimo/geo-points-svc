@@ -47,7 +47,7 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	EventTypes(r).Push(typeModel)
-	ape.Render(w, newEventTypeResponse(*res))
+	ape.Render(w, newEventTypeResponse(res[0]))
 }
 
 func newEventTypeResponse(evType models.EventType) resources.EventTypeResponse {
