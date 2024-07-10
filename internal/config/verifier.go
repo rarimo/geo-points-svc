@@ -32,6 +32,7 @@ func (c *config) Verifier() *zk.Verifier {
 		}
 
 		v, err := zk.NewVerifier(nil,
+			zk.WithCitizenships("GEO"),
 			zk.WithProofType(zk.GeorgianPassport),
 			zk.WithVerificationKeyFile(cfg.VerificationKeyPath),
 			zk.WithAgeAbove(cfg.AllowedAge),
