@@ -46,6 +46,12 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(res) == 0 {
+		Log(r).Error("Count of updated event_types = 0")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	EventTypes(r).Push(typeModel)
 	ape.Render(w, newEventTypeResponse(res[0]))
 }
