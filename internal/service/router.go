@@ -48,6 +48,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			})
 			r.Get("/balances", handlers.Leaderboard)
 			r.Route("/event_types", func(r chi.Router) {
+				r.With(authMW).Get("/qr", handlers.ListQREventTypes)
 				r.Get("/", handlers.ListEventTypes)
 				r.With(authMW).Post("/", handlers.CreateEventType)
 				r.Get("/{name}", handlers.GetEventType)

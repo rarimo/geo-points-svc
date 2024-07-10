@@ -42,6 +42,7 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var referrals []data.Referral
+	var referredUsers int
 	if req.ReferralCodes {
 		referrals, err = ReferralsQ(r).
 			FilterByNullifier(req.Nullifier).
@@ -52,9 +53,13 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
+
+		for _, ref := range referrals {
+			referredUsers += counter(int(ref.UsageLeft))
+		}
 	}
 
-	ape.Render(w, newBalanceResponse(*balance, referrals))
+	ape.Render(w, newBalanceResponse(*balance, referrals, referredUsers))
 }
 
 // newBalanceModel forms a balance response without referral fields, which must
@@ -75,12 +80,13 @@ func newBalanceModel(balance data.Balance) resources.Balance {
 	}
 }
 
-func newBalanceResponse(balance data.Balance, referrals []data.Referral) resources.BalanceResponse {
+func newBalanceResponse(balance data.Balance, referrals []data.Referral, referredUsers int) resources.BalanceResponse {
 	resp := resources.BalanceResponse{Data: newBalanceModel(balance)}
 	boolP := func(b bool) *bool { return &b }
 
 	resp.Data.Attributes.IsDisabled = boolP(balance.ReferredBy == nil)
 	resp.Data.Attributes.IsVerified = boolP(balance.IsVerified)
+	resp.Data.Attributes.ReferredUsersCount = &referredUsers
 
 	if len(referrals) == 0 {
 		return resp
@@ -96,4 +102,14 @@ func newBalanceResponse(balance data.Balance, referrals []data.Referral) resourc
 
 	resp.Data.Attributes.ReferralCodes = &res
 	return resp
+}
+
+func counter(i int) int {
+	switch {
+	case i < 0:
+		return -i
+	case i == 0:
+		return 1
+	}
+	return 0
 }

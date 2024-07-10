@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/labstack/gommon/log"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -33,20 +32,6 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(event.Nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
-		return
-	}
-
-	gotSig := r.Header.Get("Signature")
-	wantSig, err := SigCalculator(r).QREventSignature(event.Nullifier, event.ID, req.Data.Attributes.QrCode)
-	if err != nil { // must never happen due to preceding validation
-		Log(r).WithError(err).Error("Failed to calculate HMAC signature")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	if gotSig != wantSig {
-		log.Warnf("QR event fulfillment unauthorized access: HMAC signature mismatch: got %s, want %s", gotSig, wantSig)
-		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 

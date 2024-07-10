@@ -53,17 +53,17 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	EventTypes(r).Push(typeModel)
-	ape.Render(w, newEventTypeResponse(res[0]))
+	ape.Render(w, newEventTypeResponse(res[0], true))
 }
 
-func newEventTypeResponse(evType models.EventType) resources.EventTypeResponse {
+func newEventTypeResponse(evType models.EventType, qr bool) resources.EventTypeResponse {
 	return resources.EventTypeResponse{
 		Data: resources.EventType{
 			Key: resources.Key{
 				ID:   evType.Name,
 				Type: resources.EVENT_TYPE,
 			},
-			Attributes: evType.Resource(),
+			Attributes: evType.Resource(qr),
 		},
 	}
 }

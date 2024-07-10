@@ -42,5 +42,5 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, resources.EventResponse{Data: newEventModel(*event, evType.Resource())})
+	ape.Render(w, resources.EventResponse{Data: newEventModel(*event, evType.Resource(false))})
 }

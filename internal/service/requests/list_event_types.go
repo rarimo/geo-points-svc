@@ -12,6 +12,7 @@ type ListExpiredEvents struct {
 	FilterName    []string `filter:"name"`
 	FilterFlag    []string `filter:"flag"`
 	FilterNotName []string `url:"filter[name][not]"`
+	Count         bool     `url:"count"`
 }
 
 func NewListEventTypes(r *http.Request) (req ListExpiredEvents, err error) {

@@ -11,13 +11,6 @@ patch:
       schema:
         type: string
         example: "059c81dd-2a54-44a8-8142-c15ad8f88949"
-    - in: header
-      name: Signature
-      description: Signature of the request
-      required: true
-      schema:
-        type: string
-        pattern: '^[a-f0-9]{64}$'
   requestBody:
     required: true
     content:
