@@ -68,6 +68,7 @@ func (e EventType) Resource() resources.EventStaticMeta {
 		ExpiresAt:        e.ExpiresAt,
 		AutoClaim:        e.AutoClaim,
 		ActionUrl:        e.ActionURL,
+		Disabled:         e.Disabled,
 		Logo:             e.Logo,
 		Flag:             e.Flag(),
 	}
