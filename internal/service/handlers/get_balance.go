@@ -54,8 +54,21 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Infinite referral codes initially have 0 uses and,
+		// accordingly, after use, this value will decrease,
+		// i.e. the number of invited users for this code will
+		// be an absolute value
+		//
+		// A one-time code is considered used if it has 0 uses,
+		// because the initial value is 1
 		for _, ref := range referrals {
-			referredUsers += counter(int(ref.UsageLeft))
+			if ref.Infinity {
+				referredUsers += -int(ref.UsageLeft)
+				continue
+			}
+			if ref.UsageLeft == 0 {
+				referredUsers++
+			}
 		}
 	}
 
@@ -102,14 +115,4 @@ func newBalanceResponse(balance data.Balance, referrals []data.Referral, referre
 
 	resp.Data.Attributes.ReferralCodes = &res
 	return resp
-}
-
-func counter(i int) int {
-	switch {
-	case i < 0:
-		return -i
-	case i == 0:
-		return 1
-	}
-	return 0
 }
