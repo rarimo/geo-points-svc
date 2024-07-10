@@ -31,7 +31,7 @@ get:
     500:
       $ref: '#/components/responses/internalError'
 
-patch:
+put:
   tags:
     - Event types
   summary: Update event type

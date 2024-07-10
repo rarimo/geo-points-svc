@@ -52,7 +52,7 @@ func Run(ctx context.Context, cfg config.Config) {
 				r.Get("/", handlers.ListEventTypes)
 				r.With(authMW).Post("/", handlers.CreateEventType)
 				r.Get("/{name}", handlers.GetEventType)
-				r.With(authMW).Patch("/{name}", handlers.UpdateEventType)
+				r.With(authMW).Put("/{name}", handlers.UpdateEventType)
 			})
 		})
 		// must be accessible only within the cluster
