@@ -86,7 +86,7 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newBalanceResponse(*balance, referrals))
+	ape.Render(w, newBalanceResponse(*balance, referrals, 0))
 }
 
 func prepareEventsWithRef(nullifier, refBy string, isGenesisRef bool, r *http.Request) []data.Event {

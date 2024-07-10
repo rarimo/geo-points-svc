@@ -85,3 +85,8 @@ properties:
     type: string
     description: Base64-encoded QR code. Must match the code provided in event type.
     example: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABaElEQVR4AWP4//8/AyUYw"
+  usage_count:
+    type: integer
+    format: int
+    description: Number of uses. Only available to the administrator.
+    example: 1002

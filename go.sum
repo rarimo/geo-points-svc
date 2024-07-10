@@ -2118,10 +2118,6 @@ github.com/rarimo/geo-auth-svc v0.2.0 h1:yQvcIBNx+Tc1jJdtpWDfyLc0HogU+okA08HEZ55
 github.com/rarimo/geo-auth-svc v0.2.0/go.mod h1:SB4bo1xHYDAsBaQGX2+FoEgD3xxqYmcgr4XTTjy4/OM=
 github.com/rarimo/saver-grpc-lib v1.0.0 h1:MGUVjYg7unmodYczVsLqlqZNkT4CIgKqdo6aQtL1qdE=
 github.com/rarimo/saver-grpc-lib v1.0.0/go.mod h1:DpugWK5B7Hi0bdC3MPe/9FD2zCxaRwsyykdwxtF1Zgg=
-github.com/rarimo/zkverifier-kit v1.0.0 h1:zMW85hyDP3Uk6p9Dk9U4TBzOf0Pry+RNlWpli1tUZ1Q=
-github.com/rarimo/zkverifier-kit v1.0.0/go.mod h1:3YDg5dTkDRr4IdfaDHGYetopd6gS/2SuwSeseYTWwNw=
-github.com/rarimo/zkverifier-kit v1.1.0-rc.0 h1:5JkObPkEUGwgq4SKJAGInaTBDBILQUHMP4VKZuYPcsM=
-github.com/rarimo/zkverifier-kit v1.1.0-rc.0/go.mod h1:3YDg5dTkDRr4IdfaDHGYetopd6gS/2SuwSeseYTWwNw=
 github.com/rarimo/zkverifier-kit v1.1.0-rc.1 h1:xtmrFEl7eLAE6mi7IQYOOMKFdwXC3gbe39fYQdvKVZg=
 github.com/rarimo/zkverifier-kit v1.1.0-rc.1/go.mod h1:3YDg5dTkDRr4IdfaDHGYetopd6gS/2SuwSeseYTWwNw=
 github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 h1:N/ElC8H3+5XpJzTSTfLsJV/mx9Q9g7kxmchpfZyxgzM=

@@ -53,7 +53,9 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	EventTypes(r).Push(typeModel)
-	ape.Render(w, newEventTypeResponse(res[0]))
+	resp := newEventTypeResponse(res[0])
+	resp.Data.Attributes.QrCodeValue = typeModel.QRCodeValue
+	ape.Render(w, resp)
 }
 
 func newEventTypeResponse(evType models.EventType) resources.EventTypeResponse {

@@ -33,4 +33,6 @@ type EventStaticMeta struct {
 	// General event starting date (UTC RFC3339)
 	StartsAt *time.Time `json:"starts_at,omitempty"`
 	Title    string     `json:"title"`
+	// Number of uses. Only available to the administrator.
+	UsageCount *int `json:"usage_count,omitempty"`
 }

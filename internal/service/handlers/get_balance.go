@@ -42,6 +42,7 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var referrals []data.Referral
+	var referredUsers int
 	if req.ReferralCodes {
 		referrals, err = ReferralsQ(r).
 			FilterByNullifier(req.Nullifier).
@@ -52,9 +53,26 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
+
+		// Infinite referral codes initially have 0 uses and,
+		// accordingly, after use, this value will decrease,
+		// i.e. the number of invited users for this code will
+		// be an absolute value
+		//
+		// A one-time code is considered used if it has 0 uses,
+		// because the initial value is 1
+		for _, ref := range referrals {
+			if ref.Infinity {
+				referredUsers += -int(ref.UsageLeft)
+				continue
+			}
+			if ref.UsageLeft == 0 {
+				referredUsers++
+			}
+		}
 	}
 
-	ape.Render(w, newBalanceResponse(*balance, referrals))
+	ape.Render(w, newBalanceResponse(*balance, referrals, referredUsers))
 }
 
 // newBalanceModel forms a balance response without referral fields, which must
@@ -75,12 +93,13 @@ func newBalanceModel(balance data.Balance) resources.Balance {
 	}
 }
 
-func newBalanceResponse(balance data.Balance, referrals []data.Referral) resources.BalanceResponse {
+func newBalanceResponse(balance data.Balance, referrals []data.Referral, referredUsers int) resources.BalanceResponse {
 	resp := resources.BalanceResponse{Data: newBalanceModel(balance)}
 	boolP := func(b bool) *bool { return &b }
 
 	resp.Data.Attributes.IsDisabled = boolP(balance.ReferredBy == nil)
 	resp.Data.Attributes.IsVerified = boolP(balance.IsVerified)
+	resp.Data.Attributes.ReferredUsersCount = &referredUsers
 
 	if len(referrals) == 0 {
 		return resp
