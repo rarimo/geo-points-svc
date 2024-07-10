@@ -4,6 +4,14 @@ get:
   summary: Get event
   description: Returns a single event by ID.
   operationId: getEvent
+  parameters:
+    - $ref: '#/components/parameters/headerLang'
+    - in: path
+      name: 'id'
+      required: true
+      schema:
+        type: string
+        example: "059c81dd-2a54-44a8-8142-c15ad8f88949"
   responses:
     200:
       description: Success
@@ -34,6 +42,7 @@ patch:
     User must be authorized, and event must be _fulfilled_ by him.
   operationId: claimEvent
   parameters:
+    - $ref: '#/components/parameters/headerLang'
     - in: path
       name: 'id'
       required: true

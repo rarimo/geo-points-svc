@@ -6,6 +6,7 @@ get:
   operationId: getEvents
   parameters:
     - $ref: '#/components/parameters/filterNullifier'
+    - $ref: '#/components/parameters/headerLang'
     - in: query
       name: 'filter[status]'
       description: |

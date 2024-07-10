@@ -188,7 +188,8 @@ func getAndVerifyBalanceEligibility(
 	}
 
 	// never panics because of request validation
-	proof.PubSignals[zk.Nullifier] = mustHexToInt(nullifier)
+	ni := zk.Indexes(zk.GeorgianPassport)[zk.Nullifier]
+	proof.PubSignals[ni] = mustHexToInt(nullifier)
 	err = Verifier(r).VerifyProof(*proof)
 	if err != nil {
 		if errors.Is(err, identity.ErrContractCall) {
