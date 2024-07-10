@@ -39,7 +39,7 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	typeModel := models.ResourceToModel(req.Data.Attributes)
-	res, err := EventTypesQ(r).Update(typeModel.ForUpdate())
+	res, err := EventTypesQ(r).FilterByNames(typeModel.Name).Update(typeModel.ForUpdate())
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to update event type")
 		ape.RenderErr(w, problems.InternalError())
