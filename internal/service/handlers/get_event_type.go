@@ -21,5 +21,5 @@ func GetEventType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newEventTypeResponse(*evType, false))
+	ape.Render(w, newEventTypeResponse(*evType))
 }

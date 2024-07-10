@@ -43,8 +43,9 @@ func ListQREventTypes(w http.ResponseWriter, r *http.Request) {
 				ID:   t.Name,
 				Type: resources.EVENT_TYPE,
 			},
-			Attributes: t.Resource(true),
+			Attributes: t.Resource(),
 		}
+		resTypes[i].Attributes.QrCodeValue = t.QRCodeValue
 		if req.Count {
 			evCount, err := EventsQ(r).FilterByType(t.Name).FilterByStatus(data.EventFulfilled, data.EventClaimed).Count()
 			if err != nil {

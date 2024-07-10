@@ -82,7 +82,7 @@ func ClaimEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newClaimEventResponse(*event, evType.Resource(false), *balance))
+	ape.Render(w, newClaimEventResponse(*event, evType.Resource(), *balance))
 }
 
 // claimEvent requires event to exist

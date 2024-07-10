@@ -33,7 +33,7 @@ func ListEventTypes(w http.ResponseWriter, r *http.Request) {
 				ID:   t.Name,
 				Type: resources.EVENT_TYPE,
 			},
-			Attributes: t.Resource(false),
+			Attributes: t.Resource(),
 		}
 	}
 

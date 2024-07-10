@@ -56,9 +56,8 @@ func (e EventType) Flag() string {
 	}
 }
 
-func (e EventType) Resource(qr bool) resources.EventStaticMeta {
-
-	res := resources.EventStaticMeta{
+func (e EventType) Resource() resources.EventStaticMeta {
+	return resources.EventStaticMeta{
 		Name:             e.Name,
 		Description:      e.Description,
 		ShortDescription: e.ShortDescription,
@@ -73,12 +72,6 @@ func (e EventType) Resource(qr bool) resources.EventStaticMeta {
 		Logo:             e.Logo,
 		Flag:             e.Flag(),
 	}
-
-	if qr {
-		res.QrCodeValue = e.QRCodeValue
-	}
-
-	return res
 }
 
 func (e EventType) ForUpdate() map[string]any {
