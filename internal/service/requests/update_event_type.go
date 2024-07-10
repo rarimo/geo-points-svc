@@ -25,7 +25,7 @@ func NewUpdateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/id":                    val.Validate(req.Data.ID, val.Required, val.In(name)),
 		"data/type":                  val.Validate(req.Data.Type, val.Required, val.In(resources.EVENT_TYPE)),
 		"data/attributes/action_url": val.Validate(attr.ActionUrl, is.URL),
-		"data/attributes/frequency":  val.Validate(attr.Frequency, val.In(models.Unlimited)),
+		"data/attributes/frequency":  val.Validate(attr.Frequency, val.In(string(models.Unlimited))),
 		"data/attributes/logo":       val.Validate(attr.Logo, is.URL),
 		"data/attributes/reward":     val.Validate(attr.Reward, val.Min(1)),
 	}.Filter()
