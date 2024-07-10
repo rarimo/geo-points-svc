@@ -21,5 +21,5 @@ func GetEventType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newEventTypeResponse(*evType))
+	ape.Render(w, newEventTypeResponse(*evType, r.Header.Get(langHeader)))
 }

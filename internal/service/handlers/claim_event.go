@@ -16,6 +16,8 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
+const langHeader = "Accept-Language"
+
 func ClaimEvent(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.NewClaimEvent(r)
 	if err != nil {
@@ -82,7 +84,7 @@ func ClaimEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newClaimEventResponse(*event, evType.Resource(), *balance))
+	ape.Render(w, newClaimEventResponse(*event, evType.Resource(r.Header.Get(langHeader)), *balance))
 }
 
 // claimEvent requires event to exist

@@ -8,6 +8,7 @@ get:
     for each event type in the system.
   operationId: getEventTypes
   parameters:
+    - $ref: '#/components/parameters/headerLang'
     - in: query
       name: 'filter[name]'
       description: Filter by type name. Possible values should be hard-coded in the client.

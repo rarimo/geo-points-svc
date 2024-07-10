@@ -1,0 +1,7 @@
+in: header
+name: Accept-Language
+description: Localization of event types. If locale is not configured for the type, the default is returned.
+required: false
+schema:
+  type: string
+  example: en-US

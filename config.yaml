@@ -11,10 +11,20 @@ listener:
 event_types:
   types:
     - name: passport_scan
-      title: Points for passport scan
       reward: 5
+      # there are default and localized configurations of texts
+      title: Points for passport scan
       description: Get points for scan passport and share data
       short_description: Short description
+      localized:
+        en-UK:
+          title: Points for passport scan
+          description: Get points for scan passport and share data
+          short_description: Short description
+        en-US:
+          title: Points for passport scan
+          description: Get points for scan passport and share data
+          short_description: Short description
       frequency: one-time
       action_url: https://...
       logo: https://...

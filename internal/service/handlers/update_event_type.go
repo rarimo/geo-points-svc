@@ -53,19 +53,19 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	EventTypes(r).Push(typeModel)
-	resp := newEventTypeResponse(res[0])
+	resp := newEventTypeResponse(res[0], r.Header.Get(langHeader))
 	resp.Data.Attributes.QrCodeValue = typeModel.QRCodeValue
 	ape.Render(w, resp)
 }
 
-func newEventTypeResponse(evType models.EventType) resources.EventTypeResponse {
+func newEventTypeResponse(evType models.EventType, locale string) resources.EventTypeResponse {
 	return resources.EventTypeResponse{
 		Data: resources.EventType{
 			Key: resources.Key{
 				ID:   evType.Name,
 				Type: resources.EVENT_TYPE,
 			},
-			Attributes: evType.Resource(),
+			Attributes: evType.Resource(locale),
 		},
 	}
 }

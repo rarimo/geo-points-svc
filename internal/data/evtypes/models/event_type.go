@@ -1,26 +1,28 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"github.com/rarimo/geo-points-svc/resources"
 )
 
 type EventType struct {
-	Name             string     `fig:"name,required" db:"name"`
-	Description      string     `fig:"description,required" db:"description"`
-	ShortDescription string     `fig:"short_description,required" db:"short_description"`
-	Reward           int64      `fig:"reward,required" db:"reward"`
-	Title            string     `fig:"title,required" db:"title"`
-	Frequency        Frequency  `fig:"frequency,required" db:"frequency"`
-	StartsAt         *time.Time `fig:"starts_at" db:"starts_at"`
-	ExpiresAt        *time.Time `fig:"expires_at" db:"expires_at"`
-	NoAutoOpen       bool       `fig:"no_auto_open" db:"no_auto_open"`
-	AutoClaim        bool       `fig:"auto_claim" db:"auto_claim"`
-	Disabled         bool       `fig:"disabled" db:"disabled"`
-	ActionURL        *string    `fig:"action_url" db:"action_url"`
-	Logo             *string    `fig:"logo" db:"logo"`
-	QRCodeValue      *string    `fig:"qr_code_value" db:"qr_code_value"`
+	Name             string          `fig:"name,required" db:"name"`
+	Reward           int64           `fig:"reward,required" db:"reward"`
+	Title            string          `fig:"title,required" db:"title"`
+	Description      string          `fig:"description,required" db:"description"`
+	ShortDescription string          `fig:"short_description,required" db:"short_description"`
+	Localized        LocalizationMap `fig:"localized" db:"localized"`
+	Frequency        Frequency       `fig:"frequency,required" db:"frequency"`
+	StartsAt         *time.Time      `fig:"starts_at" db:"starts_at"`
+	ExpiresAt        *time.Time      `fig:"expires_at" db:"expires_at"`
+	NoAutoOpen       bool            `fig:"no_auto_open" db:"no_auto_open"`
+	AutoClaim        bool            `fig:"auto_claim" db:"auto_claim"`
+	Disabled         bool            `fig:"disabled" db:"disabled"`
+	ActionURL        *string         `fig:"action_url" db:"action_url"`
+	Logo             *string         `fig:"logo" db:"logo"`
+	QRCodeValue      *string         `fig:"qr_code_value" db:"qr_code_value"`
 }
 
 func ResourceToModel(r resources.EventStaticMeta) EventType {
@@ -56,13 +58,14 @@ func (e EventType) Flag() string {
 	}
 }
 
-func (e EventType) Resource() resources.EventStaticMeta {
+func (e EventType) Resource(locale string) resources.EventStaticMeta {
+	l := e.GetLocalized(strings.ToLower(locale))
 	return resources.EventStaticMeta{
 		Name:             e.Name,
-		Description:      e.Description,
-		ShortDescription: e.ShortDescription,
 		Reward:           e.Reward,
-		Title:            e.Title,
+		Description:      l.Description,
+		ShortDescription: l.ShortDescription,
+		Title:            l.Title,
 		Frequency:        e.Frequency.String(),
 		StartsAt:         e.StartsAt,
 		ExpiresAt:        e.ExpiresAt,
@@ -89,4 +92,23 @@ func (e EventType) ForUpdate() map[string]any {
 		"logo":              e.Logo,
 		"qr_code_value":     e.QRCodeValue,
 	}
+}
+
+func (e EventType) GetLocalized(locale string) Localized {
+	def := Localized{
+		Title:            e.Title,
+		Description:      e.Description,
+		ShortDescription: e.ShortDescription,
+	}
+
+	if len(e.Localized) == 0 {
+		return def
+	}
+
+	v, ok := e.Localized[locale]
+	if !ok {
+		return def
+	}
+
+	return v
 }

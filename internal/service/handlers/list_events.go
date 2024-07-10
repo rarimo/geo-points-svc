@@ -104,7 +104,7 @@ func getOrderedEventsMeta(events []data.Event, r *http.Request) ([]resources.Eve
 		if evType == nil {
 			return nil, errors.New("wrong event type is stored in DB: might be bad event config")
 		}
-		res[i] = evType.Resource()
+		res[i] = evType.Resource(r.Header.Get(langHeader))
 	}
 
 	return res, nil

@@ -4,6 +4,14 @@ get:
   summary: Get event type
   description: Returns public configuration of event type by its unique name
   operationId: getEventType
+  parameters:
+    - $ref: '#/components/parameters/headerLang'
+    - in: path
+      name: 'name'
+      required: true
+      schema:
+        type: string
+        example: "meetup_participation"
   responses:
     200:
       description: Success
@@ -23,7 +31,7 @@ get:
     500:
       $ref: '#/components/responses/internalError'
 
-patch:
+put:
   tags:
     - Event types
   summary: Update event type
@@ -34,6 +42,14 @@ patch:
     in Go, because differentiating between `{}` and `{"field": null}`
     requires custom unmarshalling implementation.
   operationId: updateEventType
+  parameters:
+    - $ref: '#/components/parameters/headerLang'
+    - in: path
+      name: 'name'
+      required: true
+      schema:
+        type: string
+        example: "meetup_participation"
   requestBody:
     required: true
     content:
