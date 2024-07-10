@@ -259,6 +259,7 @@ paths:
         for each event type in the system.
       operationId: getEventTypes
       parameters:
+        - $ref: '#/components/parameters/headerLang'
         - in: query
           name: 'filter[name]'
           description: Filter by type name. Possible values should be hard-coded in the client.
@@ -348,6 +349,14 @@ paths:
       summary: Get event type
       description: Returns public configuration of event type by its unique name
       operationId: getEventType
+      parameters:
+        - $ref: '#/components/parameters/headerLang'
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+            example: meetup_participation
       responses:
         '200':
           description: Success
@@ -366,7 +375,7 @@ paths:
           $ref: '#/components/responses/notFound'
         '500':
           $ref: '#/components/responses/internalError'
-    patch:
+    put:
       tags:
         - Event types
       summary: Update event type
@@ -377,6 +386,14 @@ paths:
         in Go, because differentiating between `{}` and `{"field": null}`
         requires custom unmarshalling implementation.
       operationId: updateEventType
+      parameters:
+        - $ref: '#/components/parameters/headerLang'
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+            example: meetup_participation
       requestBody:
         required: true
         content:
@@ -520,6 +537,7 @@ paths:
       operationId: getEvents
       parameters:
         - $ref: '#/components/parameters/filterNullifier'
+        - $ref: '#/components/parameters/headerLang'
         - in: query
           name: 'filter[status]'
           description: |
@@ -607,6 +625,14 @@ paths:
       summary: Get event
       description: Returns a single event by ID.
       operationId: getEvent
+      parameters:
+        - $ref: '#/components/parameters/headerLang'
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: 059c81dd-2a54-44a8-8142-c15ad8f88949
       responses:
         '200':
           description: Success
@@ -636,6 +662,7 @@ paths:
         User must be authorized, and event must be _fulfilled_ by him.
       operationId: claimEvent
       parameters:
+        - $ref: '#/components/parameters/headerLang'
         - in: path
           name: id
           required: true
@@ -1259,6 +1286,14 @@ components:
         type: string
         example: 0x123...abc
         pattern: '^0x[0-9a-fA-F]{64}$'
+    headerLang:
+      in: header
+      name: Accept-Language
+      description: 'Localization of event types. If locale is not configured for the type, the default is returned.'
+      required: false
+      schema:
+        type: string
+        example: en-US
     pageCursor:
       in: query
       name: 'page[cursor]'

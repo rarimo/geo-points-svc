@@ -393,6 +393,9 @@
         "operationId": "getEventTypes",
         "parameters": [
           {
+            "$ref": "#/components/parameters/headerLang"
+          },
+          {
             "in": "query",
             "name": "filter[name]",
             "description": "Filter by type name. Possible values should be hard-coded in the client.",
@@ -523,6 +526,20 @@
         "summary": "Get event type",
         "description": "Returns public configuration of event type by its unique name",
         "operationId": "getEventType",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/headerLang"
+          },
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "meetup_participation"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -553,13 +570,27 @@
           }
         }
       },
-      "patch": {
+      "put": {
         "tags": [
           "Event types"
         ],
         "summary": "Update event type",
         "description": "Update an existing event type. Requires **admin** role in JWT.\n**All attributes** are updated, ensure to pass every existing field too.\nAlthough this is not JSON:API compliant, it is much easier to work with\nin Go, because differentiating between `{}` and `{\"field\": null}`\nrequires custom unmarshalling implementation.\n",
         "operationId": "updateEventType",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/headerLang"
+          },
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "meetup_participation"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -770,6 +801,9 @@
             "$ref": "#/components/parameters/filterNullifier"
           },
           {
+            "$ref": "#/components/parameters/headerLang"
+          },
+          {
             "in": "query",
             "name": "filter[status]",
             "description": "Filter by event status, which is:\n  - `open` - you need to do something on the platform\n  - `fulfilled` - you have done something and are eligible to claim the reward\n  - `claimed` - you have claimed the reward\n",
@@ -896,6 +930,20 @@
         "summary": "Get event",
         "description": "Returns a single event by ID.",
         "operationId": "getEvent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/headerLang"
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "059c81dd-2a54-44a8-8142-c15ad8f88949"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -937,6 +985,9 @@
         "description": "Update event status to _claimed_ and accrue points.\nUser must be authorized, and event must be _fulfilled_ by him.\n",
         "operationId": "claimEvent",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/headerLang"
+          },
           {
             "in": "path",
             "name": "id",
@@ -1800,6 +1851,16 @@
           "type": "string",
           "example": "0x123...abc",
           "pattern": "^0x[0-9a-fA-F]{64}$"
+        }
+      },
+      "headerLang": {
+        "in": "header",
+        "name": "Accept-Language",
+        "description": "Localization of event types. If locale is not configured for the type, the default is returned.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "en-US"
         }
       },
       "pageCursor": {
