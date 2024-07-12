@@ -21,6 +21,8 @@ type BalanceAttributes struct {
 	ReferralCodes *[]ReferralCode `json:"referral_codes,omitempty"`
 	// Number of invited users
 	ReferredUsersCount *int `json:"referred_users_count,omitempty"`
+	// Number of users for whom the reward was received
+	RewardedReferredUsersCount *int `json:"rewarded_referred_users_count,omitempty"`
 	// Unix timestamp of the last points accruing
 	UpdatedAt int32 `json:"updated_at"`
 }
