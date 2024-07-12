@@ -23,7 +23,7 @@ type referrals struct {
 func NewReferrals(db *pgdb.DB) data.ReferralsQ {
 	return &referrals{
 		db:       db,
-		selector: squirrel.Select("id", referralsTable+".nullifier AS nullifier", "usage_left").From(referralsTable),
+		selector: squirrel.Select("id", referralsTable+".nullifier AS nullifier", "usage_left", "infinity").From(referralsTable),
 		updater:  squirrel.Update(referralsTable),
 		consumer: squirrel.Update(referralsTable).Set("usage_left", squirrel.Expr("usage_left - 1")),
 		counter:  squirrel.Select("COUNT(*) as count").From(referralsTable),
