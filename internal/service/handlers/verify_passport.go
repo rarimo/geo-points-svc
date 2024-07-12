@@ -95,12 +95,12 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	if balance.IsVerified {
 		if balance.SharedHash != nil {
 			log.Warnf("Balance %s already verified", balance.Nullifier)
-			ape.RenderErr(w, problems.TooManyRequests())
+			ape.RenderErr(w, problems.Conflict())
 			return
 		}
 		if proof == nil {
 			log.Warnf("Balance %s tried to re-join program", balance.Nullifier)
-			ape.RenderErr(w, problems.TooManyRequests())
+			ape.RenderErr(w, problems.Conflict())
 			return
 		}
 
