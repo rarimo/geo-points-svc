@@ -181,7 +181,7 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Errors'
-        '429':
+        '409':
           description: Passport already verified or event absent for user.
           content:
             application/vnd.api+json:
@@ -240,7 +240,7 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/Errors'
-        '429':
+        '409':
           description: Passport already verified or event absent for user.
           content:
             application/vnd.api+json:
