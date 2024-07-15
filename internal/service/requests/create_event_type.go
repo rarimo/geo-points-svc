@@ -27,7 +27,7 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/attributes/frequency":         val.Validate(attr.Frequency, val.Required, val.In(string(models.Unlimited))),
 		"data/attributes/logo":              val.Validate(attr.Logo, is.URL),
 		"data/attributes/name":              val.Validate(attr.Name, val.Required, val.In(req.Data.ID)),
-		"data/attributes/qr_code_value":     val.Validate(attr.QrCodeValue, val.Required),
+		"data/attributes/qr_code_value":     val.Validate(attr.QrCodeValue, val.Required, is.Base64),
 		"data/attributes/reward":            val.Validate(attr.Reward, val.Required, val.Min(1)),
 		"data/attributes/short_description": val.Validate(attr.ShortDescription, val.Required),
 		"data/attributes/title":             val.Validate(attr.Title, val.Required),

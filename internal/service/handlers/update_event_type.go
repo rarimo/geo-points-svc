@@ -35,7 +35,7 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 		}
 		if evType == nil {
 			Log(r).Debugf("Event type %s not found", req.Data.Attributes.Name)
-			ape.RenderErr(w, problems.Conflict())
+			ape.RenderErr(w, problems.NotFound())
 			return
 		}
 	}
