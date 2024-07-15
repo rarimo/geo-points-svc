@@ -9,9 +9,9 @@ type ResourceType string
 // List of ResourceType
 const (
 	ACTIVATE_BALANCE     ResourceType = "activate_balance"
+	CREATE_BALANCE       ResourceType = "create_balance"
 	BALANCE              ResourceType = "balance"
 	CLAIM_EVENT          ResourceType = "claim_event"
-	CREATE_BALANCE       ResourceType = "create_balance"
 	EVENT_CLAIMING_STATE ResourceType = "event_claiming_state"
 	EVENT                ResourceType = "event"
 	EVENT_TYPE           ResourceType = "event_type"

@@ -33,6 +33,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			r.Route("/balances", func(r chi.Router) {
 				r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
+				r.Patch("/", handlers.ActivateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Get("/", handlers.GetBalance)
 					r.Post("/verifypassport", handlers.VerifyPassport)

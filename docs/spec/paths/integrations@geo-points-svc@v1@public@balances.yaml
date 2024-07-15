@@ -3,14 +3,10 @@ post:
     - Points balance
   summary: Create points balance
   description: |
-    Create an empty balance for authorized user who makes the request. Rank is included
-    in response.
-    
-    This operation might be time-consuming, because `open` events should be added for
-    the new account synchronously (to display them right after the request).
-    
+    Create an empty balance inactive for authorized user who makes the request.
+        
     If balance already exists, but it is disabled (it was not referred by another user,
-    but has fulfilled some event), you should use PATCH balances/{nullifier} endpoint as well.
+    but has fulfilled some event), you should use PATCH balances/ endpoint as well.
   operationId: createPointsBalance
   requestBody:
     content:
@@ -21,9 +17,46 @@ post:
             - data
           properties:
             data:
-              $ref: '#/components/schemas/CreateBalance'
+              $ref: '#/components/schemas/ActivateBalance'
   responses:
-    201:
+    204:
+      description: Created
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    409:
+      description: Balance already exists for provided nullifier
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    500:
+      $ref: '#/components/responses/internalError'
+
+patch:
+  tags:
+    - Points balance
+  summary: Activate points balance
+  description: |
+    Activate points balance for authorized user who makes the request. Rank is included
+    in response.
+    
+    This operation might be time-consuming, because `open` events should be added for
+    the new account synchronously (to display them right after the request).    
+  operationId: activatePointsBalance
+  requestBody:
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ActivateBalance'
+  responses:
+    200:
       description: Created
       content:
         application/vnd.api+json:
@@ -34,12 +67,14 @@ post:
             properties:
               data:
                 $ref: '#/components/schemas/Balance'
+    400:
+      $ref: '#/components/responses/invalidParameter'
     401:
       $ref: '#/components/responses/invalidAuth'
     404:
       $ref: '#/components/responses/notFound'
     409:
-      description: Balance already exists for provided nullifier
+      description: Balance already activated
       content:
         application/vnd.api+json:
           schema:

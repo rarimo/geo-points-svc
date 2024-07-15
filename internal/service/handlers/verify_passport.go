@@ -179,9 +179,12 @@ func getAndVerifyBalanceEligibility(
 		return nil, append(errs, problems.InternalError())
 	}
 
-	if errs = checkVerificationEligibility(r, balance); len(errs) > 0 {
-		return nil, errs
+	if balance == nil {
+		Log(r).Debug("Balance absent")
+		return nil, append(errs, problems.NotFound())
+
 	}
+
 	// for withdrawal and joining program
 	if proof == nil {
 		return balance, nil
@@ -202,21 +205,6 @@ func getAndVerifyBalanceEligibility(
 	return balance, nil
 }
 
-func checkVerificationEligibility(r *http.Request, balance *data.Balance) (errs []*jsonapi.ErrorObject) {
-	switch {
-	case balance == nil:
-		Log(r).Debug("Balance absent")
-		return append(errs, problems.NotFound())
-	case balance.ReferredBy == nil:
-		Log(r).Debug("Balance inactive")
-		return append(errs, problems.BadRequest(validation.Errors{
-			"referred_by": errors.New("user must be referred to withdraw"),
-		})...)
-	}
-
-	return nil
-}
-
 // doPassportScanUpdates performs all the necessary updates when the passport
 // scan proof is provided. This logic is shared between verification and
 // withdrawal handlers.
@@ -230,6 +218,11 @@ func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID st
 	// Event can be automatically claimed if auto-claim is enabled
 	if err = fulfillOrClaimPassportScanEvent(r, balance); err != nil {
 		return fmt.Errorf("fulfill passport scan event: %w", err)
+	}
+
+	if balance.ReferredBy == nil {
+		Log(r).Debugf("Balance disabled: %s", balance.Nullifier)
+		return nil
 	}
 
 	evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
