@@ -5,6 +5,7 @@ import (
 
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -43,6 +44,7 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	var referrals []data.Referral
 	var referredUsers int
+	var rewardedReferredUsers int
 	if req.ReferralCodes {
 		referrals, err = ReferralsQ(r).
 			FilterByNullifier(req.Nullifier).
@@ -70,9 +72,16 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 				referredUsers++
 			}
 		}
+
+		rewardedReferredUsers, err = EventsQ(r).FilterByNullifier(req.Nullifier).FilterByType(models.TypeReferralSpecific).FilterByStatus(data.EventClaimed).Count()
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to get count rewarded referral_specific events for user")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
 	}
 
-	ape.Render(w, newBalanceResponse(*balance, referrals, referredUsers))
+	ape.Render(w, newBalanceResponse(*balance, referrals, referredUsers, rewardedReferredUsers))
 }
 
 // newBalanceModel forms a balance response without referral fields, which must
@@ -93,13 +102,14 @@ func newBalanceModel(balance data.Balance) resources.Balance {
 	}
 }
 
-func newBalanceResponse(balance data.Balance, referrals []data.Referral, referredUsers int) resources.BalanceResponse {
+func newBalanceResponse(balance data.Balance, referrals []data.Referral, referredUsers, rewardedReferredUsers int) resources.BalanceResponse {
 	resp := resources.BalanceResponse{Data: newBalanceModel(balance)}
 	boolP := func(b bool) *bool { return &b }
 
 	resp.Data.Attributes.IsDisabled = boolP(balance.ReferredBy == nil)
 	resp.Data.Attributes.IsVerified = boolP(balance.IsVerified)
 	resp.Data.Attributes.ReferredUsersCount = &referredUsers
+	resp.Data.Attributes.RewardedReferredUsersCount = &rewardedReferredUsers
 
 	if len(referrals) == 0 {
 		return resp
