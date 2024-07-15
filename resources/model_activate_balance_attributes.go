@@ -4,7 +4,7 @@
 
 package resources
 
-type CreateBalanceAttributes struct {
+type ActivateBalanceAttributes struct {
 	// referrer code from the link
 	ReferredBy string `json:"referred_by"`
 }

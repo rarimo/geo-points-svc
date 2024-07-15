@@ -1,5 +1,5 @@
 allOf:
-  - $ref: '#/components/schemas/CreateBalanceKey'
+  - $ref: '#/components/schemas/ActivateBalanceKey'
   - type: object
     x-go-is-request: true
     required:
@@ -14,4 +14,3 @@ allOf:
             type: string
             description: referrer code from the link
             example: "rCx18MZ4"
-                
