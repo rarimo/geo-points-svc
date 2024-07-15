@@ -19,6 +19,7 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 	attr := req.Data.Attributes
 	return req, val.Errors{
 		// only QR code events can be currently created or updated
+		// localization is not supported currently
 		"data/id":                           val.Validate(req.Data.ID, val.Required),
 		"data/type":                         val.Validate(req.Data.Type, val.Required, val.In(resources.EVENT_TYPE)),
 		"data/attributes/action_url":        val.Validate(attr.ActionUrl, is.URL),
@@ -26,10 +27,15 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/attributes/frequency":         val.Validate(attr.Frequency, val.Required, val.In(string(models.Unlimited))),
 		"data/attributes/logo":              val.Validate(attr.Logo, is.URL),
 		"data/attributes/name":              val.Validate(attr.Name, val.Required, val.In(req.Data.ID)),
-		"data/attributes/flag":              val.Validate(attr.Flag, val.Empty),
-		"data/attributes/qr_code_value":     val.Validate(attr.QrCodeValue, val.Required),
+		"data/attributes/qr_code_value":     val.Validate(attr.QrCodeValue, val.Required, is.Base64),
 		"data/attributes/reward":            val.Validate(attr.Reward, val.Required, val.Min(1)),
 		"data/attributes/short_description": val.Validate(attr.ShortDescription, val.Required),
 		"data/attributes/title":             val.Validate(attr.Title, val.Required),
+		// these fields are not currently supported, because cron jobs implementation is required
+		"data/attributes/starts_at":  val.Validate(attr.StartsAt, val.Empty),
+		"data/attributes/expires_at": val.Validate(attr.ExpiresAt, val.Empty),
+		// read-only fields due to reusing the same model
+		"data/attributes/flag":        val.Validate(attr.Flag, val.Empty),
+		"data/attributes/usage_count": val.Validate(attr.UsageCount, val.Empty),
 	}.Filter()
 }
