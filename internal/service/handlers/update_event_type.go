@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -39,21 +41,46 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	typeModel := models.ResourceToModel(req.Data.Attributes)
-	res, err := EventTypesQ(r).FilterByNames(typeModel.Name).Update(typeModel.ForUpdate())
+
+	var updated []models.EventType
+	err = EventsQ(r).Transaction(func() error {
+		updated, err = EventTypesQ(r).FilterByNames(typeModel.Name).Update(typeModel.ForUpdate())
+		if err != nil {
+			return fmt.Errorf("update event type: %w", err)
+		}
+		if len(updated) != 1 {
+			return fmt.Errorf("critical: count of updated event types is %d, expected 1", len(updated))
+		}
+		// Currently, event cannot be 'not openable' in other ways,
+		// add extra checks more fields are supported.
+		if evType.Disabled == typeModel.Disabled {
+			return nil
+		}
+		// Open events if we have enabled the type, otherwise clean them up.
+		if !typeModel.Disabled {
+			return openQREvents(r, typeModel)
+		}
+
+		deleted, err := EventsQ(r).
+			FilterByType(typeModel.Name).
+			FilterByStatus(data.EventOpen, data.EventFulfilled).
+			Delete()
+		if err != nil {
+			return fmt.Errorf("delete disabled events: %w", err)
+		}
+
+		Log(r).Infof("Deleted %d events on disabling event type %s", deleted, typeModel.Name)
+		return nil
+	})
+
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to update event type")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	if len(res) == 0 {
-		Log(r).Error("Count of updated event_types = 0")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
 	EventTypes(r).Push(typeModel)
-	resp := newEventTypeResponse(res[0], r.Header.Get(langHeader))
+	resp := newEventTypeResponse(updated[0], r.Header.Get(langHeader))
 	resp.Data.Attributes.QrCodeValue = typeModel.QRCodeValue
 	ape.Render(w, resp)
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
@@ -39,23 +40,32 @@ func CreateEventType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	typeModel := models.ResourceToModel(req.Data.Attributes)
-	if err = EventTypesQ(r).Insert(typeModel); err != nil {
-		Log(r).WithError(err).Error("Failed to insert event type")
+	err = EventsQ(r).Transaction(func() error {
+		if err = EventTypesQ(r).Insert(typeModel); err != nil {
+			return fmt.Errorf("insert event type: %w", err)
+		}
+		EventTypes(r).Push(typeModel)
+
+		// TODO: add cron jobs for limited events and other special logic when updating other fields is supported
+		if evtypes.FilterNotOpenable(typeModel) {
+			return nil
+		}
+		return openQREvents(r, typeModel)
+	})
+
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to add event type and open events")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	EventTypes(r).Push(typeModel)
 
-	if evtypes.FilterNotOpenable(typeModel) {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
+	w.WriteHeader(http.StatusNoContent)
+}
 
+func openQREvents(r *http.Request, evType models.EventType) error {
 	balances, err := BalancesQ(r).FilterDisabled().Select()
 	if err != nil {
-		Log(r).WithError(err).Error("Failed to select balances")
-		ape.RenderErr(w, problems.InternalError())
-		return
+		return fmt.Errorf("select balances: %w", err)
 	}
 
 	eventsToInsert := make([]data.Event, 0, len(balances))
@@ -63,13 +73,13 @@ func CreateEventType(w http.ResponseWriter, r *http.Request) {
 		eventsToInsert = append(eventsToInsert, data.Event{
 			Nullifier: b.Nullifier,
 			Status:    data.EventOpen,
-			Type:      typeModel.Name,
+			Type:      evType.Name,
 		})
 	}
+
 	if err = EventsQ(r).Insert(eventsToInsert...); err != nil {
-		Log(r).WithError(err).Error("Failed to insert qr-code events")
-		ape.RenderErr(w, problems.InternalError())
-		return
+		return fmt.Errorf("insert events: %w", err)
 	}
-	w.WriteHeader(http.StatusNoContent)
+
+	return nil
 }

@@ -28,5 +28,13 @@ func NewUpdateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/attributes/frequency":  val.Validate(attr.Frequency, val.In(string(models.Unlimited))),
 		"data/attributes/logo":       val.Validate(attr.Logo, is.URL),
 		"data/attributes/reward":     val.Validate(attr.Reward, val.Min(1)),
+		// not updatable, as QR code includes event type name
+		"data/attributes/qr_code_value": val.Validate(attr.QrCodeValue, val.Empty),
+		// these fields are not currently supported, because cron jobs implementation is required
+		"data/attributes/starts_at":  val.Validate(attr.StartsAt, val.Empty),
+		"data/attributes/expires_at": val.Validate(attr.ExpiresAt, val.Empty),
+		// read-only fields due to reusing the same model
+		"data/attributes/flag":        val.Validate(attr.Flag, val.Empty),
+		"data/attributes/usage_count": val.Validate(attr.UsageCount, val.Empty),
 	}.Filter()
 }
