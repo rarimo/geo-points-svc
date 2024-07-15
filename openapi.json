@@ -1211,6 +1211,12 @@
                     "description": "Number of invited users",
                     "example": 13
                   },
+                  "rewarded_referred_users_count": {
+                    "type": "integer",
+                    "format": "int",
+                    "description": "Number of users for whom the reward was received",
+                    "example": 5
+                  },
                   "level": {
                     "type": "integer",
                     "format": "int",
