@@ -80,14 +80,19 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("update balance amount and level: %w", err)
 		}
 
-		events := prepareEventsWithRef(nullifier, req.Data.Attributes.ReferredBy, refBalance.ReferredBy == nil, r)
-		Log(r).Debugf("%d events will be added for nullifier=%s", len(events), nullifier)
-		if err = EventsQ(r).Insert(events...); err != nil {
-			return fmt.Errorf("add open events: %w", err)
+		if refBalance.ReferredBy != nil {
+			err = EventsQ(r).Insert(data.Event{
+				Nullifier: nullifier,
+				Type:      models.TypeBeReferred,
+				Status:    data.EventFulfilled,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to insert `be_referred` event: %w", err)
+			}
 		}
 
 		if err = ReferralsQ(r).Consume(referralCode); err != nil {
-			return fmt.Errorf("failed to consume referral")
+			return fmt.Errorf("failed to consume referral: %w", err)
 		}
 
 		evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
@@ -96,20 +101,11 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 
-		// Claim events for invited friends who scanned the passport.
-		// This is possible when the user registered in the referral
-		// program and invited friends, the friends scanned the passport,
-		// but since the user hadn't a supported passport, the event
-		// could not be claimed. And now that user has scanned the passport,
-		// it is necessary to claim events for user's friends if auto-claim
-		// is enabled
-		if err = claimReferralSpecificEvents(r, evTypeRef, balance.Nullifier); err != nil {
-			return fmt.Errorf("failed to claim referral specific events: %w", err)
-		}
-
-		// Be referred event is a welcome bonus when you created balance with non-genesis referral code
-		if err = claimBeReferredEvent(r, *balance); err != nil {
-			return fmt.Errorf("failed to claim be referred event: %w", err)
+		if balance.IsVerified {
+			// Be referred event is a welcome bonus when you created balance with non-genesis referral code
+			if err = claimBeReferredEvent(r, *balance); err != nil {
+				return fmt.Errorf("failed to claim be referred event: %w", err)
+			}
 		}
 
 		// Adds a friend event for the referrer. If the event
@@ -148,44 +144,4 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ape.Render(w, newBalanceResponse(*balance, referrals, 0, 0))
-}
-
-func prepareEventsWithRef(nullifier, refBy string, isGenesisRef bool, r *http.Request) []data.Event {
-	events := EventTypes(r).PrepareEvents(nullifier, evtypes.FilterNotOpenable)
-	refType := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
-
-	if refBy == "" || isGenesisRef || refType == nil {
-		return events
-	}
-
-	Log(r).WithFields(map[string]any{"nullifier": nullifier, "referred_by": refBy}).
-		Debug("`Be referred` event will be added for referee user")
-
-	return append(events, data.Event{
-		Nullifier: nullifier,
-		Type:      models.TypeBeReferred,
-		Status:    data.EventFulfilled,
-	})
-}
-
-// createBalanceWithEvents should be called in transaction to avoid database corruption
-func createBalanceWithEvents(nullifier string, refBy *string, events []data.Event, r *http.Request) error {
-	balance := data.Balance{
-		Nullifier:  nullifier,
-		ReferredBy: refBy,
-		Level:      0,
-	}
-
-	err := BalancesQ(r).Insert(balance)
-	if err != nil {
-		return fmt.Errorf("add balance: %w", err)
-	}
-
-	Log(r).Debugf("%d events will be added for nullifier=%s", len(events), nullifier)
-	if err = EventsQ(r).Insert(events...); err != nil {
-		return fmt.Errorf("add open events: %w", err)
-	}
-
-	// not consuming referral code
-	return nil
 }

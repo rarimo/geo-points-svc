@@ -33,7 +33,6 @@ func Run(ctx context.Context, cfg config.Config) {
 			r.Route("/balances", func(r chi.Router) {
 				r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
-				r.Patch("/", handlers.ActivateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Get("/", handlers.GetBalance)
 					r.Post("/verifypassport", handlers.VerifyPassport)
@@ -60,6 +59,12 @@ func Run(ctx context.Context, cfg config.Config) {
 		r.Route("/private", func(r chi.Router) {
 			r.Post("/referrals", handlers.EditReferrals)
 		})
+	})
+
+	r.Route("/integrations/geo-points-svc/v2/public/balances", func(r chi.Router) {
+		r.Use(authMW)
+		r.Post("/", handlers.CreateBalanceV2)
+		r.Patch("/{nullifier}", handlers.ActivateBalance)
 	})
 
 	cfg.Log().Info("Service started")

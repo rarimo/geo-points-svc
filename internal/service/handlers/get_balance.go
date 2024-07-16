@@ -26,9 +26,9 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	var balance *data.Balance
 	if req.Rank {
-		balance, err = BalancesQ(r).FilterDisabled().GetWithRank(req.Nullifier)
+		balance, err = BalancesQ(r).GetWithRank(req.Nullifier)
 	} else {
-		balance, err = BalancesQ(r).FilterDisabled().FilterByNullifier(req.Nullifier).Get()
+		balance, err = BalancesQ(r).FilterByNullifier(req.Nullifier).Get()
 	}
 
 	if err != nil {
