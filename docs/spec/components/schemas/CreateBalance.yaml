@@ -1,0 +1,18 @@
+allOf:
+  - $ref: '#/components/schemas/CreateBalanceKey'
+  - type: object
+    x-go-is-request: true
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        properties:
+          referred_by:
+            type: string
+            description: |
+              Referral code from the link. Supply it to create the active balance,
+              otherwise disabled balance is created, and it can be activated later.
+              
+              Disabled balance is only allowed to verify passport and get.
+            example: "rCx18MZ4"

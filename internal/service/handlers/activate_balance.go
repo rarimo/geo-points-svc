@@ -111,7 +111,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 		// Adds a friend event for the referrer. If the event
 		// is inactive, then nothing happens. If active, the
 		// fulfilled event is added and, if possible, the event claimed
-		if err = addEventForReferrer(r, evTypeRef, *balance); err != nil {
+		if err = addEventForReferrer(r, *evTypeRef, *balance); err != nil {
 			return fmt.Errorf("add event for referrer: %w", err)
 		}
 
