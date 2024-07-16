@@ -95,12 +95,6 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to consume referral: %w", err)
 		}
 
-		evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
-		if evTypeRef == nil {
-			Log(r).Debug("Referral specific event type is inactive")
-			return nil
-		}
-
 		if balance.IsVerified {
 			// Be referred event is a welcome bonus when you created balance with non-genesis referral code
 			if err = claimBeReferredEvent(r, *balance); err != nil {
@@ -108,9 +102,18 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// Adds a friend event for the referrer. If the event
-		// is inactive, then nothing happens. If active, the
-		// fulfilled event is added and, if possible, the event claimed
+		evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
+		if evTypeRef == nil {
+			Log(r).Debug("Referral specific event type is inactive")
+			return nil
+		}
+
+		if balance.IsVerified {
+			if err = claimReferralSpecificEvents(r, *evTypeRef, balance.Nullifier); err != nil {
+				return fmt.Errorf("failed to claim referral specific events: %w", err)
+			}
+		}
+
 		if err = addEventForReferrer(r, *evTypeRef, *balance); err != nil {
 			return fmt.Errorf("add event for referrer: %w", err)
 		}
