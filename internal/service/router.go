@@ -65,6 +65,7 @@ func Run(ctx context.Context, cfg config.Config) {
 		r.Use(authMW)
 		r.Post("/", handlers.CreateBalanceV2)
 		r.Patch("/{nullifier}", handlers.ActivateBalance)
+		r.Post("/{nullifier}/verifypassport", handlers.VerifyPassportV2)
 	})
 
 	cfg.Log().Info("Service started")
