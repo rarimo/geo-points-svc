@@ -2116,6 +2116,8 @@ github.com/rarimo/cosmos-sdk v0.46.7 h1:jU2PiWzc+19SF02cXM0O0puKPeH1C6Q6t2lzJ9s1
 github.com/rarimo/cosmos-sdk v0.46.7/go.mod h1:fqKqz39U5IlEFb4nbQ72951myztsDzFKKDtffYJ63nk=
 github.com/rarimo/geo-auth-svc v0.2.0 h1:yQvcIBNx+Tc1jJdtpWDfyLc0HogU+okA08HEZ55wv5U=
 github.com/rarimo/geo-auth-svc v0.2.0/go.mod h1:SB4bo1xHYDAsBaQGX2+FoEgD3xxqYmcgr4XTTjy4/OM=
+github.com/rarimo/geo-auth-svc v1.1.0 h1:3k1tTWAjtCBsnzlMb3aB+xgsFLEPUSmB3woME+q6tfk=
+github.com/rarimo/geo-auth-svc v1.1.0/go.mod h1:JrpCGdT0xtAcWIKgPhxPHf7QCW4h845BXuh6M7NdQFw=
 github.com/rarimo/saver-grpc-lib v1.0.0 h1:MGUVjYg7unmodYczVsLqlqZNkT4CIgKqdo6aQtL1qdE=
 github.com/rarimo/saver-grpc-lib v1.0.0/go.mod h1:DpugWK5B7Hi0bdC3MPe/9FD2zCxaRwsyykdwxtF1Zgg=
 github.com/rarimo/zkverifier-kit v1.1.0-rc.1 h1:xtmrFEl7eLAE6mi7IQYOOMKFdwXC3gbe39fYQdvKVZg=
