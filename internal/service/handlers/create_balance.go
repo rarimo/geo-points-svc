@@ -21,7 +21,6 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nullifier := req.Data.ID
-
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
@@ -33,33 +32,39 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
 	if balance != nil {
 		ape.RenderErr(w, problems.Conflict())
 		return
 	}
 
-	referral, err := ReferralsQ(r).FilterInactive().Get(req.Data.Attributes.ReferredBy)
-	if err != nil {
-		Log(r).WithError(err).Error("Failed to get referral by ID")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-	if referral == nil {
-		ape.RenderErr(w, problems.NotFound())
-		return
+	var (
+		refCode      = req.Data.Attributes.ReferredBy
+		isGenesisRef = false
+	)
+
+	if refCode != nil {
+		referral, err := ReferralsQ(r).FilterInactive().Get(*refCode)
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to get referral by ID")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		if referral == nil {
+			ape.RenderErr(w, problems.NotFound())
+			return
+		}
+
+		refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
+		if err != nil || refBalance == nil { // must exist due to FK constraint
+			Log(r).WithError(err).Error("Failed to get referrer balance by nullifier")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		isGenesisRef = refBalance.ReferredBy == nil
 	}
 
-	refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
-	if err != nil || refBalance == nil { // must exist due to FK constraint
-		Log(r).WithError(err).Error("Failed to get referrer balance by nullifier")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-	isGenesisRef := refBalance.ReferredBy == nil
-
-	events := prepareEventsWithRef(nullifier, req.Data.Attributes.ReferredBy, isGenesisRef, r)
-	if err = createBalanceWithEventsAndReferrals(nullifier, &req.Data.Attributes.ReferredBy, events, r); err != nil {
+	events := prepareEventsWithRef(nullifier, refCode, isGenesisRef, r)
+	if err = createBalanceWithEventsAndReferrals(nullifier, refCode, events, r); err != nil {
 		Log(r).WithError(err).Error("Failed to create balance with events")
 		ape.RenderErr(w, problems.InternalError())
 		return
@@ -89,15 +94,15 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newBalanceResponse(*balance, referrals, 0, 0))
 }
 
-func prepareEventsWithRef(nullifier, refBy string, isGenesisRef bool, r *http.Request) []data.Event {
+func prepareEventsWithRef(nullifier string, refBy *string, isGenesisRef bool, r *http.Request) []data.Event {
 	events := EventTypes(r).PrepareEvents(nullifier, evtypes.FilterNotOpenable)
 	refType := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
 
-	if refBy == "" || isGenesisRef || refType == nil {
+	if refBy == nil || isGenesisRef || refType == nil {
 		return events
 	}
 
-	Log(r).WithFields(map[string]any{"nullifier": nullifier, "referred_by": refBy}).
+	Log(r).WithFields(map[string]any{"nullifier": nullifier, "referred_by": *refBy}).
 		Debug("`Be referred` event will be added for referee user")
 
 	return append(events, data.Event{
@@ -137,13 +142,12 @@ func createBalanceWithEventsAndReferrals(nullifier string, refBy *string, events
 			Level:      0,
 		}
 
-		err := BalancesQ(r).Insert(balance)
-		if err != nil {
+		if err := BalancesQ(r).Insert(balance); err != nil {
 			return fmt.Errorf("add balance: %w", err)
 		}
 
 		Log(r).Debugf("%d events will be added for nullifier=%s", len(events), nullifier)
-		if err = EventsQ(r).Insert(events...); err != nil {
+		if err := EventsQ(r).Insert(events...); err != nil {
 			return fmt.Errorf("add open events: %w", err)
 		}
 

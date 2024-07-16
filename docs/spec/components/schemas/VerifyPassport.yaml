@@ -19,4 +19,4 @@ allOf:
             format: types.ZKProof
             description: |
               Query ZK passport verification proof.
-              Required for endpoint `/v2/balances/{nullifier}/verifypassport`.
+              Required for passport verification endpoint.

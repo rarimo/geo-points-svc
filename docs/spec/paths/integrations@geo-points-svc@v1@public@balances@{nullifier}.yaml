@@ -5,19 +5,22 @@ get:
   description: |
     Balance of authorized user who makes the request. Rank in leaderboard is included.
     You should create new balance for the new user by making POST request.
+    
+    If balance is disabled (was created without referral code and not activated),
+    some fields are not returned.
   operationId: getPointsBalance
   parameters:
     - $ref: '#/components/parameters/pathNullifier'
     - in: query
       name: 'rank'
-      description: 'Specifies whether to return the rank'
+      description: Specifies whether to return the rank. Has no effect on disabled balance.
       required: false
       schema:
         type: boolean
         example: true
     - in: query
       name: 'referral_codes'
-      description: 'Specifies whether to return the referral codes'
+      description: Specifies whether to return the referral codes. Has no effect on disabled balance.
       required: false
       schema:
         type: boolean
@@ -37,5 +40,55 @@ get:
       $ref: '#/components/responses/invalidParameter'
     401:
       $ref: '#/components/responses/invalidAuth'
+    500:
+      $ref: '#/components/responses/internalError'
+
+patch:
+  tags:
+    - Points balance
+  summary: Activate points balance
+  description: |
+    Activate points balance for authorized user who makes the request.
+    Rank is included in response.
+    
+    Only balances created without referral code can be activated,
+    check this with `is_disabled` field.
+    
+    If balance's passport was verified earlier, some events will be auto-claimed.
+  operationId: activatePointsBalance
+  requestBody:
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ActivateBalance'
+  responses:
+    200:
+      description: Balance activated
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Balance'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    404:
+      $ref: '#/components/responses/notFound'
+    409:
+      description: Balance already activated
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
     500:
       $ref: '#/components/responses/internalError'
