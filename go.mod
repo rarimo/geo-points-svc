@@ -13,7 +13,7 @@ require (
 	github.com/google/jsonapi v1.0.0
 	github.com/iden3/go-rapidsnark/types v0.0.3
 	github.com/labstack/gommon v0.4.0
-	github.com/rarimo/geo-auth-svc v0.2.0
+	github.com/rarimo/geo-auth-svc v1.1.0
 	github.com/rarimo/saver-grpc-lib v1.0.0
 	github.com/rarimo/zkverifier-kit v1.1.1
 	github.com/rubenv/sql-migrate v1.6.1

@@ -61,6 +61,12 @@ func Run(ctx context.Context, cfg config.Config) {
 		})
 	})
 
+	r.Route("/integrations/geo-points-svc/v1", func(r chi.Router) {
+		r.Route("/public", func(r chi.Router) {
+			r.Post("/balances/{nullifier}/verifypassport", handlers.VerifyPassportV2)
+		})
+	})
+
 	cfg.Log().Info("Service started")
 	ape.Serve(ctx, r, cfg, ape.ServeOpts{})
 }
