@@ -13,6 +13,9 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
+// VerifyPassportV2
+// TODO: Use this handler for passport verification
+// when backwards compatibility becomes unnecessary
 func VerifyPassportV2(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.NewVerifyPassportV2(r)
 	if err != nil {
