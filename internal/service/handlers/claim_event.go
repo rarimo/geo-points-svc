@@ -126,7 +126,7 @@ func DoClaimEventUpdates(
 	balance data.Balance,
 	reward int64) (err error) {
 
-	level, err := doLvlUpAndReferralsUpdate(levels, referralsQ, balance, reward)
+	level, err := doLevelRefUpgrade(levels, referralsQ, balance, reward)
 	if err != nil {
 		return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
 	}
@@ -142,13 +142,15 @@ func DoClaimEventUpdates(
 	return nil
 }
 
-func doLvlUpAndReferralsUpdate(levels config.Levels, referralsQ data.ReferralsQ, balance data.Balance, reward int64) (level int, err error) {
+// doLevelRefUpgrade calculates new level by provided reward: if level is up,
+// referrals are added
+func doLevelRefUpgrade(levels config.Levels, refQ data.ReferralsQ, balance data.Balance, reward int64) (level int, err error) {
 	refsCount, level := levels.LvlUp(balance.Level, reward+balance.Amount)
 	// we need +2 because refsCount can be -1
 	referrals := make([]data.Referral, 0, refsCount+2)
 
 	// count used to calculate ref code
-	count, err := referralsQ.New().FilterByNullifier(balance.Nullifier).Count()
+	count, err := refQ.New().FilterByNullifier(balance.Nullifier).Count()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get referral count: %w", err)
 	}
@@ -162,7 +164,7 @@ func doLvlUpAndReferralsUpdate(levels config.Levels, referralsQ data.ReferralsQ,
 			Infinity:  true,
 		})
 	}
-	if err = referralsQ.New().Insert(referrals...); err != nil {
+	if err = refQ.New().Insert(referrals...); err != nil {
 		return 0, fmt.Errorf("failed to insert referrals: %w", err)
 	}
 

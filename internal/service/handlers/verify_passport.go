@@ -333,9 +333,8 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef models.EventType, nu
 		return nil
 	}
 
-	// balance can't be nil because of previous logic
 	balance, err := BalancesQ(r).FilterByNullifier(nullifier).FilterDisabled().Get()
-	if err != nil {
+	if err != nil || balance == nil { // must not be nil due to previous logic
 		return fmt.Errorf("failed to get balance: %w", err)
 	}
 

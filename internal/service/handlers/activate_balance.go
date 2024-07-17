@@ -67,17 +67,17 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = EventsQ(r).Transaction(func() error {
-		level, err := doLvlUpAndReferralsUpdate(Levels(r), ReferralsQ(r), *balance, 0)
+		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), *balance, 0)
 		if err != nil {
 			return fmt.Errorf("failed to do lvlup and referrals update: %w", err)
 		}
 
 		err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
-			data.ColReferredBy: referralCode,
+			data.ColReferredBy: balance.ReferredBy,
 			data.ColLevel:      level,
 		})
 		if err != nil {
-			return fmt.Errorf("update balance amount and level: %w", err)
+			return fmt.Errorf("update balance: %w", err)
 		}
 
 		if refBalance.ReferredBy != nil {

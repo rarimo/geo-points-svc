@@ -49,7 +49,7 @@ func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels config.L
 		return nil
 	}
 
-	// ensured in query that all balances are verified
+	// ensured in query that all balances are verified and active
 	balances, err := pg.NewBalances(db).WithoutPassportEvent()
 	if err != nil {
 		return fmt.Errorf("failed to select balances without points for passport scan: %w", err)
@@ -165,11 +165,11 @@ func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) er
 		return errors.New("critical: events present, but no balances with nullifier")
 	}
 
-	// select events to claim only for verified balances, group by type name
+	// select events to claim only for verified and active balances, group by type name
 	claimByTypes := make(map[string][]data.Event, len(claimTypes))
 	for _, event := range events {
 		for _, balance := range balances {
-			if event.Nullifier != balance.Nullifier || !balance.IsVerified {
+			if event.Nullifier != balance.Nullifier || !balance.IsVerified || balance.ReferredBy == nil {
 				continue
 			}
 			claimByTypes[event.Type] = append(claimByTypes[event.Type], event)

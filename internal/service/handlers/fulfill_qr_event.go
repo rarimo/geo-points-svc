@@ -42,24 +42,25 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if evType.QRCodeValue == nil || *evType.QRCodeValue != req.Data.Attributes.QrCode {
-		Log(r).Debugf("QR code for event %s doesn't match: got %s, want %s", event.Type, req.Data.Attributes.QrCode, evType.QRCodeValue)
+		Log(r).Debugf("QR code for event %s doesn't match: got %s, want %s", event.Type, req.Data.Attributes.QrCode, *evType.QRCodeValue)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
-	balance, err := BalancesQ(r).FilterByNullifier(event.Nullifier).FilterDisabled().Get()
-	if err != nil {
+	balance, err := BalancesQ(r).FilterByNullifier(event.Nullifier).Get()
+	if err != nil || balance == nil { // must never be nil due to foreign key constraint
 		Log(r).WithError(err).Error("Failed to get balance by nullifier")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	if balance == nil {
-		Log(r).Infof("Balance nullifier=%s is disabled", event.Nullifier)
+
+	if !balance.IsVerified || balance.ReferredBy == nil {
+		Log(r).Infof("Balance nullifier=%s is unverified or disabled, fulfill or claim not allowed", event.Nullifier)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
-	if !evType.AutoClaim {
+	if !evType.AutoClaim && balance.ReferredBy != nil {
 		_, err = EventsQ(r).FilterByID(event.ID).Update(data.EventFulfilled, nil, nil)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to update event status")
@@ -68,12 +69,6 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		}
 
 		ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, false))
-		return
-	}
-
-	if !balance.IsVerified {
-		Log(r).Infof("Balance nullifier=%s is not verified, fulfill or claim not allowed", event.Nullifier)
-		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
