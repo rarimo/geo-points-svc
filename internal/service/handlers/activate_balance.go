@@ -121,7 +121,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 	if err != nil {
-		Log(r).WithError(err).Error("failed to insert events and consume referral for balance")
+		Log(r).WithError(err).Error("Failed to insert events and consume referral for balance")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
