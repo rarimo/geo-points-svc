@@ -21,7 +21,6 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nullifier := req.Data.ID
-
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
@@ -33,34 +32,53 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
 	if balance != nil {
 		ape.RenderErr(w, problems.Conflict())
 		return
 	}
 
-	referral, err := ReferralsQ(r).FilterInactive().Get(req.Data.Attributes.ReferredBy)
+	var (
+		refCode      = req.Data.Attributes.ReferredBy
+		isGenesisRef = false
+	)
+
+	if refCode != nil {
+		referral, err := ReferralsQ(r).FilterInactive().Get(*refCode)
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to get referral by ID")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		if referral == nil {
+			ape.RenderErr(w, problems.NotFound())
+			return
+		}
+
+		refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
+		if err != nil || refBalance == nil { // must exist due to FK constraint
+			Log(r).WithError(err).Error("Failed to get referrer balance by nullifier")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		isGenesisRef = refBalance.ReferredBy == nil
+	}
+
+	events := prepareEventsWithRef(nullifier, refCode, isGenesisRef, r)
+	if refCode == nil {
+		balance, err = createBalanceWithEvents(nullifier, events, r)
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to create disabled balance with events")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+
+		ape.Render(w, newBalanceResponse(*balance, nil, 0, 0))
+		return
+	}
+
+	err = createBalanceWithEventsAndReferrals(nullifier, *refCode, events, r)
 	if err != nil {
-		Log(r).WithError(err).Error("Failed to get referral by ID")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-	if referral == nil {
-		ape.RenderErr(w, problems.NotFound())
-		return
-	}
-
-	refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
-	if err != nil || refBalance == nil { // must exist due to FK constraint
-		Log(r).WithError(err).Error("Failed to get referrer balance by nullifier")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-	isGenesisRef := refBalance.ReferredBy == nil
-
-	events := prepareEventsWithRef(nullifier, req.Data.Attributes.ReferredBy, isGenesisRef, r)
-	if err = createBalanceWithEventsAndReferrals(nullifier, &req.Data.Attributes.ReferredBy, events, r); err != nil {
-		Log(r).WithError(err).Error("Failed to create balance with events")
+		Log(r).WithError(err).Error("Failed to create balance with events and referrals")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
@@ -89,15 +107,15 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newBalanceResponse(*balance, referrals, 0, 0))
 }
 
-func prepareEventsWithRef(nullifier, refBy string, isGenesisRef bool, r *http.Request) []data.Event {
+func prepareEventsWithRef(nullifier string, refBy *string, isGenesisRef bool, r *http.Request) []data.Event {
 	events := EventTypes(r).PrepareEvents(nullifier, evtypes.FilterNotOpenable)
 	refType := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
 
-	if refBy == "" || isGenesisRef || refType == nil {
+	if refBy == nil || isGenesisRef || refType == nil {
 		return events
 	}
 
-	Log(r).WithFields(map[string]any{"nullifier": nullifier, "referred_by": refBy}).
+	Log(r).WithFields(map[string]any{"nullifier": nullifier, "referred_by": *refBy}).
 		Debug("`Be referred` event will be added for referee user")
 
 	return append(events, data.Event{
@@ -108,63 +126,47 @@ func prepareEventsWithRef(nullifier, refBy string, isGenesisRef bool, r *http.Re
 }
 
 // createBalanceWithEvents should be called in transaction to avoid database corruption
-func createBalanceWithEvents(nullifier string, refBy *string, events []data.Event, r *http.Request) error {
+func createBalanceWithEvents(nullifier string, events []data.Event, r *http.Request) (*data.Balance, error) {
 	balance := data.Balance{
-		Nullifier:  nullifier,
-		ReferredBy: refBy,
-		Level:      0,
+		Nullifier: nullifier,
+		Level:     0,
 	}
 
-	err := BalancesQ(r).Insert(balance)
-	if err != nil {
-		return fmt.Errorf("add balance: %w", err)
+	if err := BalancesQ(r).Insert(balance); err != nil {
+		return nil, fmt.Errorf("add balance: %w", err)
 	}
 
 	Log(r).Debugf("%d events will be added for nullifier=%s", len(events), nullifier)
-	if err = EventsQ(r).Insert(events...); err != nil {
-		return fmt.Errorf("add open events: %w", err)
+	if err := EventsQ(r).Insert(events...); err != nil {
+		return nil, fmt.Errorf("add open events: %w", err)
 	}
 
-	// not consuming referral code
-	return nil
+	return &balance, nil
 }
 
-func createBalanceWithEventsAndReferrals(nullifier string, refBy *string, events []data.Event, r *http.Request) error {
+func createBalanceWithEventsAndReferrals(nullifier, refBy string, events []data.Event, r *http.Request) error {
 	return EventsQ(r).Transaction(func() error {
-		balance := data.Balance{
-			Nullifier:  nullifier,
-			ReferredBy: refBy,
-			Level:      0,
-		}
-
-		err := BalancesQ(r).Insert(balance)
+		balance, err := createBalanceWithEvents(nullifier, events, r)
 		if err != nil {
-			return fmt.Errorf("add balance: %w", err)
+			return fmt.Errorf("create balance with events: %w", err)
 		}
+		balance.ReferredBy = &refBy
 
-		Log(r).Debugf("%d events will be added for nullifier=%s", len(events), nullifier)
-		if err = EventsQ(r).Insert(events...); err != nil {
-			return fmt.Errorf("add open events: %w", err)
-		}
-
-		level, err := doLvlUpAndReferralsUpdate(Levels(r), ReferralsQ(r), balance, 0)
+		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), *balance, 0)
 		if err != nil {
 			return fmt.Errorf("failed to do lvlup and referrals update: %w", err)
 		}
 
 		err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
-			data.ColLevel: level,
+			data.ColLevel:      level,
+			data.ColReferredBy: refBy,
 		})
 		if err != nil {
 			return fmt.Errorf("update balance amount and level: %w", err)
 		}
 
-		if refBy == nil {
-			return nil
-		}
-
-		if err = ReferralsQ(r).Consume(*refBy); err != nil {
-			return fmt.Errorf("failed to consume referral")
+		if err = ReferralsQ(r).Consume(refBy); err != nil {
+			return fmt.Errorf("failed to consume referral: %w", err)
 		}
 
 		return nil

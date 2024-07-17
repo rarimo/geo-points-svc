@@ -27,6 +27,18 @@ func ListEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bal, err := BalancesQ(r).FilterByNullifier(*req.FilterNullifier).FilterDisabled().Get()
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to get event by ID")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if bal == nil {
+		Log(r).Debugf("Balance disabled or absent: %s", *req.FilterNullifier)
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
 	if req.FilterHasExpiration != nil {
 		filter := func(ev models.EventType) bool { return ev.ExpiresAt != nil }
 		// keep in mind that these filters eliminate values matching the condition, see evtypes/filters.go

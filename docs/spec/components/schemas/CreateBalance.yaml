@@ -7,11 +7,12 @@ allOf:
     properties:
       attributes:
         type: object
-        required:
-          - referred_by
         properties:
           referred_by:
             type: string
-            description: referrer code from the link
+            description: |
+              Referral code from the link. Supply it to create the active balance,
+              otherwise disabled balance is created, and it can be activated later.
+              
+              Disabled balance is only allowed to verify passport and get.
             example: "rCx18MZ4"
-                

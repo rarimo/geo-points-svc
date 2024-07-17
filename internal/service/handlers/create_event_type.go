@@ -63,7 +63,7 @@ func CreateEventType(w http.ResponseWriter, r *http.Request) {
 }
 
 func openQREvents(r *http.Request, evType models.EventType) error {
-	balances, err := BalancesQ(r).FilterDisabled().Select()
+	balances, err := BalancesQ(r).Select()
 	if err != nil {
 		return fmt.Errorf("select balances: %w", err)
 	}

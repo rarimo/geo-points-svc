@@ -5,6 +5,6 @@
 package resources
 
 type CreateBalanceAttributes struct {
-	// referrer code from the link
-	ReferredBy string `json:"referred_by"`
+	// Referral code from the link. Supply it to create the active balance, otherwise disabled balance is created, and it can be activated later.  Disabled balance is only allowed to verify passport and get.
+	ReferredBy *string `json:"referred_by,omitempty"`
 }

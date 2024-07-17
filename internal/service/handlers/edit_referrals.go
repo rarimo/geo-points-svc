@@ -35,8 +35,9 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 
 		var code string
 		err = EventsQ(r).Transaction(func() error {
-			events := prepareEventsWithRef(req.Nullifier, "", true, r)
-			if err = createBalanceWithEvents(req.Nullifier, nil, events, r); err != nil {
+			events := prepareEventsWithRef(req.Nullifier, nil, true, r)
+			_, err = createBalanceWithEvents(req.Nullifier, events, r)
+			if err != nil {
 				return fmt.Errorf("failed to create balance with events: %w", err)
 			}
 
@@ -68,7 +69,7 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if balance.ReferredBy != nil {
-		ape.RenderErr(w, problems.BadRequest(validation.Errors{"balance": fmt.Errorf("genesis balances must be inactive")})...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{"balance": fmt.Errorf("genesis balances must be disabled")})...)
 		return
 	}
 

@@ -62,9 +62,7 @@ type EventsQ interface {
 	FilterByStatus(...EventStatus) EventsQ
 	FilterByType(...string) EventsQ
 	FilterByNotType(types ...string) EventsQ
+	FilterByUpdatedAtBefore(int64) EventsQ
 	FilterByExternalID(string) EventsQ
 	FilterInactiveNotClaimed(types ...string) EventsQ
-	// FilterByUpdatedAtBefore must be only used with SelectReopenable, because it
-	// depends on table alias.
-	FilterByUpdatedAtBefore(int64) EventsQ
 }

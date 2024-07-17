@@ -30,7 +30,7 @@ func NewEvents(db *pgdb.DB) data.EventsQ {
 		updater:    squirrel.Update(eventsTable),
 		deleter:    squirrel.Delete(eventsTable),
 		counter:    squirrel.Select("COUNT(*) AS count").From(eventsTable),
-		reopenable: squirrel.Select("e1.nullifier", "e1.type").Distinct().From(eventsTable + " e1"),
+		reopenable: squirrel.Select("nullifier", "type").Distinct().From(eventsTable + " e1"),
 	}
 }
 
@@ -141,15 +141,14 @@ func (q *events) Count() (int, error) {
 }
 
 func (q *events) SelectReopenable() ([]data.ReopenableEvent, error) {
+	// including disabled balances to open events intentionally
+	// join balances and filter by referred_by if you need the opposite
 	subq := fmt.Sprintf(`NOT EXISTS (
 	SELECT 1 FROM %s e2
     WHERE e2.nullifier = e1.nullifier
     AND e2.type = e1.type
     AND e2.status IN (?, ?))`, eventsTable)
-	stmt := q.reopenable.
-		Where(subq, data.EventOpen, data.EventFulfilled).
-		Join(balancesTable + " b ON b.nullifier = e1.nullifier").
-		Where("b.referred_by IS NOT NULL")
+	stmt := q.reopenable.Where(subq, data.EventOpen, data.EventFulfilled)
 
 	var res []data.ReopenableEvent
 	if err := q.db.Select(&res, stmt); err != nil {
@@ -165,13 +164,14 @@ func (q *events) SelectAbsentTypes(allTypes ...string) ([]data.ReopenableEvent, 
 		values[i] = fmt.Sprintf("('%s')", t)
 	}
 
+	// including disabled balances to open events intentionally
 	query := fmt.Sprintf(`
 		WITH types(type) AS (
     		VALUES %s
 		)
 		SELECT u.nullifier, t.type
 		FROM (
-    		SELECT nullifier FROM %s WHERE referred_by IS NOT NULL
+    		SELECT nullifier FROM %s
 		) u
 		CROSS JOIN types t
 		LEFT JOIN %s e ON e.nullifier = u.nullifier AND e.type = t.type
@@ -223,8 +223,7 @@ func (q *events) FilterByExternalID(id string) data.EventsQ {
 }
 
 func (q *events) FilterByUpdatedAtBefore(unix int64) data.EventsQ {
-	q.reopenable = q.reopenable.Where(squirrel.Lt{"e1.updated_at": unix})
-	return q
+	return q.applyCondition(squirrel.Lt{"updated_at": unix})
 }
 
 func (q *events) FilterInactiveNotClaimed(types ...string) data.EventsQ {

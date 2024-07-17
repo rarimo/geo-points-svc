@@ -9,6 +9,6 @@ import "github.com/iden3/go-rapidsnark/types"
 type VerifyPassportAttributes struct {
 	// Unique identifier of the passport.
 	AnonymousId string `json:"anonymous_id"`
-	// Query ZK passport verification proof. Required for endpoint `/v2/balances/{nullifier}/verifypassport`.
+	// Query ZK passport verification proof. Required for passport verification endpoint.
 	Proof *types.ZKProof `json:"proof,omitempty"`
 }

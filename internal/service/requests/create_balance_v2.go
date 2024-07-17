@@ -2,6 +2,7 @@ package requests
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -9,10 +10,14 @@ import (
 	"github.com/rarimo/geo-points-svc/resources"
 )
 
-func NewCreateBalance(r *http.Request) (req resources.CreateBalanceRequest, err error) {
+func NewCreateBalanceV2(r *http.Request) (req resources.Relation, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = newDecodeError("body", err)
 		return
+	}
+
+	if req.Data == nil {
+		return req, fmt.Errorf("data: not provided")
 	}
 
 	req.Data.ID = strings.ToLower(req.Data.ID)

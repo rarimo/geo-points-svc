@@ -35,6 +35,7 @@ func Run(ctx context.Context, cfg config.Config) {
 				r.Post("/", handlers.CreateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Get("/", handlers.GetBalance)
+					r.Patch("/", handlers.ActivateBalance)
 					r.Post("/verifypassport", handlers.VerifyPassport)
 					r.Post("/join_program", handlers.VerifyPassport)
 				})

@@ -42,5 +42,17 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bal, err := BalancesQ(r).FilterByNullifier(event.Nullifier).FilterDisabled().Get()
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to get event by ID")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if bal == nil {
+		Log(r).Debugf("Balance disabled or absent: %s", event.Nullifier)
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
 	ape.Render(w, resources.EventResponse{Data: newEventModel(*event, evType.Resource(r.Header.Get(langHeader)))})
 }

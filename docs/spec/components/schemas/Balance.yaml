@@ -20,9 +20,8 @@ allOf:
           is_disabled:
             type: boolean
             description: |
-              Whether the user was not referred by anybody, but the balance with some
-              events was reserved. It happens when the user fulfills some event
-              before the balance creation.
+              Whether the user was not referred with some code. If it wasn't - balance
+              is disabled and very limited in functionality.
             example: false
           created_at:
             type: integer
@@ -39,18 +38,18 @@ allOf:
             example: 294
           referral_codes:
             type: array
-            description: Referral codes. Returned only for the single user.
+            description: Referral codes. Returned only for the single active balance.
             items:
               $ref: '#/components/schemas/ReferralCode'
           referred_users_count:
             type: integer
             format: int
-            description: Number of invited users
+            description: Number of invited users. Returned only for the single active balance.
             example: 13
           rewarded_referred_users_count:
             type: integer
             format: int
-            description: Number of users for whom the reward was received
+            description: Number of users for whom the reward was received. Returned only for the single active balance.
             example: 5
           level:
             type: integer

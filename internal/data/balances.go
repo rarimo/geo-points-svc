@@ -6,6 +6,7 @@ import (
 
 const (
 	ColAmount      = "amount"
+	ColReferredBy  = "referred_by"
 	ColLevel       = "level"
 	ColAnonymousID = "anonymous_id"
 	ColSharedHash  = "shared_hash"

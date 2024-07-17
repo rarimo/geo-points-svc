@@ -8,6 +8,7 @@ type ResourceType string
 
 // List of ResourceType
 const (
+	ACTIVATE_BALANCE     ResourceType = "activate_balance"
 	BALANCE              ResourceType = "balance"
 	CLAIM_EVENT          ResourceType = "claim_event"
 	CREATE_BALANCE       ResourceType = "create_balance"
