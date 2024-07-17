@@ -47,7 +47,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	referral, err := ReferralsQ(r).FilterInactive().Get(req.Data.Attributes.ReferredBy)
+	referral, err := ReferralsQ(r).FilterInactive().Get(referralCode)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to get referral by ID")
 		ape.RenderErr(w, problems.InternalError())
@@ -73,7 +73,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
-			data.ColReferredBy: balance.ReferredBy,
+			data.ColReferredBy: referralCode,
 			data.ColLevel:      level,
 		})
 		if err != nil {
