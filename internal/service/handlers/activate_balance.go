@@ -114,6 +114,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		balance.ReferredBy = &referral.ID
 		if err = addEventForReferrer(r, *evTypeRef, *balance); err != nil {
 			return fmt.Errorf("add event for referrer: %w", err)
 		}
