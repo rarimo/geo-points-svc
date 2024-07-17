@@ -41,11 +41,16 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
+	if balance.ReferredBy == nil {
+		balance.Rank = nil
+	}
 
-	var referrals []data.Referral
-	var referredUsers int
-	var rewardedReferredUsers int
-	if req.ReferralCodes {
+	var (
+		referrals             []data.Referral
+		referredUsers         int
+		rewardedReferredUsers int
+	)
+	if req.ReferralCodes && balance.ReferredBy != nil {
 		referrals, err = ReferralsQ(r).
 			FilterByNullifier(req.Nullifier).
 			WithStatus().

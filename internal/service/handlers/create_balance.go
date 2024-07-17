@@ -65,11 +65,18 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 
 	events := prepareEventsWithRef(nullifier, refCode, isGenesisRef, r)
 	if refCode == nil {
-		_, err = createBalanceWithEvents(nullifier, events, r)
-	} else {
-		err = createBalanceWithEventsAndReferrals(nullifier, *refCode, events, r)
+		balance, err = createBalanceWithEvents(nullifier, events, r)
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to create disabled balance with events")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+
+		ape.Render(w, newBalanceResponse(*balance, nil, 0, 0))
+		return
 	}
 
+	err = createBalanceWithEventsAndReferrals(nullifier, *refCode, events, r)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to create balance with events and referrals")
 		ape.RenderErr(w, problems.InternalError())
