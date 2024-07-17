@@ -18,7 +18,7 @@
           "Points balance"
         ],
         "summary": "Create points balance",
-        "description": "Create an empty balance for authorized user who makes the request. Rank is included\nin response.\n\nThis operation might be time-consuming, because `open` events should be added for\nthe new account synchronously (to display them right after the request).\n\nIf balance already exists, but it is disabled (it was not referred by another user,\nbut has fulfilled some event), you should use PATCH balances/{nullifier} endpoint as well.\n",
+        "description": "Create an empty balance for authorized user who makes the request.\n    \nIf balance already exists, but it is disabled (it was not referred by another user,\nbut has fulfilled some event), you should activate balance instead.\n",
         "operationId": "createPointsBalance",
         "requestBody": {
           "content": {
@@ -56,11 +56,11 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
           "401": {
             "$ref": "#/components/responses/invalidAuth"
-          },
-          "404": {
-            "$ref": "#/components/responses/notFound"
           },
           "409": {
             "description": "Balance already exists for provided nullifier",
@@ -142,7 +142,7 @@
           "Points balance"
         ],
         "summary": "Get points balance",
-        "description": "Balance of authorized user who makes the request. Rank in leaderboard is included.\nYou should create new balance for the new user by making POST request.\n",
+        "description": "Balance of authorized user who makes the request. Rank in leaderboard is included.\nYou should create new balance for the new user by making POST request.\n\nIf balance is disabled (was created without referral code and not activated),\nsome fields are not returned.\n",
         "operationId": "getPointsBalance",
         "parameters": [
           {
@@ -151,7 +151,7 @@
           {
             "in": "query",
             "name": "rank",
-            "description": "Specifies whether to return the rank",
+            "description": "Specifies whether to return the rank. Has no effect on disabled balance.",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -161,7 +161,7 @@
           {
             "in": "query",
             "name": "referral_codes",
-            "description": "Specifies whether to return the referral codes",
+            "description": "Specifies whether to return the referral codes. Has no effect on disabled balance.",
             "required": false,
             "schema": {
               "type": "boolean"
@@ -192,6 +192,73 @@
           },
           "401": {
             "$ref": "#/components/responses/invalidAuth"
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Points balance"
+        ],
+        "summary": "Activate points balance",
+        "description": "Activate points balance for authorized user who makes the request.\nRank is included in response.\n\nOnly balances created without referral code can be activated,\ncheck this with `is_disabled` field.\n\nIf balance's passport was verified earlier, some events will be auto-claimed.\n",
+        "operationId": "activatePointsBalance",
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "$ref": "#/components/schemas/ActivateBalance"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Balance activated",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Balance"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          },
+          "409": {
+            "description": "Balance already activated",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/internalError"
@@ -297,7 +364,7 @@
           "Points balance"
         ],
         "summary": "Verify passport",
-        "description": "Verify passport with ZKP, fulfilling the event.\nOne passport can't be verified twice.\n",
+        "description": "Verify passport to unlock event claiming and get reward.\nOne passport can't be verified twice.\n\nThere are two verification flows:\n1) Legacy flow is done through Query ZK-proof\n2) New flow is done via JWT, received from Auth service after providing ZK-proof\n\nSome events will be automatically claimed in case if balance is active.\n",
         "operationId": "verifyPassport",
         "parameters": [
           {
@@ -357,8 +424,18 @@
           "401": {
             "$ref": "#/components/responses/invalidAuth"
           },
+          "403": {
+            "description": "Invalid signature",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "Balance not exists.",
+            "description": "Balance not exists",
             "content": {
               "application/vnd.api+json": {
                 "schema": {
@@ -368,7 +445,7 @@
             }
           },
           "409": {
-            "description": "Passport already verified or event absent for user.",
+            "description": "Passport already verified or anonymous ID exists",
             "content": {
               "application/vnd.api+json": {
                 "schema": {
@@ -1151,6 +1228,56 @@
   },
   "components": {
     "schemas": {
+      "ActivateBalance": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ActivateBalanceKey"
+          },
+          {
+            "type": "object",
+            "x-go-is-request": true,
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "required": [
+                  "referred_by"
+                ],
+                "properties": {
+                  "referred_by": {
+                    "type": "string",
+                    "description": "Referral code from the link",
+                    "example": "rCx18MZ4"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ActivateBalanceKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Nullifier of the points owner",
+            "example": "0x123...abc",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "activate_balance"
+            ]
+          }
+        }
+      },
       "Balance": {
         "allOf": [
           {
@@ -1179,7 +1306,7 @@
                   },
                   "is_disabled": {
                     "type": "boolean",
-                    "description": "Whether the user was not referred by anybody, but the balance with some\nevents was reserved. It happens when the user fulfills some event\nbefore the balance creation.\n",
+                    "description": "Whether the user was not referred with some code. If it wasn't - balance\nis disabled and very limited in functionality.\n",
                     "example": false
                   },
                   "created_at": {
@@ -1200,7 +1327,7 @@
                   },
                   "referral_codes": {
                     "type": "array",
-                    "description": "Referral codes. Returned only for the single user.",
+                    "description": "Referral codes. Returned only for the single active balance.",
                     "items": {
                       "$ref": "#/components/schemas/ReferralCode"
                     }
@@ -1208,13 +1335,13 @@
                   "referred_users_count": {
                     "type": "integer",
                     "format": "int",
-                    "description": "Number of invited users",
+                    "description": "Number of invited users. Returned only for the single active balance.",
                     "example": 13
                   },
                   "rewarded_referred_users_count": {
                     "type": "integer",
                     "format": "int",
-                    "description": "Number of users for whom the reward was received",
+                    "description": "Number of users for whom the reward was received. Returned only for the single active balance.",
                     "example": 5
                   },
                   "level": {
@@ -1287,13 +1414,10 @@
             "properties": {
               "attributes": {
                 "type": "object",
-                "required": [
-                  "referred_by"
-                ],
                 "properties": {
                   "referred_by": {
                     "type": "string",
-                    "description": "referrer code from the link",
+                    "description": "Referral code from the link. Supply it to create the active balance,\notherwise disabled balance is created, and it can be activated later.\n\nDisabled balance is only allowed to verify passport and get.\n",
                     "example": "rCx18MZ4"
                   }
                 }
@@ -1775,7 +1899,7 @@
                   "proof": {
                     "type": "object",
                     "format": "types.ZKProof",
-                    "description": "Query ZK passport verification proof.\nRequired for endpoint `/v2/balances/{nullifier}/verifypassport`.\n"
+                    "description": "Query ZK passport verification proof.\nRequired for passport verification endpoint.\n"
                   }
                 }
               }
