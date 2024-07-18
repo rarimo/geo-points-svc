@@ -59,10 +59,6 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if proof == nil {
-		log.Debug("Proof is not provided: performing logic of joining program instead of full verification")
-	}
-
 	balance, errs := getAndVerifyBalanceEligibility(r, req.Data.ID, proof)
 	if len(errs) > 0 {
 		ape.RenderErr(w, errs...)
@@ -90,7 +86,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		}
 		h := sig.Get(zk.PersonalNumberHash)
 		if h == "" {
-			log.Errorf("Proof verification succeeded, but shared hash was not obtained: proof: %+v", proof)
+			log.Errorf("Shared hash was not obtained for valid proof: %+v", proof)
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
@@ -118,10 +114,12 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 			"data/attributes/anonymous_id": validation.Validate(anonymousID, validation.Required, validation.In(balAID)),
 		}.Filter()
 		if err != nil {
+			log.Warnf("Anonymous ID was changed, got %s, want %s", anonymousID, balAID)
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 
+		log.Debug("Balance has joined program previously, updating shared hash")
 		err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
 			data.ColSharedHash: *sharedHash,
 		})
@@ -136,10 +134,20 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = EventsQ(r).Transaction(func() error {
-		return doPassportScanUpdates(r, *balance, anonymousID, sharedHash)
+		if err = updateBalanceVerification(r, *balance, anonymousID, sharedHash); err != nil {
+			return fmt.Errorf("update balance verification info: %w", err)
+		}
+
+		if balance.ReferredBy == nil {
+			log.Debug("Balance is disabled, events will not be claimed")
+			return nil
+		}
+
+		return doVerificationEventUpdates(r, *balance)
 	})
+
 	if err != nil {
-		log.WithError(err).Error("Failed to execute transaction")
+		log.WithError(err).Error("Failed to do passport scan updates")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
@@ -174,6 +182,7 @@ func getAndVerifyBalanceEligibility(
 	proof *zkptypes.ZKProof,
 ) (balance *data.Balance, errs []*jsonapi.ErrorObject) {
 
+	log := Log(r).WithField("balance.nullifier", nullifier)
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		return nil, append(errs, problems.Unauthorized())
 	}
@@ -185,10 +194,11 @@ func getAndVerifyBalanceEligibility(
 	}
 
 	if balance == nil {
-		Log(r).Debug("Balance absent")
+		log.Debug("Balance not found")
 		return nil, append(errs, problems.NotFound())
 	}
 	if proof == nil {
+		log.Debug("Proof is not provided and will not be verified")
 		return balance, nil
 	}
 
@@ -198,68 +208,14 @@ func getAndVerifyBalanceEligibility(
 	err = Verifier(r).VerifyProof(*proof)
 	if err != nil {
 		if errors.Is(err, identity.ErrContractCall) {
-			Log(r).WithError(err).Error("Failed to verify proof")
+			log.WithError(err).Error("Failed to verify proof")
 			return nil, append(errs, problems.InternalError())
 		}
 		return nil, problems.BadRequest(err)
 	}
 
+	log.Debug("Passport proof successfully verified")
 	return balance, nil
-}
-
-// doPassportScanUpdates performs all the necessary updates when the passport
-// scan proof is provided
-func doPassportScanUpdates(r *http.Request, balance data.Balance, anonymousID string, sharedHash *string) error {
-	err := updateBalanceVerification(r, balance, anonymousID, sharedHash)
-	if err != nil {
-		return fmt.Errorf("update balance country: %w", err)
-	}
-	// must not auto-claim or add referral events for disabled balance
-	if balance.ReferredBy == nil {
-		return nil
-	}
-
-	// Fulfill passport scan event for user if event active
-	// Event can be automatically claimed if auto-claim is enabled
-	if err = fulfillOrClaimPassportScanEvent(r, balance); err != nil {
-		return fmt.Errorf("fulfill passport scan event: %w", err)
-	}
-
-	if balance.ReferredBy == nil {
-		Log(r).Debugf("Balance disabled: %s", balance.Nullifier)
-		return nil
-	}
-
-	evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
-	if evTypeRef == nil {
-		Log(r).Debug("Referral specific event type is inactive")
-		return nil
-	}
-
-	// Claim events for invited friends who scanned the passport.
-	// This is possible when the user registered in the referral
-	// program and invited friends, the friends scanned the passport,
-	// but since the user hadn't a supported passport, the event
-	// could not be claimed. And now that user has scanned the passport,
-	// it is necessary to claim events for user's friends if auto-claim
-	// is enabled
-	if err = claimReferralSpecificEvents(r, *evTypeRef, balance.Nullifier); err != nil {
-		return fmt.Errorf("failed to claim referral specific events: %w", err)
-	}
-
-	// Be referred event is a welcome bonus when you created balance with non-genesis referral code
-	if err = claimBeReferredEvent(r, balance); err != nil {
-		return fmt.Errorf("failed to claim be referred event: %w", err)
-	}
-
-	// Adds a friend event for the referrer. If the event
-	// is inactive, then nothing happens. If active, the
-	// fulfilled event is added and, if possible, the event claimed
-	if err = addEventForReferrer(r, *evTypeRef, balance); err != nil {
-		return fmt.Errorf("add event for referrer: %w", err)
-	}
-
-	return nil
 }
 
 func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousID string, sharedHash *string) error {
@@ -273,12 +229,34 @@ func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousI
 
 	err := BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(toUpd)
 	if err != nil {
-		return fmt.Errorf("update balance country: %w", err)
+		return fmt.Errorf("update balance: %w", err)
 	}
 
 	return nil
 }
 
+func doVerificationEventUpdates(r *http.Request, balance data.Balance) error {
+	if err := fulfillOrClaimPassportScanEvent(r, balance); err != nil {
+		return fmt.Errorf("fulfill passport scan event: %w", err)
+	}
+
+	if err := claimBeReferredEvent(r, balance); err != nil {
+		return fmt.Errorf("failed to claim be referred event: %w", err)
+	}
+	if err := claimReferralSpecificEvents(r, balance.Nullifier); err != nil {
+		return fmt.Errorf("failed to claim referral specific events: %w", err)
+	}
+	if err := addEventForReferrer(r, balance); err != nil {
+		return fmt.Errorf("add event for referrer: %w", err)
+	}
+
+	Log(r).WithField("balance.nullifier", balance.Nullifier).
+		Debug("All verification-related events successfully updated")
+	return nil
+}
+
+// fulfillOrClaimPassportScanEvent Fulfill passport scan event for user if event
+// active. Event can be automatically claimed if auto-claim is enabled.
 func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) error {
 	evTypePassport := EventTypes(r).Get(models.TypePassportScan, evtypes.FilterInactive)
 	if evTypePassport == nil {
@@ -292,12 +270,12 @@ func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) erro
 	if err != nil {
 		return fmt.Errorf("get open passport scan event: %w", err)
 	}
-
 	if event == nil {
 		return errors.New("inconsistent state: balance is not verified, event type is active, but no open event was found")
 	}
 
-	if !evTypePassport.AutoClaim {
+	if !evTypePassport.AutoClaim || balance.ReferredBy == nil {
+		Log(r).Debug("Passport scan event is not auto-claimed or balance is disabled, event will be fulfilled")
 		_, err = EventsQ(r).
 			FilterByID(event.ID).
 			Update(data.EventFulfilled, nil, nil)
@@ -326,10 +304,16 @@ func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) erro
 	return nil
 }
 
-// evTypeRef must not be nil
-func claimReferralSpecificEvents(r *http.Request, evTypeRef models.EventType, nullifier string) error {
-	if !evTypeRef.AutoClaim {
-		Log(r).Debugf("Auto claim for referral specific disabled")
+// claimReferralSpecificEvents Claim events for invited friends who scanned the
+// passport. This is possible when the user registered in the referral program
+// and invited friends, the friends scanned the passport, but since the user
+// hadn't a supported passport, the event could not be claimed. And now that user
+// has scanned the passport, it is necessary to claim events for user's friends
+// if auto-claim is enabled.
+func claimReferralSpecificEvents(r *http.Request, nullifier string) error {
+	evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
+	if evTypeRef == nil || !evTypeRef.AutoClaim {
+		Log(r).Debugf("Referral specific event is inactive or cannot be auto-claimed")
 		return nil
 	}
 
@@ -374,6 +358,8 @@ func claimReferralSpecificEvents(r *http.Request, evTypeRef models.EventType, nu
 	return nil
 }
 
+// claimBeReferredEvent get fulfilled be_referred event and claims it if user is
+// invited with non-genesis referral code
 func claimBeReferredEvent(r *http.Request, balance data.Balance) error {
 	evTypeBeRef := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
 	if evTypeBeRef == nil || !evTypeBeRef.AutoClaim {
@@ -385,7 +371,7 @@ func claimBeReferredEvent(r *http.Request, balance data.Balance) error {
 		FilterByStatus(data.EventFulfilled).
 		Get()
 	if err != nil {
-		return fmt.Errorf("get fulfilled be referred event: %w", err)
+		return fmt.Errorf("get fulfilled be_referred event: %w", err)
 	}
 	if event == nil {
 		Log(r).Debug("User is not eligible for be_referred event")
@@ -410,8 +396,21 @@ func claimBeReferredEvent(r *http.Request, balance data.Balance) error {
 	return nil
 }
 
-func addEventForReferrer(r *http.Request, evTypeRef models.EventType, balance data.Balance) error {
-	// ReferredBy always non-nil because of the previous logic
+// addEventForReferrer adds a friend event for the referrer. If the event is
+// inactive, then nothing happens. If active, the fulfilled event is added and,
+// if possible, the event claimed.
+func addEventForReferrer(r *http.Request, balance data.Balance) error {
+	evTypeRef := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
+	if evTypeRef == nil {
+		Log(r).Debug("Referral specific event type is inactive")
+		return nil
+	}
+
+	if balance.ReferredBy == nil {
+		Log(r).Debug("Balance is disabled, event for referrer will not be added")
+		return nil
+	}
+
 	referral, err := ReferralsQ(r).Get(*balance.ReferredBy)
 	if err != nil {
 		return fmt.Errorf("get referral by ID: %w", err)
@@ -420,22 +419,22 @@ func addEventForReferrer(r *http.Request, evTypeRef models.EventType, balance da
 		return fmt.Errorf("critical: referred_by not null, but row in referrals absent")
 	}
 
-	referrerBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
+	refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
 	if err != nil {
 		return fmt.Errorf("failed to get referrer balance: %w", err)
 	}
-	if referrerBalance == nil {
+	if refBalance == nil {
 		return fmt.Errorf("critical: referrer balance not exist [%s], while referral code exist", referral.Nullifier)
 	}
 
-	if referrerBalance.ReferredBy == nil {
-		Log(r).Debug("Referrer is genesis balance")
+	if refBalance.ReferredBy == nil {
+		Log(r).Debug("Referrer is genesis balance, referee will not be rewarded")
 		return nil
 	}
 
-	if !evTypeRef.AutoClaim || !referrerBalance.IsVerified {
-		if !referrerBalance.IsVerified {
-			Log(r).Debug("Referrer not scan passport yet! Add fulfilled events")
+	if !evTypeRef.AutoClaim || !refBalance.IsVerified {
+		if !refBalance.IsVerified {
+			Log(r).Debug("Referrer has not scanned passport yet, adding fulfilled events")
 		}
 		err = EventsQ(r).Insert(data.Event{
 			Nullifier: referral.Nullifier,
@@ -465,7 +464,7 @@ func addEventForReferrer(r *http.Request, evTypeRef models.EventType, balance da
 		Levels(r),
 		ReferralsQ(r),
 		BalancesQ(r),
-		*referrerBalance,
+		*refBalance,
 		evTypeRef.Reward)
 	if err != nil {
 		return fmt.Errorf("failed to do claim event updates for referrer referral specific events: %w", err)
