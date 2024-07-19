@@ -40,12 +40,14 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	var (
 		refCode      = req.Data.Attributes.ReferredBy
 		isGenesisRef = false
+		log          = Log(r).WithField("nullifier", nullifier)
 	)
 
 	if refCode != nil {
+		log.Debug("Balance will be activated with referral code")
 		referral, err := ReferralsQ(r).FilterInactive().Get(*refCode)
 		if err != nil {
-			Log(r).WithError(err).Error("Failed to get referral by ID")
+			log.WithError(err).Error("Failed to get referral by ID")
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
@@ -56,7 +58,7 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 
 		refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
 		if err != nil || refBalance == nil { // must exist due to FK constraint
-			Log(r).WithError(err).Error("Failed to get referrer balance by nullifier")
+			log.WithError(err).Error("Failed to get referrer balance by nullifier")
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
@@ -67,18 +69,19 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	if refCode == nil {
 		balance, err = createBalanceWithEvents(nullifier, events, r)
 		if err != nil {
-			Log(r).WithError(err).Error("Failed to create disabled balance with events")
+			log.WithError(err).Error("Failed to create disabled balance with events")
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
 
+		log.Debug("Created disabled balance with events")
 		ape.Render(w, newBalanceResponse(*balance, nil, 0, 0))
 		return
 	}
 
 	err = createBalanceWithEventsAndReferrals(nullifier, *refCode, events, r)
 	if err != nil {
-		Log(r).WithError(err).Error("Failed to create balance with events and referrals")
+		log.WithError(err).Error("Failed to create balance with events and referrals")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
@@ -89,7 +92,7 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 	// Balance will exist cause of previous logic.
 	balance, err = BalancesQ(r).GetWithRank(nullifier)
 	if err != nil {
-		Log(r).WithError(err).Error("Failed to get created balance by nullifier")
+		log.WithError(err).Error("Failed to get created balance by nullifier")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
@@ -99,7 +102,7 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		WithStatus().
 		Select()
 	if err != nil {
-		Log(r).WithError(err).Error("Failed to get referrals by nullifier with rewarding field")
+		log.WithError(err).Error("Failed to get referrals by nullifier with rewarding field")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
