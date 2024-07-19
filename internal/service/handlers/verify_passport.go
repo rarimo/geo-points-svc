@@ -264,14 +264,17 @@ func fulfillOrClaimPassportScanEvent(r *http.Request, balance data.Balance) erro
 		return nil
 	}
 
-	event, err := EventsQ(r).FilterByNullifier(balance.Nullifier).
+	// event could also be fulfilled when balance was activated
+	event, err := EventsQ(r).
+		FilterByNullifier(balance.Nullifier).
 		FilterByType(models.TypePassportScan).
-		FilterByStatus(data.EventOpen).Get()
+		FilterByStatus(data.EventOpen, data.EventFulfilled).
+		Get()
 	if err != nil {
 		return fmt.Errorf("get open passport scan event: %w", err)
 	}
 	if event == nil {
-		return errors.New("inconsistent state: balance is not verified, event type is active, but no open event was found")
+		return errors.New("inconsistent state: balance is not verified, event type is active, but no open or fulfilled event was found")
 	}
 
 	if !evTypePassport.AutoClaim || balance.ReferredBy == nil {
