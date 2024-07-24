@@ -44,6 +44,10 @@ import:
     to: /usr/local/bin/geo-points-svc
     after: setup
   - image: builder
-    add: /go/src/github.com/rarimo/geo-points-svc/verification_key.json
-    to: /verification_key.json
+    add: /go/src/github.com/rarimo/geo-points-svc/proof_keys/passport.json
+    to: /proof_keys/passport.json
+    after: setup
+  - image: builder
+    add: /go/src/github.com/rarimo/geo-points-svc/proof_keys/poll.json
+    to: /proof_keys/poll.json
     after: setup
