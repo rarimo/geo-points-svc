@@ -62,6 +62,13 @@ paths:
         - $ref: '#/components/parameters/pageLimit'
         - $ref: '#/components/parameters/pageNumber'
         - $ref: '#/components/parameters/pageOrder'
+        - in: query
+          name: count
+          description: Count total number of users.
+          required: false
+          schema:
+            type: boolean
+            example: true
       responses:
         '200':
           description: Success
@@ -441,7 +448,8 @@ paths:
       summary: Update event type
       description: |
         Update an existing event type. Requires **admin** role in JWT.
-        **All attributes** are updated, ensure to pass every existing field too.
+        **All attributes** except QR code, Poll Event ID and Poll Contract are
+        updated, ensure to pass every existing field too.
         Although this is not JSON:API compliant, it is much easier to work with
         in Go, because differentiating between `{}` and `{"field": null}`
         requires custom unmarshalling implementation.
@@ -763,6 +771,57 @@ paths:
           $ref: '#/components/responses/invalidAuth'
         '403':
           description: This event type was disabled and cannot be claimed
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '404':
+          $ref: '#/components/responses/notFound'
+        '500':
+          $ref: '#/components/responses/internalError'
+  '/integrations/geo-points-svc/v1/public/events/{id}/poll':
+    patch:
+      tags:
+        - Events
+      summary: Fulfill poll event
+      description: Fulfill event for voting in Georgian poll by sending proof of voting
+      operationId: fulfillPollEvent
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: 059c81dd-2a54-44a8-8142-c15ad8f88949
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/FulfillPollEvent'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EventClaimingState'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '403':
+          description: This event type was disabled and cannot be fulfilled
           content:
             application/vnd.api+json:
               schema:
@@ -1225,6 +1284,15 @@ components:
           format: int
           description: Number of uses. Only available to the administrator.
           example: 1002
+        poll_event_id:
+          type: string
+          description: Decimal value of the Event ID
+          example: '123456789987654321'
+        poll_contract:
+          type: string
+          description: Hex voting contract address with 0x.
+          example: 0x123...123
+          pattern: '^0x[0-9a-fA-F]{40}$'
     EventType:
       allOf:
         - $ref: '#/components/schemas/EventTypeKey'
@@ -1251,6 +1319,39 @@ components:
           type: string
           enum:
             - event_type
+    FulfillPollEvent:
+      allOf:
+        - $ref: '#/components/schemas/FulfillPollEventKey'
+        - type: object
+          x-go-is-request: true
+          required:
+            - attributes
+          properties:
+            attributes:
+              required:
+                - proof
+              type: object
+              properties:
+                proof:
+                  type: object
+                  format: types.ZKProof
+                  description: |
+                    Proof of voting in some poll.
+                    The poll ID must be equal to `meta.static.poll_id` from the event.
+    FulfillPollEventKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: Event ID
+          example: 059c81dd-2a54-44a8-8142-c15ad8f88949
+        type:
+          type: string
+          enum:
+            - fulfill_poll_event
     FulfillQREvent:
       allOf:
         - $ref: '#/components/schemas/FulfillQREventKey'
