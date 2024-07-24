@@ -2117,8 +2117,8 @@ github.com/rarimo/geo-auth-svc v1.1.0 h1:3k1tTWAjtCBsnzlMb3aB+xgsFLEPUSmB3woME+q
 github.com/rarimo/geo-auth-svc v1.1.0/go.mod h1:JrpCGdT0xtAcWIKgPhxPHf7QCW4h845BXuh6M7NdQFw=
 github.com/rarimo/saver-grpc-lib v1.0.0 h1:MGUVjYg7unmodYczVsLqlqZNkT4CIgKqdo6aQtL1qdE=
 github.com/rarimo/saver-grpc-lib v1.0.0/go.mod h1:DpugWK5B7Hi0bdC3MPe/9FD2zCxaRwsyykdwxtF1Zgg=
-github.com/rarimo/zkverifier-kit v1.1.2-0.20240724050048-459caa155ec1 h1:49sGqP0W4oGoU8kegYK1A1pb7B0deEw1bwz0qogXxvs=
-github.com/rarimo/zkverifier-kit v1.1.2-0.20240724050048-459caa155ec1/go.mod h1:3YDg5dTkDRr4IdfaDHGYetopd6gS/2SuwSeseYTWwNw=
+github.com/rarimo/zkverifier-kit v1.2.0 h1:Qsdcq+jMBEkdTlbqGT7InQhNI39lZyCX9PXgqzb1ozM=
+github.com/rarimo/zkverifier-kit v1.2.0/go.mod h1:3YDg5dTkDRr4IdfaDHGYetopd6gS/2SuwSeseYTWwNw=
 github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 h1:N/ElC8H3+5XpJzTSTfLsJV/mx9Q9g7kxmchpfZyxgzM=
 github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/regen-network/cosmos-proto v0.3.1 h1:rV7iM4SSFAagvy8RiyhiACbWEGotmqzywPxOvwMdxcg=
