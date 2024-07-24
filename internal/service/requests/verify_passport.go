@@ -10,6 +10,7 @@ import (
 	val "github.com/go-ozzo/ozzo-validation/v4"
 	zkptypes "github.com/iden3/go-rapidsnark/types"
 	"github.com/rarimo/geo-points-svc/resources"
+	zk "github.com/rarimo/zkverifier-kit"
 )
 
 var (
@@ -27,6 +28,7 @@ func NewVerifyPassport(r *http.Request) (req resources.VerifyPassportRequest, er
 	req.Data.ID = strings.ToLower(req.Data.ID)
 	var (
 		attr  = req.Data.Attributes
+		count = zk.PubSignalsCount(zk.GeorgianPassport)
 		proof zkptypes.ZKProof // safe dereference
 	)
 
@@ -45,6 +47,6 @@ func NewVerifyPassport(r *http.Request) (req resources.VerifyPassportRequest, er
 		"data/attributes/anonymous_id":      val.Validate(attr.AnonymousId, val.Required, val.Match(hex32bRegexp)),
 		"data/attributes/proof":             val.Validate(attr.Proof, val.When(joinProgramPathRegexp.MatchString(r.URL.Path), val.Nil)),
 		"data/attributes/proof/proof":       val.Validate(proof.Proof, val.When(attr.Proof != nil, val.Required)),
-		"data/attributes/proof/pub_signals": val.Validate(proof.PubSignals, val.When(attr.Proof != nil, val.Required, val.Length(24, 24))),
+		"data/attributes/proof/pub_signals": val.Validate(proof.PubSignals, val.When(attr.Proof != nil, val.Required, val.Length(count, count))),
 	}.Filter()
 }

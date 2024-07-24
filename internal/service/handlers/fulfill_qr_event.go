@@ -41,8 +41,13 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
+
 	if evType.QRCodeValue == nil || *evType.QRCodeValue != req.Data.Attributes.QrCode {
-		Log(r).Debugf("QR code for event %s doesn't match: got %s, want %s", event.Type, req.Data.Attributes.QrCode, *evType.QRCodeValue)
+		var qrv string
+		if evType.QRCodeValue != nil {
+			qrv = *evType.QRCodeValue
+		}
+		Log(r).Debugf("QR code for event %s doesn't match: got %s, want %s", event.Type, req.Data.Attributes.QrCode, qrv)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}

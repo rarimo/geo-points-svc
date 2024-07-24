@@ -22,7 +22,9 @@ type EventType struct {
 	Disabled         bool            `fig:"disabled" db:"disabled"`
 	ActionURL        *string         `fig:"action_url" db:"action_url"`
 	Logo             *string         `fig:"logo" db:"logo"`
-	QRCodeValue      *string         `fig:"qr_code_value" db:"qr_code_value"`
+	QRCodeValue      *string         `db:"qr_code_value"`
+	PollEventID      *string         `db:"poll_event_id"`
+	PollContract     *string         `db:"poll_contract"`
 }
 
 func ResourceToModel(r resources.EventStaticMeta) EventType {

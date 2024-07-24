@@ -1,0 +1,18 @@
+allOf:
+  - $ref: '#/components/schemas/FulfillPollEventKey'
+  - type: object
+    x-go-is-request: true
+    required:
+      - attributes
+    properties:
+      attributes:
+        required:
+          - proof
+        type: object
+        properties:
+          proof:
+            type: object
+            format: types.ZKProof
+            description: |
+              Proof of voting in some poll.
+              The poll ID must be equal to `meta.static.poll_id` from the event.
