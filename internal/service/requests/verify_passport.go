@@ -15,6 +15,7 @@ import (
 
 var (
 	nullifierRegexp = regexp.MustCompile("^0x[0-9a-fA-F]{64}$")
+	addressRegexp   = regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
 	hex32bRegexp    = regexp.MustCompile("^[0-9a-f]{64}$")
 	// endpoint is hardcoded to reuse handlers.VerifyPassport
 	joinProgramPathRegexp = regexp.MustCompile("^/integrations/geo-points-svc/v1/public/balances/0x[0-9a-fA-F]{64}/join_program$")

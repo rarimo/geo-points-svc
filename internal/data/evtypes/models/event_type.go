@@ -44,6 +44,8 @@ func ResourceToModel(r resources.EventStaticMeta) EventType {
 		ActionURL:        r.ActionUrl,
 		Logo:             r.Logo,
 		QRCodeValue:      r.QrCodeValue,
+		PollEventID:      r.PollEventId,
+		PollContract:     r.PollContract,
 	}
 }
 
@@ -92,7 +94,6 @@ func (e EventType) ForUpdate() map[string]any {
 		"disabled":          e.Disabled,
 		"action_url":        e.ActionURL,
 		"logo":              e.Logo,
-		"qr_code_value":     e.QRCodeValue,
 	}
 }
 

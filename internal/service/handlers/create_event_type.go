@@ -50,7 +50,7 @@ func CreateEventType(w http.ResponseWriter, r *http.Request) {
 		if evtypes.FilterNotOpenable(typeModel) {
 			return nil
 		}
-		return openQREvents(r, typeModel)
+		return openEvents(r, typeModel)
 	})
 
 	if err != nil {
@@ -62,7 +62,7 @@ func CreateEventType(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func openQREvents(r *http.Request, evType models.EventType) error {
+func openEvents(r *http.Request, evType models.EventType) error {
 	balances, err := BalancesQ(r).Select()
 	if err != nil {
 		return fmt.Errorf("select balances: %w", err)

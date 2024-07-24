@@ -37,7 +37,8 @@ put:
   summary: Update event type
   description: |
     Update an existing event type. Requires **admin** role in JWT.
-    **All attributes** are updated, ensure to pass every existing field too.
+    **All attributes** except QR code, Poll Event ID and Poll Contract are
+    updated, ensure to pass every existing field too.
     Although this is not JSON:API compliant, it is much easier to work with
     in Go, because differentiating between `{}` and `{"field": null}`
     requires custom unmarshalling implementation.

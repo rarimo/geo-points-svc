@@ -25,6 +25,10 @@ type EventStaticMeta struct {
 	Logo *string `json:"logo,omitempty"`
 	// Unique event code name
 	Name string `json:"name"`
+	// Hex voting contract address with 0x.
+	PollContract *string `json:"poll_contract,omitempty"`
+	// Decimal value of the Event ID
+	PollEventId *string `json:"poll_event_id,omitempty"`
 	// Base64-encoded QR code. Must match the code provided in event type.
 	QrCodeValue *string `json:"qr_code_value,omitempty"`
 	// Reward amount in points
