@@ -5,8 +5,7 @@ import (
 	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/saver-grpc-lib/broadcaster"
-	zk "github.com/rarimo/zkverifier-kit"
-	"github.com/rarimo/zkverifier-kit/identity"
+	"github.com/rarimo/zkverifier-kit/root"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -22,7 +21,7 @@ type Config interface {
 	hmacsig.SigCalculatorProvider
 
 	Levels() Levels
-	Verifier() *zk.Verifier
+	Verifiers() Verifiers
 }
 
 type config struct {
@@ -31,9 +30,11 @@ type config struct {
 	comfig.Listenerer
 	auth.Auther
 	broadcaster.Broadcasterer
-	identity.VerifierProvider
 	evtypes.EventTypeser
 	hmacsig.SigCalculatorProvider
+
+	passport root.VerifierProvider
+	poll     root.VerifierProvider
 
 	levels   comfig.Once
 	verifier comfig.Once
@@ -48,7 +49,8 @@ func New(getter kv.Getter) Config {
 		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
 		Auther:                auth.NewAuther(getter), //nolint:misspell
 		Broadcasterer:         broadcaster.New(getter),
-		VerifierProvider:      identity.NewVerifierProvider(getter),
+		passport:              root.NewVerifierProvider(getter, root.PoseidonSMT),
+		poll:                  root.NewVerifierProvider(getter, root.ProposalSMT),
 		EventTypeser:          evtypes.NewConfig(getter),
 		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
 	}

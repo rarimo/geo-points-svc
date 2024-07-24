@@ -24,7 +24,7 @@ func Run(cfg config.Config, sig chan struct{}) {
 	if err := pg.NewEvents(db).Transaction(func() error {
 		return updateReferralUserEvents(db, cfg.EventTypes())
 	}); err != nil {
-		panic(fmt.Errorf("failed to update referral user events"))
+		panic(fmt.Errorf("failed to update referral user events: %w", err))
 	}
 
 	if err := pg.NewEvents(db).Transaction(func() error {
@@ -38,7 +38,7 @@ func Run(cfg config.Config, sig chan struct{}) {
 
 // updatePassportScanEvents is needed so that if the passport
 // scan events were not fulfilled or claimed because the event was disabled,
-// expired or no autoclaimed, fulfill and, if possible, claim them.
+// expired or no auto-claimed, fulfill and, if possible, claim them.
 // First, there is an attempt to claim as many events as
 // possible and to fulfill the rest of the events.
 //

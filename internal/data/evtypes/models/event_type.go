@@ -22,7 +22,9 @@ type EventType struct {
 	Disabled         bool            `fig:"disabled" db:"disabled"`
 	ActionURL        *string         `fig:"action_url" db:"action_url"`
 	Logo             *string         `fig:"logo" db:"logo"`
-	QRCodeValue      *string         `fig:"qr_code_value" db:"qr_code_value"`
+	QRCodeValue      *string         `db:"qr_code_value"`
+	PollEventID      *string         `db:"poll_event_id"`
+	PollContract     *string         `db:"poll_contract"`
 }
 
 func ResourceToModel(r resources.EventStaticMeta) EventType {
@@ -42,6 +44,8 @@ func ResourceToModel(r resources.EventStaticMeta) EventType {
 		ActionURL:        r.ActionUrl,
 		Logo:             r.Logo,
 		QRCodeValue:      r.QrCodeValue,
+		PollEventID:      r.PollEventId,
+		PollContract:     r.PollContract,
 	}
 }
 
@@ -74,6 +78,8 @@ func (e EventType) Resource(locale string) resources.EventStaticMeta {
 		Disabled:         e.Disabled,
 		Logo:             e.Logo,
 		Flag:             e.Flag(),
+		PollEventId:      e.PollEventID,
+		PollContract:     e.PollContract,
 	}
 }
 
@@ -90,7 +96,6 @@ func (e EventType) ForUpdate() map[string]any {
 		"disabled":          e.Disabled,
 		"action_url":        e.ActionURL,
 		"logo":              e.Logo,
-		"qr_code_value":     e.QRCodeValue,
 	}
 }
 

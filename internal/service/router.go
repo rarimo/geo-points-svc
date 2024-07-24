@@ -21,7 +21,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxLog(cfg.Log()),
 			handlers.CtxEventTypes(cfg.EventTypes()),
 			handlers.CtxLevels(cfg.Levels()),
-			handlers.CtxVerifier(cfg.Verifier()),
+			handlers.CtxVerifiers(cfg.Verifiers()),
 			handlers.CtxSigCalculator(cfg.SigCalculator()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
@@ -43,16 +43,19 @@ func Run(ctx context.Context, cfg config.Config) {
 			r.Route("/events", func(r chi.Router) {
 				r.Use(authMW)
 				r.Get("/", handlers.ListEvents)
-				r.Get("/{id}", handlers.GetEvent)
-				r.Patch("/{id}/qrcode", handlers.FulfillQREvent)
-				r.Patch("/{id}", handlers.ClaimEvent)
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", handlers.GetEvent)
+					r.Patch("/", handlers.ClaimEvent)
+					r.Patch("/qrcode", handlers.FulfillQREvent)
+					r.Patch("/poll", handlers.FulfillPollEvent)
+				})
 			})
 			r.Get("/balances", handlers.Leaderboard)
 			r.Route("/event_types", func(r chi.Router) {
-				r.With(authMW).Get("/qr", handlers.ListQREventTypes)
 				r.Get("/", handlers.ListEventTypes)
-				r.With(authMW).Post("/", handlers.CreateEventType)
 				r.Get("/{name}", handlers.GetEventType)
+				r.With(authMW).Get("/qr", handlers.ListQREventTypes)
+				r.With(authMW).Post("/", handlers.CreateEventType)
 				r.With(authMW).Put("/{name}", handlers.UpdateEventType)
 			})
 		})

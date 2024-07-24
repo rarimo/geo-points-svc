@@ -18,7 +18,6 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	zk "github.com/rarimo/zkverifier-kit"
-	"github.com/rarimo/zkverifier-kit/identity"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -205,9 +204,10 @@ func getAndVerifyBalanceEligibility(
 	// never panics because of request validation
 	ni := zk.Indexes(zk.GeorgianPassport)[zk.Nullifier]
 	proof.PubSignals[ni] = mustHexToInt(nullifier)
-	err = Verifier(r).VerifyProof(*proof)
+	err = Verifiers(r).Passport.VerifyProof(*proof)
 	if err != nil {
-		if errors.Is(err, identity.ErrContractCall) {
+		var vErr validation.Errors
+		if !errors.As(err, &vErr) {
 			log.WithError(err).Error("Failed to verify proof")
 			return nil, append(errs, problems.InternalError())
 		}

@@ -9,7 +9,6 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
-	zk "github.com/rarimo/zkverifier-kit"
 	"gitlab.com/distributed_lab/logan/v3"
 )
 
@@ -24,7 +23,7 @@ const (
 	eventTypesQCtxKey
 	userClaimsCtxKey
 	levelsCtxKey
-	verifierCtxKey
+	verifiersCtxKey
 	sigCalculatorCtxKey
 )
 
@@ -98,14 +97,14 @@ func UserClaims(r *http.Request) []resources.Claim {
 	return r.Context().Value(userClaimsCtxKey).([]resources.Claim)
 }
 
-func CtxVerifier(verifier *zk.Verifier) func(context.Context) context.Context {
+func CtxVerifiers(v config.Verifiers) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, verifierCtxKey, verifier)
+		return context.WithValue(ctx, verifiersCtxKey, v)
 	}
 }
 
-func Verifier(r *http.Request) *zk.Verifier {
-	return r.Context().Value(verifierCtxKey).(*zk.Verifier)
+func Verifiers(r *http.Request) config.Verifiers {
+	return r.Context().Value(verifiersCtxKey).(config.Verifiers)
 }
 
 func CtxSigCalculator(calc hmacsig.Calculator) func(context.Context) context.Context {

@@ -40,6 +40,12 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if evType.QRCodeValue == nil && (evType.PollEventID == nil || evType.PollContract == nil) {
+		Log(r).Debugf("The event should be either a QR code or a poll")
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+
 	typeModel := models.ResourceToModel(req.Data.Attributes)
 
 	var updated []models.EventType
@@ -58,7 +64,7 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 		}
 		// Open events if we have enabled the type, otherwise clean them up.
 		if !typeModel.Disabled {
-			return openQREvents(r, typeModel)
+			return openEvents(r, typeModel)
 		}
 
 		deleted, err := EventsQ(r).
@@ -82,6 +88,8 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 	EventTypes(r).Push(typeModel)
 	resp := newEventTypeResponse(updated[0], r.Header.Get(langHeader))
 	resp.Data.Attributes.QrCodeValue = typeModel.QRCodeValue
+	resp.Data.Attributes.PollEventId = typeModel.PollEventID
+	resp.Data.Attributes.PollContract = typeModel.PollContract
 	ape.Render(w, resp)
 }
 

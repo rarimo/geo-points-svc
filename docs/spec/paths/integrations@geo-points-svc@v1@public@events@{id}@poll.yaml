@@ -1,0 +1,50 @@
+patch:
+  tags:
+    - Events
+  summary: Fulfill poll event
+  description: Fulfill event for voting in Georgian poll by sending proof of voting
+  operationId: fulfillPollEvent
+  parameters:
+    - in: path
+      name: 'id'
+      required: true
+      schema:
+        type: string
+        example: "059c81dd-2a54-44a8-8142-c15ad8f88949"
+  requestBody:
+    required: true
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/FulfillPollEvent'
+  responses:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/EventClaimingState'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    403:
+      description: This event type was disabled and cannot be fulfilled
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    404:
+      $ref: '#/components/responses/notFound'
+    500:
+      $ref: '#/components/responses/internalError'

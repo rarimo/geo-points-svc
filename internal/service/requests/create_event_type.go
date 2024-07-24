@@ -18,7 +18,7 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 
 	attr := req.Data.Attributes
 	return req, val.Errors{
-		// only QR code events can be currently created or updated
+		// only QR code and poll events can be currently created or updated
 		// localization is not supported currently
 		"data/id":                           val.Validate(req.Data.ID, val.Required),
 		"data/type":                         val.Validate(req.Data.Type, val.Required, val.In(resources.EVENT_TYPE)),
@@ -27,10 +27,20 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/attributes/frequency":         val.Validate(attr.Frequency, val.Required, val.In(string(models.Unlimited))),
 		"data/attributes/logo":              val.Validate(attr.Logo, is.URL),
 		"data/attributes/name":              val.Validate(attr.Name, val.Required, val.In(req.Data.ID)),
-		"data/attributes/qr_code_value":     val.Validate(attr.QrCodeValue, val.Required, is.Base64),
 		"data/attributes/reward":            val.Validate(attr.Reward, val.Required, val.Min(1)),
 		"data/attributes/short_description": val.Validate(attr.ShortDescription, val.Required),
 		"data/attributes/title":             val.Validate(attr.Title, val.Required),
+		// for poll event
+		"data/attributes/poll_event_id": val.Validate(attr.PollEventId, is.Digit,
+			val.When(attr.QrCodeValue == nil, val.Required),
+			val.When(attr.QrCodeValue != nil, val.Nil)),
+		"data/attributes/poll_contract": val.Validate(attr.PollContract, val.Match(addressRegexp),
+			val.When(attr.QrCodeValue == nil, val.Required),
+			val.When(attr.QrCodeValue != nil, val.Nil)),
+		// for QR code event
+		"data/attributes/qr_code_value": val.Validate(attr.QrCodeValue, is.Base64,
+			val.When(attr.PollContract == nil || attr.PollEventId == nil, val.Required),
+			val.When(attr.PollContract != nil || attr.PollEventId != nil, val.Nil)),
 		// these fields are not currently supported, because cron jobs implementation is required
 		"data/attributes/starts_at":  val.Validate(attr.StartsAt, val.Empty),
 		"data/attributes/expires_at": val.Validate(attr.ExpiresAt, val.Empty),

@@ -90,3 +90,12 @@ properties:
     format: int
     description: Number of uses. Only available to the administrator.
     example: 1002
+  poll_event_id:
+    type: string
+    description: Decimal value of the Event ID
+    example: "123456789987654321"
+  poll_contract:
+    type: string
+    description: Hex voting contract address with 0x.
+    example: "0x123...123"
+    pattern: '^0x[0-9a-fA-F]{40}$'
