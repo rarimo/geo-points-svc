@@ -16,6 +16,7 @@ type balances struct {
 	db       *pgdb.DB
 	selector squirrel.SelectBuilder
 	updater  squirrel.UpdateBuilder
+	counter  squirrel.SelectBuilder
 	rank     squirrel.SelectBuilder
 }
 
@@ -24,6 +25,7 @@ func NewBalances(db *pgdb.DB) data.BalancesQ {
 		db:       db,
 		selector: squirrel.Select("*").From(balancesTable),
 		updater:  squirrel.Update(balancesTable),
+		counter:  squirrel.Select("COUNT(*) as count").From(balancesTable),
 		rank:     squirrel.Select("*, ROW_NUMBER() OVER (ORDER BY amount DESC, updated_at ASC) AS rank").From(balancesTable),
 	}
 }
@@ -53,6 +55,18 @@ func (q *balances) Update(fields map[string]any) error {
 	}
 
 	return nil
+}
+
+func (q *balances) Count() (int64, error) {
+	res := struct {
+		Count int64 `db:"count"`
+	}{}
+
+	if err := q.db.Get(&res, q.counter); err != nil {
+		return 0, fmt.Errorf("get balance: %w", err)
+	}
+
+	return res.Count, nil
 }
 
 // applyRankedPage is similar to the pgdb.OffsetParams.ApplyTo method,
@@ -204,5 +218,6 @@ func (q *balances) applyCondition(cond squirrel.Sqlizer) data.BalancesQ {
 	q.selector = q.selector.Where(cond)
 	q.updater = q.updater.Where(cond)
 	q.rank = q.rank.Where(cond)
+	q.counter = q.counter.Where(cond)
 	return q
 }

@@ -44,6 +44,8 @@ type BalancesQ interface {
 	WithoutPassportEvent() ([]WithoutPassportEventBalance, error)
 	WithoutReferralEvent() ([]ReferredReferrer, error)
 
+	Count() (int64, error)
+
 	FilterByNullifier(...string) BalancesQ
 	FilterDisabled() BalancesQ
 	FilterByAnonymousID(id string) BalancesQ
