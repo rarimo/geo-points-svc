@@ -31,16 +31,10 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/attributes/short_description": val.Validate(attr.ShortDescription, val.Required),
 		"data/attributes/title":             val.Validate(attr.Title, val.Required),
 		// for poll event
-		"data/attributes/poll_event_id": val.Validate(attr.PollEventId, is.Digit,
-			val.When(attr.QrCodeValue == nil, val.Required),
-			val.When(attr.QrCodeValue != nil, val.Nil)),
-		"data/attributes/poll_contract": val.Validate(attr.PollContract, val.Match(addressRegexp),
-			val.When(attr.QrCodeValue == nil, val.Required),
-			val.When(attr.QrCodeValue != nil, val.Nil)),
+		"data/attributes/poll_event_id": val.Validate(attr.PollEventId, append(exclusive(attr.QrCodeValue == nil), is.Digit)...),
+		"data/attributes/poll_contract": val.Validate(attr.PollContract, append(exclusive(attr.QrCodeValue == nil), val.Match(addressRegexp))...),
 		// for QR code event
-		"data/attributes/qr_code_value": val.Validate(attr.QrCodeValue, is.Base64,
-			val.When(attr.PollContract == nil || attr.PollEventId == nil, val.Required),
-			val.When(attr.PollContract != nil || attr.PollEventId != nil, val.Nil)),
+		"data/attributes/qr_code_value": val.Validate(attr.QrCodeValue, append(exclusive(attr.PollEventId == nil && attr.PollContract == nil), is.Base64)...),
 		// these fields are not currently supported, because cron jobs implementation is required
 		"data/attributes/starts_at":  val.Validate(attr.StartsAt, val.Empty),
 		"data/attributes/expires_at": val.Validate(attr.ExpiresAt, val.Empty),
@@ -48,4 +42,9 @@ func NewCreateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		"data/attributes/flag":        val.Validate(attr.Flag, val.Empty),
 		"data/attributes/usage_count": val.Validate(attr.UsageCount, val.Empty),
 	}.Filter()
+}
+
+func exclusive(value bool) []val.Rule {
+	return []val.Rule{val.When(value, val.Required),
+		val.When(!value, val.Nil)}
 }

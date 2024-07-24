@@ -78,6 +78,8 @@ func (e EventType) Resource(locale string) resources.EventStaticMeta {
 		Disabled:         e.Disabled,
 		Logo:             e.Logo,
 		Flag:             e.Flag(),
+		PollEventId:      e.PollEventID,
+		PollContract:     e.PollContract,
 	}
 }
 
