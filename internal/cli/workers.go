@@ -8,6 +8,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/service"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/expirywatch"
+	"github.com/rarimo/geo-points-svc/internal/service/workers/leveljustice"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/nooneisforgotten"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/reopener"
 )
@@ -20,6 +21,7 @@ func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 		expiryWatchSig      = make(chan struct{})
 		evTypesSig          = make(chan struct{})
 		noOneIsForgottenSig = make(chan struct{})
+		levelJustice        = make(chan struct{})
 	)
 
 	run := func(f func()) {
@@ -42,8 +44,12 @@ func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 	<-reopenerSig
 	run(func() { nooneisforgotten.Run(cfg, noOneIsForgottenSig) })
 
+	// depends on noOneIsForgoten, because this worker can claim events and change balance
+	<-noOneIsForgottenSig
+	run(func() { leveljustice.Run(cfg, levelJustice) })
+
 	// service depends on all the workers for good UX
 	<-expiryWatchSig
-	<-noOneIsForgottenSig
+	<-levelJustice
 	run(func() { service.Run(ctx, cfg) })
 }

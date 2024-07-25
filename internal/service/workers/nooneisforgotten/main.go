@@ -43,7 +43,7 @@ func Run(cfg config.Config, sig chan struct{}) {
 // possible and to fulfill the rest of the events.
 //
 // Event will not be claimed if AutoClaim is disabled.
-func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
+func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels *config.Levels) error {
 	evType := types.Get(models.TypePassportScan, evtypes.FilterInactive)
 	if evType == nil {
 		return nil
@@ -134,7 +134,7 @@ func updateReferralUserEvents(db *pgdb.DB, types *evtypes.Types) error {
 // autoClaimEvents claim fulfilled events which have auto-claim enabled. This is
 // useful if some events were inactive, then became active and must be claimed
 // automatically.
-func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
+func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels *config.Levels) error {
 	claimTypes := types.Names(evtypes.FilterByAutoClaim(true))
 	if len(claimTypes) == 0 {
 		return nil

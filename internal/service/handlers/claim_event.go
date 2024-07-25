@@ -120,7 +120,7 @@ func claimEvent(r *http.Request, event *data.Event, balance *data.Balance) (clai
 //
 // Balance must be active and with verified passport
 func DoClaimEventUpdates(
-	levels config.Levels,
+	levels *config.Levels,
 	referralsQ data.ReferralsQ,
 	balancesQ data.BalancesQ,
 	balance data.Balance,
@@ -144,26 +144,40 @@ func DoClaimEventUpdates(
 
 // doLevelRefUpgrade calculates new level by provided reward: if level is up,
 // referrals are added
-func doLevelRefUpgrade(levels config.Levels, refQ data.ReferralsQ, balance data.Balance, reward int64) (level int, err error) {
-	refsCount, level := levels.LvlUp(balance.Level, reward+balance.Amount)
-	// we need +2 because refsCount can be -1
-	referrals := make([]data.Referral, 0, refsCount+2)
-
+func doLevelRefUpgrade(levels *config.Levels, refQ data.ReferralsQ, balance data.Balance, reward int64) (level int, err error) {
+	refsCount, level := levels.LvlChange(balance.Level, reward+balance.Amount)
+	referrals := []data.Referral{}
 	// count used to calculate ref code
-	count, err := refQ.New().FilterByNullifier(balance.Nullifier).Count()
+	dbReferrals, err := refQ.New().FilterByNullifier(balance.Nullifier).Select()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get referral count: %w", err)
 	}
+
+	toDelete, infinityPresent := getRefIDToDelete(dbReferrals, negAbs(refsCount))
+
 	switch {
-	case refsCount > 0:
-		referrals = append(referrals, prepareReferralsToAdd(balance.Nullifier, uint64(refsCount), count)...)
-	case refsCount == -1:
+	case refsCount == nil:
+		if infinityPresent {
+			break
+		}
 		referrals = append(referrals, data.Referral{
-			ID:        referralid.New(balance.Nullifier, count),
+			ID:        referralid.New(balance.Nullifier, uint64(len(dbReferrals))),
 			Nullifier: balance.Nullifier,
 			Infinity:  true,
 		})
+	case *refsCount > 0:
+		referrals = append(referrals, prepareReferralsToAdd(balance.Nullifier, uint64(*refsCount), uint64(len(dbReferrals)))...)
+	case *refsCount < 0:
+		if len(toDelete) == 0 {
+			break
+		}
+		err = refQ.New().FilterByIDs(toDelete...).Delete()
+		if err != nil {
+			return 0, fmt.Errorf("failed to delete referrals: %w", err)
+		}
+		return level, nil
 	}
+
 	if err = refQ.New().Insert(referrals...); err != nil {
 		return 0, fmt.Errorf("failed to insert referrals: %w", err)
 	}
@@ -192,4 +206,32 @@ func newClaimEventResponse(
 	resp.Included.Add(&inc)
 
 	return resp
+}
+
+func getRefIDToDelete(referrals []data.Referral, count int) ([]string, bool) {
+	var infinityRef *data.Referral
+	// extra capacity for infinity ref
+	ids := make([]string, 0, count+1)
+	for i, ref := range referrals {
+		if ref.Infinity {
+			infinityRef = &referrals[i]
+		}
+
+		if ref.UsageLeft > 0 && len(ids) < count {
+			ids = append(ids, ref.ID)
+		}
+	}
+
+	if infinityRef != nil {
+		ids = append(ids, infinityRef.ID)
+	}
+
+	return ids, infinityRef != nil
+}
+
+func negAbs(i *int) int {
+	if i == nil || *i >= 0 {
+		return 0
+	}
+	return -(*i)
 }

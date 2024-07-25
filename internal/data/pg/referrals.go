@@ -18,6 +18,7 @@ type referrals struct {
 	updater  squirrel.UpdateBuilder
 	consumer squirrel.UpdateBuilder
 	counter  squirrel.SelectBuilder
+	delete   squirrel.DeleteBuilder
 }
 
 func NewReferrals(db *pgdb.DB) data.ReferralsQ {
@@ -27,6 +28,7 @@ func NewReferrals(db *pgdb.DB) data.ReferralsQ {
 		updater:  squirrel.Update(referralsTable),
 		consumer: squirrel.Update(referralsTable).Set("usage_left", squirrel.Expr("usage_left - 1")),
 		counter:  squirrel.Select("COUNT(*) as count").From(referralsTable),
+		delete:   squirrel.Delete(referralsTable),
 	}
 }
 
@@ -46,6 +48,14 @@ func (q *referrals) Insert(referrals ...data.Referral) error {
 
 	if err := q.db.Exec(stmt); err != nil {
 		return fmt.Errorf("insert referrals [%+v]: %w", referrals, err)
+	}
+
+	return nil
+}
+
+func (q *referrals) Delete() error {
+	if err := q.db.Exec(q.delete); err != nil {
+		return fmt.Errorf("delete referrals: %w", err)
 	}
 
 	return nil
@@ -135,6 +145,10 @@ func (q *referrals) Consume(id string) error {
 
 func (q *referrals) FilterByNullifier(nullifier string) data.ReferralsQ {
 	return q.applyCondition(squirrel.Eq{fmt.Sprintf("%s.nullifier", referralsTable): nullifier})
+}
+
+func (q *referrals) FilterByIDs(ids ...string) data.ReferralsQ {
+	return q.applyCondition(squirrel.Eq{fmt.Sprintf("%s.id", referralsTable): ids})
 }
 
 func (q *referrals) FilterInactive() data.ReferralsQ {

@@ -20,7 +20,7 @@ type Config interface {
 	evtypes.EventTypeser
 	hmacsig.SigCalculatorProvider
 
-	Levels() Levels
+	Levels() *Levels
 	Verifiers() Verifiers
 }
 

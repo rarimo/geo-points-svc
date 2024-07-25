@@ -19,6 +19,7 @@ type Referral struct {
 type ReferralsQ interface {
 	New() ReferralsQ
 	Insert(...Referral) error
+	Delete() error
 
 	Select() ([]Referral, error)
 	Get(id string) (*Referral, error)
@@ -30,4 +31,5 @@ type ReferralsQ interface {
 
 	FilterByNullifier(string) ReferralsQ
 	FilterInactive() ReferralsQ
+	FilterByIDs(...string) ReferralsQ
 }

@@ -66,6 +66,7 @@ event_types:
       qr_code_value: "qr_code_base64_string"
 
 levels:
+  downgradeable: false
   levels:
     - lvl: 1
       threshold: 0
