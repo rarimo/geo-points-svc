@@ -36,9 +36,13 @@ func Run(ctx context.Context, cfg config.Config) {
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Get("/", handlers.GetBalance)
 					r.Patch("/", handlers.ActivateBalance)
-					r.Post("/verifypassport", handlers.VerifyPassport)
-					r.Post("/join_program", handlers.VerifyPassport)
+					r.Post("/verifypassport", handlers.VerifyInternalPassport)
+					r.Post("/join_program", handlers.VerifyInternalPassport)
+					r.Route("/verify", func(r chi.Router) {
+						r.Post("/external", handlers.VerifyExternalPassport)
+					})
 				})
+
 			})
 			r.Route("/events", func(r chi.Router) {
 				r.Use(authMW)

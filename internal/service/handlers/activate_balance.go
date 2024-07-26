@@ -98,7 +98,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to consume referral: %w", err)
 		}
 
-		if !balance.IsVerified {
+		if !BalanceIsVerified(balance) {
 			log.Debug("Balance is not verified, events will not be claimed")
 			return nil
 		}

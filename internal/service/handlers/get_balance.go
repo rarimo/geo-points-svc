@@ -112,7 +112,7 @@ func newBalanceResponse(balance data.Balance, referrals []data.Referral, referre
 	boolP := func(b bool) *bool { return &b }
 
 	resp.Data.Attributes.IsDisabled = boolP(balance.ReferredBy == nil)
-	resp.Data.Attributes.IsVerified = boolP(balance.IsVerified)
+	resp.Data.Attributes.IsVerified = boolP(BalanceIsVerified(&balance))
 	resp.Data.Attributes.ReferredUsersCount = &referredUsers
 	resp.Data.Attributes.RewardedReferredUsersCount = &rewardedReferredUsers
 

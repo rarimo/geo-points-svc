@@ -11,4 +11,6 @@ type VerifyPassportAttributes struct {
 	AnonymousId string `json:"anonymous_id"`
 	// Query ZK passport verification proof. Required for passport verification endpoint.
 	Proof *types.ZKProof `json:"proof,omitempty"`
+	// Unique identifier for linking internal and external passports
+	SharedHash *string `json:"shared_hash,omitempty"`
 }

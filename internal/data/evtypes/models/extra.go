@@ -14,10 +14,12 @@ const (
 )
 
 const (
-	TypeFreeWeekly       = "free_weekly"
-	TypeBeReferred       = "be_referred"
-	TypeReferralSpecific = "referral_specific"
-	TypePassportScan     = "passport_scan"
+	TypeFreeWeekly           = "free_weekly"
+	TypeBeReferred           = "be_referred"
+	TypeReferralSpecific     = "referral_specific"
+	TypePassportScan         = "passport_scan"
+	TypeInternalPassportScan = "internal_passport_scan"
+	TypeExternalPassportScan = "external_passport_scan"
 )
 
 const (

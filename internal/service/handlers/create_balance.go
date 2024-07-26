@@ -175,3 +175,7 @@ func createBalanceWithEventsAndReferrals(nullifier, refBy string, events []data.
 		return nil
 	})
 }
+
+func BalanceIsVerified(balance *data.Balance) bool {
+	return balance.InternalAID != nil || balance.ExternalAID != nil
+}

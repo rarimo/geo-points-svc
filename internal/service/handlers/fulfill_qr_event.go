@@ -59,7 +59,7 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !balance.IsVerified || balance.ReferredBy == nil {
+	if !BalanceIsVerified(balance) || balance.ReferredBy == nil {
 		Log(r).Infof("Balance nullifier=%s is unverified or disabled, fulfill or claim not allowed", event.Nullifier)
 		ape.RenderErr(w, problems.Forbidden())
 		return

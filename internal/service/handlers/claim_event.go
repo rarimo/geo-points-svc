@@ -55,7 +55,7 @@ func ClaimEvent(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	if balance == nil || !balance.IsVerified {
+	if balance == nil || !BalanceIsVerified(balance) {
 		msg := "did not verify passport"
 		if balance == nil {
 			msg = "is disabled"
@@ -89,15 +89,19 @@ func ClaimEvent(w http.ResponseWriter, r *http.Request) {
 
 // claimEvent requires event to exist
 // call in transaction to prevent unexpected changes
-func claimEvent(r *http.Request, event *data.Event, balance *data.Balance) (claimed *data.Event, err error) {
+func claimEvent(r *http.Request, event *data.Event, balance *data.Balance) (*data.Event, error) {
 	evType := EventTypes(r).Get(event.Type, evtypes.FilterInactive)
 	if evType == nil {
 		return event, nil
 	}
 
-	claimed, err = EventsQ(r).FilterByID(event.ID).Update(data.EventClaimed, nil, &evType.Reward)
+	claimed, err := EventsQ(r).FilterByID(event.ID).Update(data.EventClaimed, nil, &evType.Reward)
 	if err != nil {
 		return nil, fmt.Errorf("update event status: %w", err)
+	}
+
+	if len(claimed) == 0 {
+		return nil, fmt.Errorf("event wasn't updated")
 	}
 
 	err = DoClaimEventUpdates(
@@ -110,7 +114,7 @@ func claimEvent(r *http.Request, event *data.Event, balance *data.Balance) (clai
 		return nil, fmt.Errorf("failed to do claim event updates: %w", err)
 	}
 
-	return claimed, nil
+	return &claimed[0], nil
 }
 
 // DoClaimEventUpdates do updates which link to claim event:

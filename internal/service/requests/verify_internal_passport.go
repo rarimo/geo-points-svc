@@ -21,7 +21,7 @@ var (
 	joinProgramPathRegexp = regexp.MustCompile("^/integrations/geo-points-svc/v1/public/balances/0x[0-9a-fA-F]{64}/join_program$")
 )
 
-func NewVerifyPassport(r *http.Request) (req resources.VerifyPassportRequest, err error) {
+func NewVerifyInternalPassport(r *http.Request) (req resources.VerifyPassportRequest, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return req, newDecodeError("body", err)
 	}

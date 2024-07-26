@@ -22,12 +22,12 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
-// VerifyPassport handler processes 3 different flows:
+// VerifyInternalPassport handler processes 3 different flows:
 //   - Old passport verification with proof for the current release
 //   - New passport verification with JWT for the future
 //   - Legacy joining program logic when the client fails to generate query proof
-func VerifyPassport(w http.ResponseWriter, r *http.Request) {
-	req, err := requests.NewVerifyPassport(r)
+func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
+	req, err := requests.NewVerifyInternalPassport(r)
 	if err != nil {
 		Log(r).WithError(err).Debug("Bad request")
 		ape.RenderErr(w, problems.BadRequest(err)...)
@@ -35,17 +35,17 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		anonymousID = req.Data.Attributes.AnonymousId
+		internalAID = req.Data.Attributes.AnonymousId
 		proof       = req.Data.Attributes.Proof
 		log         = Log(r).WithFields(map[string]any{
 			"balance.nullifier":    req.Data.ID,
-			"balance.anonymous_id": anonymousID,
+			"balance.internal_aid": internalAID,
 		})
 
 		gotSig = r.Header.Get("Signature")
 	)
 
-	wantSig, err := SigCalculator(r).PassportVerificationSignature(req.Data.ID, anonymousID)
+	wantSig, err := SigCalculator(r).PassportVerificationSignature(req.Data.ID, internalAID)
 	if err != nil { // must never happen due to preceding validation
 		Log(r).WithError(err).Error("Failed to calculate HMAC signature")
 		ape.RenderErr(w, problems.InternalError())
@@ -64,14 +64,14 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	byAnonymousID, err := BalancesQ(r).FilterByAnonymousID(anonymousID).Get()
+	byAnonymousID, err := BalancesQ(r).FilterByInternalAID(internalAID).Get()
 	if err != nil {
-		log.WithError(err).Error("Failed to get balance by anonymous ID")
+		log.WithError(err).Error("Failed to get balance by internal AID")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if byAnonymousID != nil && byAnonymousID.Nullifier != balance.Nullifier {
-		log.Warn("Balance with the same anonymous ID already exists")
+		log.Warn("Balance with the same internal AID already exists")
 		ape.RenderErr(w, problems.Conflict())
 		return
 	}
@@ -92,7 +92,19 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		sharedHash = &h
 	}
 
-	if balance.IsVerified {
+	bySharedHash, err := BalancesQ(r).FilterBySharedHash(*sharedHash).Get()
+	if err != nil {
+		log.WithError(err).Error("Failed to get balance by shared hash")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if bySharedHash != nil && bySharedHash.Nullifier != balance.Nullifier {
+		log.Warn("Balance with the same shared hash already exists")
+		ape.RenderErr(w, problems.Conflict())
+		return
+	}
+
+	if byAnonymousID != nil {
 		if balance.SharedHash != nil {
 			log.Warnf("Balance %s already verified", balance.Nullifier)
 			ape.RenderErr(w, problems.Conflict())
@@ -105,15 +117,15 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var balAID string
-		if balance.AnonymousID != nil {
-			balAID = *balance.AnonymousID
+		if balance.InternalAID != nil {
+			balAID = *balance.InternalAID
 		}
 
 		err = validation.Errors{
-			"data/attributes/anonymous_id": validation.Validate(anonymousID, validation.Required, validation.In(balAID)),
+			"data/attributes/anonymous_id": validation.Validate(internalAID, validation.Required, validation.In(balAID)),
 		}.Filter()
 		if err != nil {
-			log.Warnf("Anonymous ID was changed, got %s, want %s", anonymousID, balAID)
+			log.Warnf("Anonymous ID was changed, got %s, want %s", internalAID, balAID)
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
@@ -133,7 +145,7 @@ func VerifyPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = EventsQ(r).Transaction(func() error {
-		if err = updateBalanceVerification(r, *balance, anonymousID, sharedHash); err != nil {
+		if err = updateBalanceVerification(r, *balance, internalAID, data.VerifyInternalType, sharedHash); err != nil {
 			return fmt.Errorf("update balance verification info: %w", err)
 		}
 
@@ -218,10 +230,19 @@ func getAndVerifyBalanceEligibility(
 	return balance, nil
 }
 
-func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousID string, sharedHash *string) error {
-	toUpd := map[string]any{
-		data.ColIsVerified:  true,
-		data.ColAnonymousID: anonymousID,
+func updateBalanceVerification(r *http.Request, balance data.Balance, anonymousID, verifyType string, sharedHash *string) error {
+	var toUpd map[string]any
+	switch verifyType {
+	case data.VerifyInternalType:
+		toUpd = map[string]any{
+			data.ColInternalAID: anonymousID,
+		}
+	case data.VerifyExternalType:
+		toUpd = map[string]any{
+			data.ColExternalAID: anonymousID,
+		}
+	default:
+		return fmt.Errorf("invalid verify type: want %s or %s, got %s", data.VerifyInternalType, data.VerifyExternalType, verifyType)
 	}
 	if sharedHash != nil {
 		toUpd[data.ColSharedHash] = *sharedHash
@@ -435,8 +456,8 @@ func addEventForReferrer(r *http.Request, balance data.Balance) error {
 		return nil
 	}
 
-	if !evTypeRef.AutoClaim || !refBalance.IsVerified {
-		if !refBalance.IsVerified {
+	if !evTypeRef.AutoClaim || (refBalance.InternalAID == nil && refBalance.ExternalAID == nil) {
+		if refBalance.InternalAID == nil && refBalance.ExternalAID == nil {
 			Log(r).Debug("Referrer has not scanned passport yet, adding fulfilled events")
 		}
 		err = EventsQ(r).Insert(data.Event{

@@ -14,6 +14,10 @@ allOf:
             type: string
             description: Unique identifier of the passport.
             example: "2bd3a2532096fee10a45a40e444a11b4d00a707f3459376087747de05996fbf5"
+          shared_hash:
+            type: string
+            description: Unique identifier for linking internal and external passports
+            example: "12345678901234567890"
           proof:
             type: object
             format: types.ZKProof

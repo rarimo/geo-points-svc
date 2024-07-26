@@ -169,7 +169,7 @@ func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels *config.Levels) e
 	claimByTypes := make(map[string][]data.Event, len(claimTypes))
 	for _, event := range events {
 		for _, balance := range balances {
-			if event.Nullifier != balance.Nullifier || !balance.IsVerified || balance.ReferredBy == nil {
+			if event.Nullifier != balance.Nullifier || !handlers.BalanceIsVerified(&balance) || balance.ReferredBy == nil {
 				continue
 			}
 			claimByTypes[event.Type] = append(claimByTypes[event.Type], event)

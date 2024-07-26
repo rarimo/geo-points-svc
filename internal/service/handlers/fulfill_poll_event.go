@@ -51,9 +51,9 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !balance.IsVerified || balance.ReferredBy == nil {
+	if !BalanceIsVerified(balance) || balance.ReferredBy == nil {
 		log.Infof("Balance is forbidden to fulfill or claim: is_verified=%t, referred_by=%v",
-			balance.IsVerified, balance.ReferredBy)
+			BalanceIsVerified(balance), balance.ReferredBy)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
