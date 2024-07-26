@@ -1,0 +1,72 @@
+apiVersion: skaffold/v2beta28
+kind: Config
+build:
+  artifacts:
+  - image: geo-points-svc # Change it on your own repo-name
+
+# Uncomment the following lines if you want to deploy your application
+# profiles:
+# - name: dev
+#   deploy:
+#     helm:
+#       releases:
+#         - name: backend # Change it on your own repo-name
+#           setValueTemplates:
+#             image.repository: "{{.IMAGE_REPO_backend}}"
+#             image.tag: "{{.IMAGE_TAG_backend}}"
+#           namespace: dev # Change it on your own namespace
+#           createNamespace: true
+#           chartPath: ./backend # Change it on your own path to helm chart
+#           valuesFiles:
+#             - ./backend/values.yaml # Change it on your own path to helm chart values.yaml file
+#           skipBuildDependencies: true
+#       flags:
+#         upgrade:
+#           - -i
+#   portForward:
+#     - resourceType: deployment
+#       resourceName: backend # Change it on your own name in Chart.yaml
+#       port: 8000
+#       localPort: 8000
+
+# - name: stage
+#   patches:
+#     - op: remove
+#       path: /build
+#   deploy:
+#     helm:
+#       releases:
+#         - name: backend # Change it on your own repo-name
+#           setValueTemplates:
+#             image.repository: "{{.SKAFFOLD_DEFAULT_REPO}}/{{.GITHUB_REPOSITORY}}"
+#             image.tag: "{{.GITHUB_SHA}}"
+#           namespace: stage # Change it on your own namespace
+#           createNamespace: true
+#           chartPath: ./backend # Change it on your own path to helm chart
+#           valuesFiles:
+#             - ./backend/values.yaml # Change it on your own path to helm chart values.yaml file
+#           skipBuildDependencies: true
+#       flags:
+#         upgrade:
+#           - -i
+
+# - name: prod
+#   patches:
+#     - op: remove
+#       path: /build
+#   deploy:
+#     helm:
+#       releases:
+#         - name: backend # Change it on your own repo-name
+#           setValueTemplates:
+#             image.repository: "{{.SKAFFOLD_DEFAULT_REPO}}/{{.GITHUB_REPOSITORY}}"
+#             image.tag: "{{.GITHUB_REF_NAME}}"
+#           namespace: prod # Change it on your own namespace
+#           createNamespace: true
+#           chartPath: ./backend # Change it on your own path to helm chart
+#           valuesFiles:
+#             - ./backend/values.yaml # Change it on your own path to helm chart values.yaml file
+#           skipBuildDependencies: true
+#       flags:
+#         upgrade:
+#           - -i
