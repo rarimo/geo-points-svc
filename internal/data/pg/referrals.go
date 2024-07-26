@@ -117,8 +117,8 @@ func (q *referrals) WithStatus() data.ReferralsQ {
 		status = fmt.Sprintf(`CASE
 			WHEN infinity = TRUE THEN '%s'
 			WHEN usage_left > 0 THEN '%s'
-			WHEN rr.is_verified = FALSE AND re.is_verified = TRUE THEN '%s'
-			WHEN rr.is_verified = TRUE AND re.is_verified = TRUE THEN '%s'
+			WHEN (rr.internal_aid IS NULL AND rr.external_aid IS NULL) AND (re.internal_aid IS NOT NULL OR re.external_aid IS NOT NULL) THEN '%s'
+			WHEN (rr.internal_aid IS NOT NULL OR rr.external_aid IS NOT NULL) AND (re.internal_aid IS NOT NULL OR re.external_aid IS NOT NULL) THEN '%s'
 			ELSE '%s'
 		END AS status`,
 			data.StatusInfinity, data.StatusActive, data.StatusAwaiting,
