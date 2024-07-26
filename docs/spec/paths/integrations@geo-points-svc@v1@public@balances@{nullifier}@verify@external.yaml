@@ -19,6 +19,8 @@ post:
       schema:
         type: string
         pattern: '^[a-f0-9]{64}$'
+  security:
+    - BearerAuth: []
   requestBody:
     required: true
     content:

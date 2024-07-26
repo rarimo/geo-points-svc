@@ -85,7 +85,7 @@ func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels *config.
 			levels,
 			pg.NewReferrals(db),
 			pg.NewBalances(db),
-			b.Balance,
+			&b.Balance,
 			evType.Reward)
 		if err != nil {
 			return fmt.Errorf("failed to do claim event updates for passport scan: %w", err)
@@ -169,7 +169,7 @@ func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels *config.Levels) e
 	claimByTypes := make(map[string][]data.Event, len(claimTypes))
 	for _, event := range events {
 		for _, balance := range balances {
-			if event.Nullifier != balance.Nullifier || !handlers.BalanceIsVerified(&balance) || balance.ReferredBy == nil {
+			if event.Nullifier != balance.Nullifier || !balance.IsVerified() || balance.IsDisabled() {
 				continue
 			}
 			claimByTypes[event.Type] = append(claimByTypes[event.Type], event)
@@ -204,7 +204,7 @@ func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels *config.Levels) e
 			levels,
 			pg.NewReferrals(db),
 			pg.NewBalances(db),
-			balance,
+			&balance,
 			rewardByNullifier[balance.Nullifier])
 		if err != nil {
 			return fmt.Errorf("failed to do claim event updates for referral specific event: %w", err)

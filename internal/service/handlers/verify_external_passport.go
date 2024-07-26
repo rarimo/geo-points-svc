@@ -41,7 +41,6 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
 	if gotSig != wantSig {
 		log.Warnf("Passport verification unauthorized access: HMAC signature mismatch: got %s, want %s", gotSig, wantSig)
 		ape.RenderErr(w, problems.Forbidden())
@@ -64,7 +63,6 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
-
 	if byNullifier.ExternalAID != nil {
 		log.Debug("Already verified")
 		ape.RenderErr(w, problems.Conflict())
@@ -84,7 +82,7 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if byNullifier.SharedHash == nil || *byNullifier.SharedHash != sharedHash {
-		if *byNullifier.SharedHash != sharedHash {
+		if byNullifier.SharedHash != nil {
 			log.Debug("Shared hash already used")
 			ape.RenderErr(w, problems.Conflict())
 			return
@@ -104,18 +102,33 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = EventsQ(r).Transaction(func() error {
-		if err = updateBalanceVerification(r, *byNullifier, externalAID, data.VerifyExternalType, &sharedHash); err != nil {
+		if err = updateBalanceVerification(r, byNullifier, externalAID, data.VerifyExternalType, &sharedHash); err != nil {
 			return fmt.Errorf("update balance verification info: %w", err)
 		}
 
-		if byNullifier.ReferredBy == nil {
+		externalPassportEvent := EventTypes(r).Get(models.TypeExternalPassportScan, evtypes.FilterInactive)
+		if externalPassportEvent != nil {
+			_, err := EventsQ(r).FilterByNullifier(nullifier).
+				FilterByStatus(data.EventOpen).
+				FilterByType(models.TypeExternalPassportScan).
+				Update(data.EventFulfilled, nil, nil)
+			if err != nil {
+				return fmt.Errorf("failed to fulfill external passport scan event: %w", err)
+			}
+		}
+
+		if byNullifier.IsDisabled() {
 			log.Debug("Balance is disabled, events will not be claimed")
 			return nil
 		}
 
 		byNullifier.ExternalAID = &externalAID
 
-		return claimEventsForBalance(r, byNullifier)
+		if err := addEventForReferrer(r, byNullifier); err != nil {
+			return fmt.Errorf("add event for referrer: %w", err)
+		}
+
+		return autoClaimEventsForBalance(r, byNullifier)
 	})
 	if err != nil {
 		log.WithError(err).Error("Failed to do passport scan updates")
@@ -137,15 +150,22 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func claimEventsForBalance(r *http.Request, balance *data.Balance) error {
-	if balance == nil || balance.ReferredBy == nil || (balance.InternalAID == nil && balance.ExternalAID == nil) {
-		Log(r).Debug("Balance absent, inactive or not verified. Events not claimed.")
+func autoClaimEventsForBalance(r *http.Request, balance *data.Balance) error {
+	if balance == nil {
+		Log(r).Debug("Balance absent. Events not claimed.")
+		return nil
+	}
+
+	if balance.IsDisabled() || !balance.IsVerified() {
+		Log(r).Debug("User not eligible for event claiming. Events not claimed.")
 		return nil
 	}
 
 	var totalPoints int64
-
-	eventsToClaim, err := EventsQ(r).FilterByNullifier(balance.Nullifier).FilterByStatus(data.EventFulfilled).Select()
+	eventsToClaim, err := EventsQ(r).
+		FilterByNullifier(balance.Nullifier).
+		FilterByStatus(data.EventFulfilled).
+		Select()
 	if err != nil {
 		return fmt.Errorf("failed to select events for user=%s: %w", balance.Nullifier, err)
 	}
@@ -172,7 +192,7 @@ func claimEventsForBalance(r *http.Request, balance *data.Balance) error {
 		totalPoints += evType.Reward * int64(len(evIDs))
 	}
 
-	level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), *balance, totalPoints)
+	level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, totalPoints)
 	if err != nil {
 		return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
 	}

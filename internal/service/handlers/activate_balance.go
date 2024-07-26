@@ -43,7 +43,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if balance.ReferredBy != nil {
+	if !balance.IsDisabled() {
 		log.Infof("Balance already activated with code %s", *balance.ReferredBy)
 		ape.RenderErr(w, problems.Conflict())
 		return
@@ -69,7 +69,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = EventsQ(r).Transaction(func() error {
-		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), *balance, 0)
+		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, 0)
 		if err != nil {
 			return fmt.Errorf("failed to do lvlup and referrals update: %w", err)
 		}
@@ -82,7 +82,7 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("update balance: %w", err)
 		}
 
-		if refBalance.ReferredBy != nil {
+		if !refBalance.IsDisabled() {
 			log.Debug("Be referred event will be fulfilled for referee")
 			err = EventsQ(r).Insert(data.Event{
 				Nullifier: nullifier,
@@ -98,13 +98,18 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to consume referral: %w", err)
 		}
 
-		if !BalanceIsVerified(balance) {
+		if !balance.IsVerified() {
 			log.Debug("Balance is not verified, events will not be claimed")
 			return nil
 		}
 
 		balance.ReferredBy = &referral.ID
-		return doVerificationEventUpdates(r, *balance)
+
+		if err := addEventForReferrer(r, balance); err != nil {
+			return fmt.Errorf("add event for referrer: %w", err)
+		}
+
+		return autoClaimEventsForBalance(r, balance)
 	})
 	if err != nil {
 		log.WithError(err).Error("Failed to insert events and consume referral for balance")

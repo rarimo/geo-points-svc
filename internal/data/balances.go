@@ -66,3 +66,11 @@ type ReferredReferrer struct {
 	Referred string `db:"referred"`
 	Referrer string `db:"referrer"`
 }
+
+func (b *Balance) IsVerified() bool {
+	return b.InternalAID != nil || b.ExternalAID != nil
+}
+
+func (b *Balance) IsDisabled() bool {
+	return b.ReferredBy == nil
+}

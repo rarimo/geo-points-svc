@@ -17,7 +17,7 @@ func Run(cfg config.Config, sig chan struct{}) {
 
 	err = pg.NewEvents(db).Transaction(func() error {
 		for _, balance := range balances {
-			err = handlers.DoClaimEventUpdates(cfg.Levels(), pg.NewReferrals(db), pg.NewBalances(db), balance, 0)
+			err = handlers.DoClaimEventUpdates(cfg.Levels(), pg.NewReferrals(db), pg.NewBalances(db), &balance, 0)
 			if err != nil {
 				return fmt.Errorf("failed to update balance level: %w", err)
 			}

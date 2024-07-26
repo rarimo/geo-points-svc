@@ -62,7 +62,7 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
-		isGenesisRef = refBalance.ReferredBy == nil
+		isGenesisRef = refBalance.IsDisabled()
 	}
 
 	events := prepareEventsWithRef(nullifier, refCode, isGenesisRef, r)
@@ -155,7 +155,7 @@ func createBalanceWithEventsAndReferrals(nullifier, refBy string, events []data.
 		}
 		balance.ReferredBy = &refBy
 
-		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), *balance, 0)
+		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, 0)
 		if err != nil {
 			return fmt.Errorf("failed to do lvlup and referrals update: %w", err)
 		}
@@ -174,8 +174,4 @@ func createBalanceWithEventsAndReferrals(nullifier, refBy string, events []data.
 
 		return nil
 	})
-}
-
-func BalanceIsVerified(balance *data.Balance) bool {
-	return balance.InternalAID != nil || balance.ExternalAID != nil
 }

@@ -55,7 +55,7 @@ func ClaimEvent(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	if balance == nil || !BalanceIsVerified(balance) {
+	if balance == nil || !balance.IsVerified() {
 		msg := "did not verify passport"
 		if balance == nil {
 			msg = "is disabled"
@@ -108,7 +108,7 @@ func claimEvent(r *http.Request, event *data.Event, balance *data.Balance) (*dat
 		Levels(r),
 		ReferralsQ(r),
 		BalancesQ(r),
-		*balance,
+		balance,
 		evType.Reward)
 	if err != nil {
 		return nil, fmt.Errorf("failed to do claim event updates: %w", err)
@@ -127,7 +127,7 @@ func DoClaimEventUpdates(
 	levels *config.Levels,
 	referralsQ data.ReferralsQ,
 	balancesQ data.BalancesQ,
-	balance data.Balance,
+	balance *data.Balance,
 	reward int64) (err error) {
 
 	level, err := doLevelRefUpgrade(levels, referralsQ, balance, reward)
@@ -148,7 +148,7 @@ func DoClaimEventUpdates(
 
 // doLevelRefUpgrade calculates new level by provided reward: if level is up,
 // referrals are added
-func doLevelRefUpgrade(levels *config.Levels, refQ data.ReferralsQ, balance data.Balance, reward int64) (level int, err error) {
+func doLevelRefUpgrade(levels *config.Levels, refQ data.ReferralsQ, balance *data.Balance, reward int64) (level int, err error) {
 	refsCount, level := levels.LvlChange(balance.Level, reward+balance.Amount)
 	referrals := []data.Referral{}
 	// count used to calculate ref code
