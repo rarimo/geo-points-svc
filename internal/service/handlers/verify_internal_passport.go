@@ -92,6 +92,11 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 		sharedHash = &h
 	}
 
+	if sharedHash == nil {
+		empty := ""
+		sharedHash = &empty
+	}
+
 	bySharedHash, err := BalancesQ(r).FilterBySharedHash(*sharedHash).Get()
 	if err != nil {
 		log.WithError(err).Error("Failed to get balance by shared hash")
@@ -110,7 +115,7 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
-		if proof == nil {
+		if proof == nil && *sharedHash == "" {
 			log.Warnf("Balance %s tried to re-join program", balance.Nullifier)
 			ape.RenderErr(w, problems.Conflict())
 			return
@@ -167,11 +172,17 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 
 		balance.InternalAID = &internalAID
 
+		if err = autoClaimEventsForBalance(r, balance); err != nil {
+			return fmt.Errorf("failed to autoclaim events for user")
+		}
+		if balance.IsVerified() {
+			return nil
+		}
+
 		if err := addEventForReferrer(r, balance); err != nil {
 			return fmt.Errorf("add event for referrer: %w", err)
 		}
-
-		return autoClaimEventsForBalance(r, balance)
+		return nil
 	})
 
 	if err != nil {
