@@ -88,6 +88,13 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to consume referral: %w", err)
 		}
 
+		err = BalancesQ(r).FilterByNullifier(nullifier).Update(map[string]any{
+			data.ColReferredBy: referral.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update referred_by: %w", err)
+		}
+
 		if !balance.IsVerified() {
 			log.Debug("Balance is not verified, events will not be claimed")
 			return nil
