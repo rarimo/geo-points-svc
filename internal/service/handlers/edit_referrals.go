@@ -68,7 +68,7 @@ func EditReferrals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if balance.ReferredBy != nil {
+	if !balance.IsDisabled() {
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{"balance": fmt.Errorf("genesis balances must be disabled")})...)
 		return
 	}

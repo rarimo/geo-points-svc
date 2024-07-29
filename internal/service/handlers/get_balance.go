@@ -41,7 +41,7 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
-	if balance.ReferredBy == nil {
+	if balance.IsDisabled() {
 		balance.Rank = nil
 	}
 
@@ -50,7 +50,7 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 		referredUsers         int
 		rewardedReferredUsers int
 	)
-	if req.ReferralCodes && balance.ReferredBy != nil {
+	if req.ReferralCodes && !balance.IsDisabled() {
 		referrals, err = ReferralsQ(r).
 			FilterByNullifier(req.Nullifier).
 			WithStatus().
@@ -111,8 +111,8 @@ func newBalanceResponse(balance data.Balance, referrals []data.Referral, referre
 	resp := resources.BalanceResponse{Data: newBalanceModel(balance)}
 	boolP := func(b bool) *bool { return &b }
 
-	resp.Data.Attributes.IsDisabled = boolP(balance.ReferredBy == nil)
-	resp.Data.Attributes.IsVerified = boolP(balance.IsVerified)
+	resp.Data.Attributes.IsDisabled = boolP(balance.IsDisabled())
+	resp.Data.Attributes.IsVerified = boolP(balance.IsVerified())
 	resp.Data.Attributes.ReferredUsersCount = &referredUsers
 	resp.Data.Attributes.RewardedReferredUsersCount = &rewardedReferredUsers
 

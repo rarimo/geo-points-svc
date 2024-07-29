@@ -29,6 +29,25 @@ event_types:
       action_url: https://...
       logo: https://...
       auto_claim: true
+    - name: external_passport_scan
+      reward: 5
+      # there are default and localized configurations of texts
+      title: Points for external passport scan
+      description: Get points for scan passport and share data
+      short_description: Short description
+      localized:
+        en-UK:
+          title: Points for external passport scan
+          description: Get points for scan passport and share data
+          short_description: Short description
+        en-US:
+          title: Points for external passport scan
+          description: Get points for scan passport and share data
+          short_description: Short description
+      frequency: one-time
+      action_url: https://...
+      logo: https://...
+      auto_claim: true
     - name: free_weekly
       title: Free weekly points
       reward: 1
@@ -66,6 +85,7 @@ event_types:
       qr_code_value: "qr_code_base64_string"
 
 levels:
+  downgradeable: false
   levels:
     - lvl: 1
       threshold: 0

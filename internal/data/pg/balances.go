@@ -164,7 +164,7 @@ func (q *balances) WithoutPassportEvent() ([]data.WithoutPassportEventBalance, e
 		ON b.nullifier = e.nullifier AND e.type='passport_scan' 
 		WHERE e.status NOT IN ('claimed') 
 		AND b.referred_by IS NOT NULL
-		AND b.is_verified = true
+		AND b.internal_aid IS NOT NULL
 	`, balancesTable, eventsTable)
 
 	if err := q.db.SelectRaw(&res, stmt); err != nil {
@@ -188,7 +188,7 @@ func (q *balances) WithoutReferralEvent() ([]data.ReferredReferrer, error) {
 				FROM %s AS b INNER JOIN %s AS e 
 				ON e.meta->>'nullifier' = b.nullifier) 
 		AND b.referred_by IS NOT NULL 
-		AND b.is_verified = true
+		AND (b.internal_aid IS NOT NULL OR b.external_aid IS NOT NULL)
 	`, balancesTable, referralsTable, balancesTable, eventsTable)
 
 	if err := q.db.SelectRaw(&res, stmt); err != nil {
@@ -210,8 +210,16 @@ func (q *balances) FilterDisabled() data.BalancesQ {
 	return q.applyCondition(squirrel.NotEq{"referred_by": nil})
 }
 
-func (q *balances) FilterByAnonymousID(id string) data.BalancesQ {
-	return q.applyCondition(squirrel.Eq{"anonymous_id": id})
+func (q *balances) FilterByInternalAID(aid string) data.BalancesQ {
+	return q.applyCondition(squirrel.Eq{"internal_aid": aid})
+}
+
+func (q *balances) FilterByExternalAID(aid string) data.BalancesQ {
+	return q.applyCondition(squirrel.Eq{"external_aid": aid})
+}
+
+func (q *balances) FilterBySharedHash(hash string) data.BalancesQ {
+	return q.applyCondition(squirrel.Eq{"shared_hash": hash})
 }
 
 func (q *balances) applyCondition(cond squirrel.Sqlizer) data.BalancesQ {

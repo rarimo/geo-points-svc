@@ -117,12 +117,12 @@ func SigCalculator(r *http.Request) hmacsig.Calculator {
 	return r.Context().Value(sigCalculatorCtxKey).(hmacsig.Calculator)
 }
 
-func CtxLevels(levels config.Levels) func(context.Context) context.Context {
+func CtxLevels(levels *config.Levels) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, levelsCtxKey, levels)
 	}
 }
 
-func Levels(r *http.Request) config.Levels {
-	return r.Context().Value(levelsCtxKey).(config.Levels)
+func Levels(r *http.Request) *config.Levels {
+	return r.Context().Value(levelsCtxKey).(*config.Levels)
 }

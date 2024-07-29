@@ -6,6 +6,7 @@ import (
 
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"gitlab.com/distributed_lab/ape"
@@ -22,7 +23,10 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 	var (
 		nullifier    = req.Data.ID
 		referralCode = req.Data.Attributes.ReferredBy
-		log          = Log(r).WithField("nullifier", nullifier)
+		log          = Log(r).WithFields(map[string]any{
+			"nullifier":     nullifier,
+			"referral_code": referralCode,
+		})
 	)
 
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
@@ -36,14 +40,12 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
 	if balance == nil {
 		log.Debug("Balance not found")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
-
-	if balance.ReferredBy != nil {
+	if !balance.IsDisabled() {
 		log.Infof("Balance already activated with code %s", *balance.ReferredBy)
 		ape.RenderErr(w, problems.Conflict())
 		return
@@ -69,20 +71,8 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = EventsQ(r).Transaction(func() error {
-		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), *balance, 0)
-		if err != nil {
-			return fmt.Errorf("failed to do lvlup and referrals update: %w", err)
-		}
-
-		err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
-			data.ColReferredBy: referralCode,
-			data.ColLevel:      level,
-		})
-		if err != nil {
-			return fmt.Errorf("update balance: %w", err)
-		}
-
-		if refBalance.ReferredBy != nil {
+		evBeReferred := EventTypes(r).Get(models.TypeBeReferred, evtypes.FilterInactive)
+		if !refBalance.IsDisabled() && evBeReferred != nil {
 			log.Debug("Be referred event will be fulfilled for referee")
 			err = EventsQ(r).Insert(data.Event{
 				Nullifier: nullifier,
@@ -98,13 +88,44 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to consume referral: %w", err)
 		}
 
-		if !balance.IsVerified {
+		err = BalancesQ(r).FilterByNullifier(nullifier).Update(map[string]any{
+			data.ColReferredBy: referral.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update referred_by: %w", err)
+		}
+
+		if !balance.IsVerified() {
 			log.Debug("Balance is not verified, events will not be claimed")
 			return nil
 		}
 
 		balance.ReferredBy = &referral.ID
-		return doVerificationEventUpdates(r, *balance)
+
+		evReferralSpecific := EventTypes(r).Get(models.TypeReferralSpecific, evtypes.FilterInactive)
+		if !refBalance.IsDisabled() && evReferralSpecific != nil {
+			err = EventsQ(r).Insert(data.Event{
+				Nullifier: referral.Nullifier,
+				Type:      evReferralSpecific.Name,
+				Status:    data.EventFulfilled,
+				Meta:      data.Jsonb(fmt.Sprintf(`{"nullifier": "%s"}`, balance.Nullifier)),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to insert fulfilled event for referrer: %w", err)
+			}
+
+			err = autoClaimEventsForBalance(r, refBalance)
+			if err != nil {
+				return fmt.Errorf("failed to autoclaim events for referrer: %w", err)
+			}
+		}
+
+		err = autoClaimEventsForBalance(r, balance)
+		if err != nil {
+			return fmt.Errorf("failed to autoclaim events for user: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		log.WithError(err).Error("Failed to insert events and consume referral for balance")

@@ -59,13 +59,13 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !balance.IsVerified || balance.ReferredBy == nil {
+	if !balance.IsVerified() || balance.IsDisabled() {
 		Log(r).Infof("Balance nullifier=%s is unverified or disabled, fulfill or claim not allowed", event.Nullifier)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
-	if !evType.AutoClaim && balance.ReferredBy != nil {
+	if !evType.AutoClaim && !balance.IsDisabled() {
 		_, err = EventsQ(r).FilterByID(event.ID).Update(data.EventFulfilled, nil, nil)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to update event status")

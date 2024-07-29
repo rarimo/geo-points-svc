@@ -60,7 +60,7 @@ func (q *events) Insert(events ...data.Event) error {
 	return nil
 }
 
-func (q *events) Update(status data.EventStatus, meta json.RawMessage, points *int64) (*data.Event, error) {
+func (q *events) Update(status data.EventStatus, meta json.RawMessage, points *int64) ([]data.Event, error) {
 	umap := map[string]any{
 		"status": status,
 	}
@@ -71,14 +71,14 @@ func (q *events) Update(status data.EventStatus, meta json.RawMessage, points *i
 		umap["points_amount"] = points
 	}
 
-	var res data.Event
+	var res []data.Event
 	stmt := q.updater.SetMap(umap).Suffix("RETURNING *")
 
-	if err := q.db.Get(&res, stmt); err != nil {
+	if err := q.db.Select(&res, stmt); err != nil {
 		return nil, fmt.Errorf("update event with map %+v: %w", umap, err)
 	}
 
-	return &res, nil
+	return res, nil
 }
 
 func (q *events) Delete() (int64, error) {

@@ -43,7 +43,7 @@ func Run(cfg config.Config, sig chan struct{}) {
 // possible and to fulfill the rest of the events.
 //
 // Event will not be claimed if AutoClaim is disabled.
-func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
+func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels *config.Levels) error {
 	evType := types.Get(models.TypePassportScan, evtypes.FilterInactive)
 	if evType == nil {
 		return nil
@@ -85,7 +85,7 @@ func updatePassportScanEvents(db *pgdb.DB, types *evtypes.Types, levels config.L
 			levels,
 			pg.NewReferrals(db),
 			pg.NewBalances(db),
-			b.Balance,
+			&b.Balance,
 			evType.Reward)
 		if err != nil {
 			return fmt.Errorf("failed to do claim event updates for passport scan: %w", err)
@@ -134,7 +134,7 @@ func updateReferralUserEvents(db *pgdb.DB, types *evtypes.Types) error {
 // autoClaimEvents claim fulfilled events which have auto-claim enabled. This is
 // useful if some events were inactive, then became active and must be claimed
 // automatically.
-func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) error {
+func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels *config.Levels) error {
 	claimTypes := types.Names(evtypes.FilterByAutoClaim(true))
 	if len(claimTypes) == 0 {
 		return nil
@@ -169,7 +169,7 @@ func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) er
 	claimByTypes := make(map[string][]data.Event, len(claimTypes))
 	for _, event := range events {
 		for _, balance := range balances {
-			if event.Nullifier != balance.Nullifier || !balance.IsVerified || balance.ReferredBy == nil {
+			if event.Nullifier != balance.Nullifier || !balance.IsVerified() || balance.IsDisabled() {
 				continue
 			}
 			claimByTypes[event.Type] = append(claimByTypes[event.Type], event)
@@ -204,7 +204,7 @@ func autoClaimEvents(db *pgdb.DB, types *evtypes.Types, levels config.Levels) er
 			levels,
 			pg.NewReferrals(db),
 			pg.NewBalances(db),
-			balance,
+			&balance,
 			rewardByNullifier[balance.Nullifier])
 		if err != nil {
 			return fmt.Errorf("failed to do claim event updates for referral specific event: %w", err)

@@ -16,12 +16,16 @@ type Level struct {
 	Infinity  bool `fig:"infinity"`
 }
 
-type Levels map[int]Level
+type Levels struct {
+	levels        map[int]Level
+	Downgradeable bool
+}
 
-func (c *config) Levels() Levels {
+func (c *config) Levels() *Levels {
 	return c.levels.Do(func() interface{} {
 		var cfg struct {
-			Lvls []Level `fig:"levels,required"`
+			Downgradeable bool    `fig:"downgradeable"`
+			Lvls          []Level `fig:"levels,required"`
 		}
 
 		err := figure.Out(&cfg).
@@ -35,44 +39,71 @@ func (c *config) Levels() Levels {
 			panic(errors.New("no levels provided in config"))
 		}
 
-		res := make(Levels, len(cfg.Lvls))
+		res := make(map[int]Level, len(cfg.Lvls))
 		for _, v := range cfg.Lvls {
 			res[v.Level] = v
 		}
 
-		return res
-	}).(Levels)
+		return &Levels{
+			levels:        res,
+			Downgradeable: cfg.Downgradeable,
+		}
+	}).(*Levels)
 }
 
 // LvlUp Calculates new lvl. New lvl always greater then current level
-func (l Levels) LvlUp(currentLevel int, totalAmount int64) (refCoundToAdd int, newLevel int) {
-	lvls := make([]int, 0, len(l))
-	for k, v := range l {
-		if k <= currentLevel {
-			continue
-		}
-		if int64(v.Threshold) > totalAmount {
-			continue
-		}
+func (l *Levels) LvlChange(currentLevel int, totalAmount int64) (refCoundToAdd *int, newLevel int) {
+	var downgrade bool
+	if l.Downgradeable && l.levels[currentLevel].Threshold > int(totalAmount) {
+		downgrade = true
+	}
+	lvls := make([]int, 0, len(l.levels))
+	refCoundToAdd = new(int)
 
-		refCoundToAdd += v.Referrals
-		lvls = append(lvls, k)
+	if downgrade {
+		for k, v := range l.levels {
+			if k > currentLevel {
+				continue
+			}
+			if int64(v.Threshold) <= totalAmount {
+				continue
+			}
+
+			*refCoundToAdd -= v.Referrals
+			lvls = append(lvls, k)
+		}
+	} else {
+		for k, v := range l.levels {
+			if k <= currentLevel {
+				continue
+			}
+			if int64(v.Threshold) > totalAmount {
+				continue
+			}
+
+			*refCoundToAdd += v.Referrals
+			lvls = append(lvls, k)
+		}
 	}
 
 	if len(lvls) == 0 {
-		return 0, currentLevel
+		return refCoundToAdd, currentLevel
 	}
 
 	newLevel = slices.Max(lvls)
-	if l[newLevel].Infinity {
-		refCoundToAdd = -1
+	if downgrade {
+		newLevel = slices.Min(lvls) - 1
+	}
+
+	if l.levels[newLevel].Infinity {
+		return nil, newLevel
 	}
 	return
 }
 
 func (l Levels) MinLvl() int {
-	lvls := make([]int, 0, len(l))
-	for k := range l {
+	lvls := make([]int, 0, len(l.levels))
+	for k := range l.levels {
 		lvls = append(lvls, k)
 	}
 

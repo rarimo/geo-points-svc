@@ -43,31 +43,15 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		log          = Log(r).WithField("nullifier", nullifier)
 	)
 
-	if refCode != nil {
-		log.Debug("Balance will be activated with referral code")
-		referral, err := ReferralsQ(r).FilterInactive().Get(*refCode)
-		if err != nil {
-			log.WithError(err).Error("Failed to get referral by ID")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-		if referral == nil {
-			ape.RenderErr(w, problems.NotFound())
-			return
-		}
-
-		refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
-		if err != nil || refBalance == nil { // must exist due to FK constraint
-			log.WithError(err).Error("Failed to get referrer balance by nullifier")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-		isGenesisRef = refBalance.ReferredBy == nil
-	}
-
-	events := prepareEventsWithRef(nullifier, refCode, isGenesisRef, r)
 	if refCode == nil {
-		balance, err = createBalanceWithEvents(nullifier, events, r)
+		events := prepareEventsWithRef(nullifier, nil, true, r)
+		err = EventsQ(r).Transaction(func() error {
+			balance, err = createBalanceWithEvents(nullifier, events, r)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
 		if err != nil {
 			log.WithError(err).Error("Failed to create disabled balance with events")
 			ape.RenderErr(w, problems.InternalError())
@@ -79,6 +63,27 @@ func CreateBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debug("Balance will be activated with referral code")
+	referral, err := ReferralsQ(r).FilterInactive().Get(*refCode)
+	if err != nil {
+		log.WithError(err).Error("Failed to get referral by ID")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if referral == nil {
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
+	refBalance, err := BalancesQ(r).FilterByNullifier(referral.Nullifier).Get()
+	if err != nil || refBalance == nil { // must exist due to FK constraint
+		log.WithError(err).Error("Failed to get referrer balance by nullifier")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	isGenesisRef = refBalance.IsDisabled()
+	events := prepareEventsWithRef(nullifier, refCode, isGenesisRef, r)
 	err = createBalanceWithEventsAndReferrals(nullifier, *refCode, events, r)
 	if err != nil {
 		log.WithError(err).Error("Failed to create balance with events and referrals")
@@ -155,7 +160,7 @@ func createBalanceWithEventsAndReferrals(nullifier, refBy string, events []data.
 		}
 		balance.ReferredBy = &refBy
 
-		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), *balance, 0)
+		level, err := DoLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, 0)
 		if err != nil {
 			return fmt.Errorf("failed to do lvlup and referrals update: %w", err)
 		}

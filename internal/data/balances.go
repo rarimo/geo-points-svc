@@ -8,9 +8,12 @@ const (
 	ColAmount      = "amount"
 	ColReferredBy  = "referred_by"
 	ColLevel       = "level"
-	ColAnonymousID = "anonymous_id"
+	ColInternalAID = "internal_aid"
+	ColExternalAID = "external_aid"
 	ColSharedHash  = "shared_hash"
-	ColIsVerified  = "is_verified"
+
+	VerifyInternalType = "internal"
+	VerifyExternalType = "external"
 )
 
 type Balance struct {
@@ -20,9 +23,9 @@ type Balance struct {
 	UpdatedAt   int32   `db:"updated_at"`
 	ReferredBy  *string `db:"referred_by"`
 	Level       int     `db:"level"`
-	AnonymousID *string `db:"anonymous_id"`
+	InternalAID *string `db:"internal_aid"`
+	ExternalAID *string `db:"external_aid"`
 	SharedHash  *string `db:"shared_hash"`
-	IsVerified  bool    `db:"is_verified"`
 	Rank        *int    `db:"rank"`
 }
 
@@ -48,7 +51,9 @@ type BalancesQ interface {
 
 	FilterByNullifier(...string) BalancesQ
 	FilterDisabled() BalancesQ
-	FilterByAnonymousID(id string) BalancesQ
+	FilterByInternalAID(aid string) BalancesQ
+	FilterByExternalAID(aid string) BalancesQ
+	FilterBySharedHash(hash string) BalancesQ
 }
 
 type WithoutPassportEventBalance struct {
@@ -60,4 +65,12 @@ type WithoutPassportEventBalance struct {
 type ReferredReferrer struct {
 	Referred string `db:"referred"`
 	Referrer string `db:"referrer"`
+}
+
+func (b *Balance) IsVerified() bool {
+	return b.InternalAID != nil || b.ExternalAID != nil
+}
+
+func (b *Balance) IsDisabled() bool {
+	return b.ReferredBy == nil
 }
