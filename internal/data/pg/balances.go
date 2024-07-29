@@ -211,7 +211,7 @@ func (q *balances) FilterDisabled() data.BalancesQ {
 }
 
 func (q *balances) FilterByInternalAID(aid string) data.BalancesQ {
-	return q.applyCondition(squirrel.Eq{"internal_ait": aid})
+	return q.applyCondition(squirrel.Eq{"internal_aid": aid})
 }
 
 func (q *balances) FilterByExternalAID(aid string) data.BalancesQ {
