@@ -160,7 +160,7 @@ func createBalanceWithEventsAndReferrals(nullifier, refBy string, events []data.
 		}
 		balance.ReferredBy = &refBy
 
-		level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, 0)
+		level, err := DoLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, 0)
 		if err != nil {
 			return fmt.Errorf("failed to do lvlup and referrals update: %w", err)
 		}

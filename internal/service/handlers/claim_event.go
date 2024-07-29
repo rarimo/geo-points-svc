@@ -104,7 +104,7 @@ func claimEvent(r *http.Request, event *data.Event, balance *data.Balance) (*dat
 		return nil, fmt.Errorf("event wasn't updated")
 	}
 
-	level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, evType.Reward)
+	level, err := DoLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, evType.Reward)
 	if err != nil {
 		return nil, fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
 	}
@@ -133,7 +133,7 @@ func DoClaimEventUpdates(
 	balance *data.Balance,
 	reward int64) (err error) {
 
-	level, err := doLevelRefUpgrade(levels, referralsQ, balance, reward)
+	level, err := DoLevelRefUpgrade(levels, referralsQ, balance, reward)
 	if err != nil {
 		return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
 	}
@@ -149,9 +149,9 @@ func DoClaimEventUpdates(
 	return nil
 }
 
-// doLevelRefUpgrade calculates new level by provided reward: if level is up,
+// DoLevelRefUpgrade calculates new level by provided reward: if level is up,
 // referrals are added
-func doLevelRefUpgrade(levels *config.Levels, refQ data.ReferralsQ, balance *data.Balance, reward int64) (level int, err error) {
+func DoLevelRefUpgrade(levels *config.Levels, refQ data.ReferralsQ, balance *data.Balance, reward int64) (level int, err error) {
 	refsCount, level := levels.LvlChange(balance.Level, reward+balance.Amount)
 	referrals := []data.Referral{}
 	// count used to calculate ref code

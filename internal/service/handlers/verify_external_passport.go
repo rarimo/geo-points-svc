@@ -196,7 +196,7 @@ func autoClaimEventsForBalance(r *http.Request, balance *data.Balance) error {
 		totalPoints += evType.Reward * int64(len(evIDs))
 	}
 
-	level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, totalPoints)
+	level, err := DoLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, totalPoints)
 	if err != nil {
 		return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
 	}
