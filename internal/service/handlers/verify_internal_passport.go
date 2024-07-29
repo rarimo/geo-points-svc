@@ -175,9 +175,6 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 		if err = autoClaimEventsForBalance(r, balance); err != nil {
 			return fmt.Errorf("failed to autoclaim events for user")
 		}
-		if balance.IsVerified() {
-			return nil
-		}
 
 		if err := addEventForReferrer(r, balance); err != nil {
 			return fmt.Errorf("add event for referrer: %w", err)
@@ -322,42 +319,19 @@ func addEventForReferrer(r *http.Request, balance *data.Balance) error {
 		return nil
 	}
 
-	if !evTypeRef.AutoClaim || !refBalance.IsVerified() {
-		if !refBalance.IsVerified() {
-			Log(r).Debug("Referrer has not scanned passport yet, adding fulfilled events")
-		}
-		err = EventsQ(r).Insert(data.Event{
-			Nullifier: referral.Nullifier,
-			Type:      evTypeRef.Name,
-			Status:    data.EventFulfilled,
-			Meta:      data.Jsonb(fmt.Sprintf(`{"nullifier": "%s"}`, balance.Nullifier)),
-		})
-		if err != nil {
-			return fmt.Errorf("failed to insert fulfilled event for referrer: %w", err)
-		}
-
-		return nil
-	}
-
 	err = EventsQ(r).Insert(data.Event{
-		Nullifier:    referral.Nullifier,
-		Type:         evTypeRef.Name,
-		Status:       data.EventClaimed,
-		PointsAmount: &evTypeRef.Reward,
-		Meta:         data.Jsonb(fmt.Sprintf(`{"nullifier": "%s"}`, balance.Nullifier)),
+		Nullifier: referral.Nullifier,
+		Type:      evTypeRef.Name,
+		Status:    data.EventFulfilled,
+		Meta:      data.Jsonb(fmt.Sprintf(`{"nullifier": "%s"}`, balance.Nullifier)),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to insert claimed event for referrer: %w", err)
+		return fmt.Errorf("failed to insert fulfilled event for referrer: %w", err)
 	}
 
-	err = DoClaimEventUpdates(
-		Levels(r),
-		ReferralsQ(r),
-		BalancesQ(r),
-		refBalance,
-		evTypeRef.Reward)
+	err = autoClaimEventsForBalance(r, refBalance)
 	if err != nil {
-		return fmt.Errorf("failed to do claim event updates for referrer referral specific events: %w", err)
+		return fmt.Errorf("failed to autoclaim events for referrer: %w", err)
 	}
 
 	return nil
