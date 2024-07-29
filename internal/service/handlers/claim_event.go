@@ -104,14 +104,17 @@ func claimEvent(r *http.Request, event *data.Event, balance *data.Balance) (*dat
 		return nil, fmt.Errorf("event wasn't updated")
 	}
 
-	err = DoClaimEventUpdates(
-		Levels(r),
-		ReferralsQ(r),
-		BalancesQ(r),
-		balance,
-		evType.Reward)
+	level, err := doLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, evType.Reward)
 	if err != nil {
-		return nil, fmt.Errorf("failed to do claim event updates: %w", err)
+		return nil, fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
+	}
+
+	err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
+		data.ColAmount: pg.AddToValue(data.ColAmount, evType.Reward),
+		data.ColLevel:  level,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("update balance amount and level: %w", err)
 	}
 
 	return &claimed[0], nil

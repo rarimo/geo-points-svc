@@ -149,11 +149,11 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("update balance verification info: %w", err)
 		}
 
-		externalPassportEvent := EventTypes(r).Get(models.TypeExternalPassportScan, evtypes.FilterInactive)
-		if externalPassportEvent != nil {
+		passportScanEvent := EventTypes(r).Get(models.TypePassportScan, evtypes.FilterInactive)
+		if passportScanEvent != nil {
 			_, err := EventsQ(r).FilterByNullifier(balance.Nullifier).
 				FilterByStatus(data.EventOpen).
-				FilterByType(models.TypeExternalPassportScan).
+				FilterByType(models.TypePassportScan).
 				Update(data.EventFulfilled, nil, nil)
 			if err != nil {
 				return fmt.Errorf("failed to fulfill external passport scan event: %w", err)

@@ -124,11 +124,18 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 
 		byNullifier.ExternalAID = &externalAID
 
+		if err = autoClaimEventsForBalance(r, byNullifier); err != nil {
+			return fmt.Errorf("failed to autoclaim events for user")
+		}
+		if byNullifier.IsVerified() {
+			return nil
+		}
+
 		if err := addEventForReferrer(r, byNullifier); err != nil {
 			return fmt.Errorf("add event for referrer: %w", err)
 		}
+		return nil
 
-		return autoClaimEventsForBalance(r, byNullifier)
 	})
 	if err != nil {
 		log.WithError(err).Error("Failed to do passport scan updates")
