@@ -72,7 +72,7 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 	}
 	if byAnonymousID != nil && byAnonymousID.Nullifier != balance.Nullifier {
 		log.Warn("Balance with the same internal AID already exists")
-		ape.RenderErr(w, problems.Conflict())
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
@@ -105,7 +105,7 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 	}
 	if bySharedHash != nil && bySharedHash.Nullifier != balance.Nullifier {
 		log.Warn("Balance with the same shared hash already exists")
-		ape.RenderErr(w, problems.Conflict())
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 

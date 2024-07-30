@@ -77,14 +77,14 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 	}
 	if byExternalAID != nil {
 		log.Debug("External AID already used")
-		ape.RenderErr(w, problems.Conflict())
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
 	if byNullifier.SharedHash == nil || *byNullifier.SharedHash != sharedHash {
 		if byNullifier.SharedHash != nil {
 			log.Debug("Shared hash already used")
-			ape.RenderErr(w, problems.Conflict())
+			ape.RenderErr(w, problems.Forbidden())
 			return
 		}
 
@@ -96,7 +96,7 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 		}
 		if bySharedHash != nil {
 			log.Debug("Shared hash already used")
-			ape.RenderErr(w, problems.Conflict())
+			ape.RenderErr(w, problems.Forbidden())
 			return
 		}
 	}
@@ -132,7 +132,6 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("add event for referrer: %w", err)
 		}
 		return nil
-
 	})
 	if err != nil {
 		log.WithError(err).Error("Failed to do passport scan updates")
