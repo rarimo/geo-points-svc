@@ -97,6 +97,20 @@ func ActivateBalance(w http.ResponseWriter, r *http.Request) {
 
 		if !balance.IsVerified() {
 			log.Debug("Balance is not verified, events will not be claimed")
+
+			// By default, inactive user have 0 lvl, we must up lvl when user activate balance
+			level, err := DoLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, 0)
+			if err != nil {
+				return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
+			}
+
+			err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
+				data.ColLevel: level,
+			})
+			if err != nil {
+				return fmt.Errorf("update balance amount and level: %w", err)
+			}
+
 			return nil
 		}
 
