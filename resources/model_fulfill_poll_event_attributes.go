@@ -7,6 +7,8 @@ package resources
 import "github.com/iden3/go-rapidsnark/types"
 
 type FulfillPollEventAttributes struct {
-	// Proof of voting in some poll. The poll ID must be equal to `meta.static.poll_id` from the event.
+	// Proof of voting in some poll.
 	Proof types.ZKProof `json:"proof"`
+	// Vote proposal id
+	ProposalId string `json:"proposal_id"`
 }

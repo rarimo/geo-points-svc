@@ -19,6 +19,7 @@ type Config interface {
 	broadcaster.Broadcasterer
 	evtypes.EventTypeser
 	hmacsig.SigCalculatorProvider
+	PollVerifierer
 
 	Levels() *Levels
 	Verifiers() Verifiers
@@ -32,9 +33,9 @@ type config struct {
 	broadcaster.Broadcasterer
 	evtypes.EventTypeser
 	hmacsig.SigCalculatorProvider
+	PollVerifierer
 
 	passport root.VerifierProvider
-	poll     root.VerifierProvider
 
 	levels   comfig.Once
 	verifier comfig.Once
@@ -48,9 +49,9 @@ func New(getter kv.Getter) Config {
 		Listenerer:            comfig.NewListenerer(getter),
 		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
 		Auther:                auth.NewAuther(getter), //nolint:misspell
+		PollVerifierer:        NewPollVerifier(getter),
 		Broadcasterer:         broadcaster.New(getter),
 		passport:              root.NewVerifierProvider(getter, root.PoseidonSMT),
-		poll:                  root.NewVerifierProvider(getter, root.ProposalSMT),
 		EventTypeser:          evtypes.NewConfig(getter),
 		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
 	}

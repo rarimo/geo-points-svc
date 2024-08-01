@@ -8,9 +8,14 @@ allOf:
       attributes:
         required:
           - proof
+          - proposal_id
         type: object
         properties:
           proof:
             type: object
             format: types.ZKProof
             description: Proof of voting in some poll.
+          proposal_id:
+            type: string
+            pattern: '[0-9]+'
+            description: Vote proposal id

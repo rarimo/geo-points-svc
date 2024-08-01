@@ -41,5 +41,11 @@ post:
             $ref: '#/components/schemas/Errors'
     404:
       $ref: '#/components/responses/notFound'
+    409:
+      description: Event already fulfilled
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
     500:
       $ref: '#/components/responses/internalError'
