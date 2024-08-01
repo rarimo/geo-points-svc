@@ -850,13 +850,13 @@ paths:
           $ref: '#/components/responses/notFound'
         '500':
           $ref: '#/components/responses/internalError'
-  '/integrations/geo-points-svc/v1/public/events/{id}/poll':
+  '/integrations/geo-points-svc/v1/public/events/{id}/qrcode':
     patch:
       tags:
         - Events
-      summary: Fulfill poll event
-      description: Fulfill event for voting in Georgian poll by sending proof of voting
-      operationId: fulfillPollEvent
+      summary: Fulfill QR code event
+      description: Fulfill QR code event
+      operationId: fulfillQREvent
       parameters:
         - in: path
           name: id
@@ -874,7 +874,7 @@ paths:
                 - data
               properties:
                 data:
-                  $ref: '#/components/schemas/FulfillPollEvent'
+                  $ref: '#/components/schemas/FulfillQREvent'
       responses:
         '200':
           description: Success
@@ -901,20 +901,15 @@ paths:
           $ref: '#/components/responses/notFound'
         '500':
           $ref: '#/components/responses/internalError'
-  '/integrations/geo-points-svc/v1/public/events/{id}/qrcode':
-    patch:
+  /integrations/geo-points-svc/v1/public/events/poll:
+    post:
       tags:
         - Events
-      summary: Fulfill QR code event
-      description: Fulfill QR code event
-      operationId: fulfillQREvent
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            example: 059c81dd-2a54-44a8-8142-c15ad8f88949
+      summary: Fulfill poll event
+      description: Fulfill event for voting in Georgian poll by sending proof of voting
+      operationId: fulfillPollEvent
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -925,7 +920,7 @@ paths:
                 - data
               properties:
                 data:
-                  $ref: '#/components/schemas/FulfillQREvent'
+                  $ref: '#/components/schemas/FulfillPollEvent'
       responses:
         '200':
           description: Success
@@ -1412,13 +1407,8 @@ components:
     FulfillPollEventKey:
       type: object
       required:
-        - id
         - type
       properties:
-        id:
-          type: string
-          description: Event ID
-          example: 059c81dd-2a54-44a8-8142-c15ad8f88949
         type:
           type: string
           enum:
