@@ -13,6 +13,4 @@ allOf:
           proof:
             type: object
             format: types.ZKProof
-            description: |
-              Proof of voting in some poll.
-              The poll ID must be equal to `meta.static.poll_id` from the event.
+            description: Proof of voting in some poll.
