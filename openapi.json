@@ -2023,7 +2023,7 @@
                   "proof": {
                     "type": "object",
                     "format": "types.ZKProof",
-                    "description": "Proof of voting in some poll.\nThe poll ID must be equal to `meta.static.poll_id` from the event.\n"
+                    "description": "Proof of voting in some poll."
                   }
                 }
               }
