@@ -13,7 +13,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/contracts/proposalsmt"
 	"github.com/rarimo/geo-points-svc/internal/contracts/proposalsstate"
 
-	"gitlab.com/distributed_lab/figure"
+	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
 )
@@ -62,6 +62,7 @@ func (c *pollVerifier) PollVerifier() *PollVerifier {
 
 		err := figure.Out(&cfg).
 			From(kv.MustGetStringMap(c.getter, "poll_verifier")).
+			With(figure.EthereumHooks, figure.BaseHooks).
 			Please()
 		if err != nil {
 			panic(fmt.Errorf("failed to figure out vote verifier config: %w", err))
