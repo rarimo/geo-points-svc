@@ -15,7 +15,6 @@ const (
 	maxIdentityCount        = 1
 	documentTypeID          = "ID"
 	passportVerificationKey = "./proof_keys/passport.json"
-	pollVerificationKey     = "./proof_keys/poll.json"
 )
 
 type Verifiers struct {
@@ -55,20 +54,8 @@ func (c *config) Verifiers() Verifiers {
 			panic(fmt.Errorf("failed to initialize passport verifier: %w", err))
 		}
 
-		poll, err := zk.NewVerifier(nil,
-			zk.WithProofType(zk.PollParticipation),
-			zk.WithEventID(proofEventIDValue),
-			zk.WithVerificationKeyFile(pollVerificationKey))
-		if err != nil {
-			panic(fmt.Errorf("failed to initialize poll verifier: %w", err))
-		}
-
-		rv := c.poll.ProvideVerifier().(*root.ProposalSMTVerifier)
-
 		return Verifiers{
 			Passport: pass,
-			Poll:     poll,
-			PollRoot: rv,
 		}
 	}).(Verifiers)
 }

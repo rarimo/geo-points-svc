@@ -75,6 +75,14 @@ event_types:
       short_description: Short description
       no_auto_open: true
       auto_claim: true
+    - name: poll_participation
+      title: Participate in a poll
+      reward: 1
+      frequency: unlimited
+      description: Vote in a poll and get additional points
+      short_description: Vote in a poll and get additional points
+      no_auto_open: true
+      auto_claim: true
     - name: meetup_participation
       title: Prove your participation by scanning QR code
       reward: 5
@@ -106,9 +114,9 @@ poseidonsmt_root_verifier:
   contract: poseidon_smt_contract_address
   request_timeout: 10s
 
-proposalsmt_root_verifier:
+poll_verifier:
   rpc: evm_rpc_url
-  request_timeout: 10s
+  proposal_state_address: 0x123...123
 
 sig_verifier:
   verification_key: "37bc75afc97f8bdcd21cda85ae7b2885b5f1205ae3d79942e56457230f1636a037cc7ebfe42998d66a3dd3446b9d29366271b4f2bd8e0d307db1d320b38fc02f"

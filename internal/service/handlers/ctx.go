@@ -25,6 +25,7 @@ const (
 	levelsCtxKey
 	verifiersCtxKey
 	sigCalculatorCtxKey
+	voteVerifierCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -105,6 +106,16 @@ func CtxVerifiers(v config.Verifiers) func(context.Context) context.Context {
 
 func Verifiers(r *http.Request) config.Verifiers {
 	return r.Context().Value(verifiersCtxKey).(config.Verifiers)
+}
+
+func CtxPollVerifier(v *config.PollVerifier) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, voteVerifierCtxKey, v)
+	}
+}
+
+func PollVerifier(r *http.Request) *config.PollVerifier {
+	return r.Context().Value(voteVerifierCtxKey).(*config.PollVerifier)
 }
 
 func CtxSigCalculator(calc hmacsig.Calculator) func(context.Context) context.Context {

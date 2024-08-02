@@ -23,6 +23,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxLevels(cfg.Levels()),
 			handlers.CtxVerifiers(cfg.Verifiers()),
 			handlers.CtxSigCalculator(cfg.SigCalculator()),
+			handlers.CtxPollVerifier(cfg.PollVerifier()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)
@@ -47,11 +48,11 @@ func Run(ctx context.Context, cfg config.Config) {
 			r.Route("/events", func(r chi.Router) {
 				r.Use(authMW)
 				r.Get("/", handlers.ListEvents)
+				r.Post("/poll", handlers.FulfillPollEvent)
 				r.Route("/{id}", func(r chi.Router) {
 					r.Get("/", handlers.GetEvent)
 					r.Patch("/", handlers.ClaimEvent)
 					r.Patch("/qrcode", handlers.FulfillQREvent)
-					r.Patch("/poll", handlers.FulfillPollEvent)
 				})
 			})
 			r.Get("/balances", handlers.Leaderboard)

@@ -64,8 +64,13 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if byNullifier.ExternalAID != nil {
-		log.Debug("Already verified")
-		ape.RenderErr(w, problems.Conflict())
+		if *byNullifier.ExternalAID == externalAID {
+			log.Debug("Already verified, same passport")
+			ape.RenderErr(w, problems.Conflict())
+			return
+		}
+		log.Debug("Already verified, another passport")
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 

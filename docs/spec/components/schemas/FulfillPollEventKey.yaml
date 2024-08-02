@@ -1,12 +1,7 @@
 type: object
 required:
-  - id
   - type
 properties:
-  id:
-    type: string
-    description: Event ID
-    example: "059c81dd-2a54-44a8-8142-c15ad8f88949"
   type:
     type: string
     enum: [ fulfill_poll_event ]
