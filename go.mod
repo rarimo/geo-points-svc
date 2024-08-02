@@ -12,6 +12,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/jsonapi v1.0.0
 	github.com/iden3/go-rapidsnark/types v0.0.3
+	github.com/iden3/go-rapidsnark/verifier v0.0.5
 	github.com/rarimo/geo-auth-svc v1.1.0
 	github.com/rarimo/saver-grpc-lib v1.0.0
 	github.com/rarimo/zkverifier-kit v1.2.0
@@ -93,7 +94,6 @@ require (
 	github.com/hdevalence/ed25519consensus v0.0.0-20220222234857-c00d1f31bab3 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
 	github.com/iden3/go-iden3-crypto v0.0.15 // indirect
-	github.com/iden3/go-rapidsnark/verifier v0.0.5 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
