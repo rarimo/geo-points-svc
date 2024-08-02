@@ -48,7 +48,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			r.Route("/events", func(r chi.Router) {
 				r.Use(authMW)
 				r.Get("/", handlers.ListEvents)
-				r.Patch("/poll", handlers.FulfillPollEvent)
+				r.Post("/poll", handlers.FulfillPollEvent)
 				r.Route("/{id}", func(r chi.Router) {
 					r.Get("/", handlers.GetEvent)
 					r.Patch("/", handlers.ClaimEvent)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"strings"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
@@ -26,9 +27,13 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	proof := req.Data.Attributes.Proof
-	nullifier := proof.PubSignals[config.PollChallengedNullifier]
+
+	nullifierDec, _ := new(big.Int).SetString(proof.PubSignals[config.PollChallengedNullifier], 10)
+	nullifier := "0x" + strings.ToLower(nullifierDec.Text(16))
+
 	proposalID, _ := new(big.Int).SetString(req.Data.Attributes.ProposalId, 10)
 	proposalEventID, _ := new(big.Int).SetString(proof.PubSignals[config.PollParticipationEventID], 10)
+
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
@@ -96,7 +101,9 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 	err = PollVerifier(r).VerifyProof(proof, proposalID, proposalEventID)
 	if err != nil {
 		log.WithError(err).Debug("Failed to verify passport")
-		if errors.Is(err, config.ErrInvalidProposalEventID) || errors.Is(err, config.ErrInvalidRoot) {
+		if errors.Is(err, config.ErrInvalidProposalEventID) ||
+			errors.Is(err, config.ErrInvalidRoot) ||
+			errors.Is(err, config.ErrInvalidChallengedEventID) {
 			ape.RenderErr(w, problems.BadRequest(validation.Errors{
 				"proof": err,
 			})...)

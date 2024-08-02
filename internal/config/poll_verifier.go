@@ -21,8 +21,9 @@ import (
 const pollVerificationKey = "./proof_keys/poll.json"
 
 var (
-	ErrInvalidProposalEventID = errors.New("proposal event id mismatching")
-	ErrInvalidRoot            = errors.New("invalid root")
+	ErrInvalidProposalEventID   = errors.New("invalid proposal event id")
+	ErrInvalidRoot              = errors.New("invalid root")
+	ErrInvalidChallengedEventID = errors.New("invalid challenged event id")
 )
 
 const (
@@ -110,6 +111,10 @@ func (v *PollVerifier) VerifyProof(proof zkptypes.ZKProof, proposalID, proposalE
 
 	if new(big.Int).SetBytes(root[:]).String() != proof.PubSignals[PollNullifierTreeRoot] {
 		return ErrInvalidRoot
+	}
+
+	if proof.PubSignals[PollChallengedEventID] != proofEventIDValue {
+		return ErrInvalidChallengedEventID
 	}
 
 	if err = zkpverifier.VerifyGroth16(proof, v.verificationKey); err != nil {
