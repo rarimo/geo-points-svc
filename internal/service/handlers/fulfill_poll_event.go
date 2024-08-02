@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/config"
@@ -28,16 +28,15 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 
 	proof := req.Data.Attributes.Proof
 
-	nullifierDec, _ := new(big.Int).SetString(proof.PubSignals[config.PollChallengedNullifier], 10)
-	nullifier := "0x" + strings.ToLower(nullifierDec.Text(16))
-
-	proposalID, _ := new(big.Int).SetString(req.Data.Attributes.ProposalId, 10)
-	proposalEventID, _ := new(big.Int).SetString(proof.PubSignals[config.PollParticipationEventID], 10)
-
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
+	nullifier := UserClaims(r)[0].Nullifier
+	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) ||
+		new(big.Int).SetBytes(hexutil.MustDecode(nullifier)).String() != proof.PubSignals[config.PollChallengedNullifier] {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}
+
+	proposalID, _ := new(big.Int).SetString(req.Data.Attributes.ProposalId, 10)
+	proposalEventID, _ := new(big.Int).SetString(proof.PubSignals[config.PollParticipationEventID], 10)
 
 	log := Log(r).WithFields(map[string]any{
 		"nullifier":         nullifier,
