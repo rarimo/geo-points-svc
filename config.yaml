@@ -76,11 +76,11 @@ event_types:
       no_auto_open: true
       auto_claim: true
     - name: poll_participation
-      title: Refer user {:did}
+      title: Participate in a poll
       reward: 1
       frequency: unlimited
-      description: The user {:did} has verified the passport. Claim the reward!
-      short_description: Short description
+      description: Vote in a poll and get additional points
+      short_description: Vote in a poll and get additional points
       no_auto_open: true
       auto_claim: true
     - name: meetup_participation
