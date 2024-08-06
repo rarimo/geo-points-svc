@@ -9,7 +9,6 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/handlers"
-	"gitlab.com/distributed_lab/logan/v3"
 )
 
 func Run(cfg config.Config, date int) error {
@@ -57,7 +56,7 @@ func Run(cfg config.Config, date int) error {
 		if err != nil {
 			return fmt.Errorf("failed to insert `early_test` event: %w", err)
 		}
-		err = autoClaimEventsForBalance(*log, eventsQ, balancesQ, &balance, lvls, referralsQ, *evTypes)
+		err = autoClaimEventsForBalance(eventsQ, balancesQ, &balance, lvls, referralsQ, *evTypes)
 		if err != nil {
 			return fmt.Errorf("failed to auto-claim eventsQ: %w", err)
 		}
@@ -67,33 +66,17 @@ func Run(cfg config.Config, date int) error {
 }
 
 func autoClaimEventsForBalance(
-	log logan.Entry, eventsQ data.EventsQ, balanceQ data.BalancesQ, balance *data.Balance,
+	eventsQ data.EventsQ, balanceQ data.BalancesQ, balance *data.Balance,
 	lvls *config.Levels, referralsQ data.ReferralsQ, evTypes evtypes.Types) error {
 
-	if balance == nil {
-		log.Debug("Balance absent. Events not claimed.")
-		return nil
-	}
-
-	if balance.IsDisabled() || !balance.IsVerified() {
-		log.Debug("User not eligible for event claiming. Events not claimed.")
-		return nil
-	}
-
 	var totalPoints int64
-	eventsToClaim, err := eventsQ.
-		FilterByNullifier(balance.Nullifier).
-		FilterByStatus(data.EventFulfilled).
-		Select()
+	eventsToClaim, err := eventsQ.FilterByStatus(data.EventFulfilled).Select()
 	if err != nil {
 		return fmt.Errorf("failed to select events for user=%s: %w", balance.Nullifier, err)
 	}
 
 	eventsMap := map[string][]string{}
 	for _, e := range eventsToClaim {
-		if _, ok := eventsMap[e.Type]; !ok {
-			eventsMap[e.Type] = []string{}
-		}
 		eventsMap[e.Type] = append(eventsMap[e.Type], e.ID)
 	}
 
@@ -121,7 +104,7 @@ func autoClaimEventsForBalance(
 		data.ColLevel:  level,
 	})
 	if err != nil {
-		return fmt.Errorf("update balance amount and level: %w", err)
+		return fmt.Errorf("error update balance amount and level: %w", err)
 	}
 
 	return nil
