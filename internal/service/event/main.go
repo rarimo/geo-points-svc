@@ -21,33 +21,50 @@ func Run(cfg config.Config, date int) error {
 	eventsQ := pg.NewEvents(db)
 	referralsQ := pg.NewReferrals(db)
 
+	evType := evTypes.Get(models.TypeEarlyTest, evtypes.FilterInactive)
+	if evType == nil {
+		log.Infof("Event type %s is inactive", models.TypeEarlyTest)
+		return nil
+	}
+
 	balances, err := balancesQ.FilterByCreatedBefore(date).FilterVerified().Select()
 
 	if err != nil {
 		log.WithError(err).Error("failed to filter by updated before")
 		return err
 	}
-
 	if len(balances) == 0 {
 		log.Infof("no balances found")
 		return nil
 	}
 
-	existingEvents, err := eventsQ.FilterByType(models.TypeEarlyTest).Select()
+	var nullifiers []string
+
+	for _, balance := range balances {
+		nullifiers = append(nullifiers, balance.Nullifier)
+	}
+
+	filteredEvents, err := eventsQ.
+		FilterByType(models.TypeEarlyTest).
+		FilterByStatus(data.EventFulfilled).
+		FilterByNullifier(nullifiers...).
+		Select()
+
 	if err != nil {
 		log.WithError(err).Error("failed to filter eventsQ")
 		return err
 	}
 
-	existingEventsMap := make(map[string]data.Event)
-	for _, event := range existingEvents {
-		existingEventsMap[event.Nullifier] = event
+	EventsMap := make(map[string]data.Event)
+	for _, event := range filteredEvents {
+		EventsMap[event.Nullifier] = event
 	}
 
 	for _, balance := range balances {
-		if _, exists := existingEventsMap[balance.Nullifier]; exists {
+		if _, exists := EventsMap[balance.Nullifier]; exists {
 			continue
 		}
+
 		err = eventsQ.Insert(data.Event{
 			Nullifier: balance.Nullifier,
 			Type:      models.TypeEarlyTest,
@@ -56,55 +73,33 @@ func Run(cfg config.Config, date int) error {
 		if err != nil {
 			return fmt.Errorf("failed to insert `early_test` event: %w", err)
 		}
-		err = autoClaimEventsForBalance(eventsQ, balancesQ, &balance, lvls, referralsQ, *evTypes)
-		if err != nil {
-			return fmt.Errorf("failed to auto-claim eventsQ: %w", err)
-		}
-	}
 
-	return nil
-}
+		var totalPoints int64
 
-func autoClaimEventsForBalance(
-	eventsQ data.EventsQ, balanceQ data.BalancesQ, balance *data.Balance,
-	lvls *config.Levels, referralsQ data.ReferralsQ, evTypes evtypes.Types) error {
-
-	var totalPoints int64
-	eventsToClaim, err := eventsQ.FilterByStatus(data.EventFulfilled).Select()
-	if err != nil {
-		return fmt.Errorf("failed to select events for user=%s: %w", balance.Nullifier, err)
-	}
-
-	eventsMap := map[string][]string{}
-	for _, e := range eventsToClaim {
-		eventsMap[e.Type] = append(eventsMap[e.Type], e.ID)
-	}
-
-	for evName, evIDs := range eventsMap {
-		evType := evTypes.Get(evName, evtypes.FilterInactive, evtypes.FilterByAutoClaim(true))
+		evType := evTypes.Get(models.TypeEarlyTest, evtypes.FilterInactive, evtypes.FilterByAutoClaim(true))
 		if evType == nil {
 			continue
 		}
 
-		_, err = eventsQ.FilterByID(evIDs...).Update(data.EventClaimed, nil, &evType.Reward)
+		_, err = eventsQ.Update(data.EventClaimed, nil, &evType.Reward)
 		if err != nil {
-			return fmt.Errorf("failedt to update %s events for user=%s: %w", evName, balance.Nullifier, err)
+			return fmt.Errorf("failedt to update %s events for user=%s: %w", models.TypeEarlyTest, balance.Nullifier, err)
 		}
 
-		totalPoints += evType.Reward * int64(len(evIDs))
-	}
+		totalPoints += evType.Reward
 
-	level, err := handlers.DoLevelRefUpgrade(lvls, referralsQ, balance, totalPoints)
-	if err != nil {
-		return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
-	}
+		level, err := handlers.DoLevelRefUpgrade(lvls, referralsQ, &balance, totalPoints)
+		if err != nil {
+			return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
+		}
 
-	err = balanceQ.FilterByNullifier(balance.Nullifier).Update(map[string]any{
-		data.ColAmount: pg.AddToValue(data.ColAmount, totalPoints),
-		data.ColLevel:  level,
-	})
-	if err != nil {
-		return fmt.Errorf("error update balance amount and level: %w", err)
+		err = balancesQ.FilterByNullifier(balance.Nullifier).Update(map[string]any{
+			data.ColAmount: pg.AddToValue(data.ColAmount, totalPoints),
+			data.ColLevel:  level,
+		})
+		if err != nil {
+			return fmt.Errorf("error update balance amount and level: %w", err)
+		}
 	}
 
 	return nil
