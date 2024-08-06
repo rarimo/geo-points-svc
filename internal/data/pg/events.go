@@ -197,6 +197,13 @@ func (q *events) FilterByNullifier(nullifier string) data.EventsQ {
 	return q.applyCondition(squirrel.Eq{"nullifier": nullifier})
 }
 
+func (q *events) FilterByNullifiers(nullifiers []string) data.EventsQ {
+	if len(nullifiers) == 0 {
+		return q
+	}
+	return q.applyCondition(squirrel.Eq{"nullifier": nullifiers})
+}
+
 func (q *events) FilterByStatus(statuses ...data.EventStatus) data.EventsQ {
 	if len(statuses) == 0 {
 		return q

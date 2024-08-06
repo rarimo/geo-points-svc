@@ -17,7 +17,6 @@ func Run(cfg config.Config, date int) error {
 	events := pg.NewEvents(db)
 
 	users, err := balances.FilterByCreatedBefore(date).FilterVerified().Select()
-	filtEvents := events.FilterByType(models.TypeEarlyTest)
 
 	if err != nil {
 		log.WithError(err).Error("failed to filter by updated before")
@@ -29,25 +28,32 @@ func Run(cfg config.Config, date int) error {
 		return nil
 	}
 
+	var userNullifiers []string
 	for _, user := range users {
-		userNull := user.Nullifier
-		eve, err := filtEvents.FilterByNullifier(userNull).Get()
+		userNullifiers = append(userNullifiers, user.Nullifier)
+	}
 
-		if err != nil {
-			log.WithError(err).Error("failed to filter by nullifier")
-			return err
-		}
-		if eve != nil {
-			break
-		}
+	existingEvents, err := events.FilterByType(models.TypeEarlyTest).FilterByNullifiers(userNullifiers).Select()
+	if err != nil {
+		log.WithError(err).Error("failed to filter events")
+		return err
+	}
 
-		err = events.Insert(data.Event{
-			Nullifier: user.Nullifier,
-			Type:      models.TypeEarlyTest,
-			Status:    data.EventFulfilled,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to insert `early_test` event: %w", err)
+	existingEventsMap := make(map[string]data.Event)
+	for _, event := range existingEvents {
+		existingEventsMap[event.Nullifier] = event
+	}
+
+	for _, user := range users {
+		if _, exists := existingEventsMap[user.Nullifier]; !exists {
+			err = events.Insert(data.Event{
+				Nullifier: user.Nullifier,
+				Type:      models.TypeEarlyTest,
+				Status:    data.EventFulfilled,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to insert `early_test` event: %w", err)
+			}
 		}
 	}
 

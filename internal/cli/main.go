@@ -31,8 +31,8 @@ func Run(args []string) bool {
 		migrateDownCmd = migrateCmd.Command("down", "migrate db down")
 
 		event    = app.Command("event", "claim event command")
-		eventCmd = event.Command("start", "claim event command")
-		data     = eventCmd.Arg("data", "data after ...").Required().Int()
+		eventCmd = event.Command("create-early-test", "claim event command")
+		data     = eventCmd.Arg("-before", "data after ...").Required().Int()
 	)
 
 	cmd, err := app.Parse(args[1:])

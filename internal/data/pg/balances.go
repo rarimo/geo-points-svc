@@ -235,5 +235,5 @@ func (q *balances) applyCondition(cond squirrel.Sqlizer) data.BalancesQ {
 }
 
 func (q *balances) FilterVerified() data.BalancesQ {
-	return q.applyCondition(squirrel.Gt{"verified": true})
+	return q.applyCondition(squirrel.Gt{"is_verified": true})
 }
