@@ -28,11 +28,6 @@ func Run(cfg config.Config, date int) error {
 		return nil
 	}
 
-	var userNullifiers []string
-	for _, user := range balances {
-		userNullifiers = append(userNullifiers, user.Nullifier)
-	}
-
 	existingEvents, err := events.FilterByType(models.TypeEarlyTest).Select()
 	if err != nil {
 		log.WithError(err).Error("failed to filter events")
