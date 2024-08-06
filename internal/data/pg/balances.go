@@ -222,10 +222,18 @@ func (q *balances) FilterBySharedHash(hash string) data.BalancesQ {
 	return q.applyCondition(squirrel.Eq{"shared_hash": hash})
 }
 
+func (q *balances) FilterByCreatedBefore(data int) data.BalancesQ {
+	return q.applyCondition(squirrel.Lt{"created_at": data})
+}
+
 func (q *balances) applyCondition(cond squirrel.Sqlizer) data.BalancesQ {
 	q.selector = q.selector.Where(cond)
 	q.updater = q.updater.Where(cond)
 	q.rank = q.rank.Where(cond)
 	q.counter = q.counter.Where(cond)
 	return q
+}
+
+func (q *balances) FilterVerified() data.BalancesQ {
+	return q.applyCondition(squirrel.Gt{"verified": true})
 }
