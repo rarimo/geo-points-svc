@@ -235,5 +235,8 @@ func (q *balances) applyCondition(cond squirrel.Sqlizer) data.BalancesQ {
 }
 
 func (q *balances) FilterVerified() data.BalancesQ {
-	return q.applyCondition(squirrel.Gt{"is_verified": true})
+	return q.applyCondition(squirrel.Or{
+		squirrel.NotEq{"internal_aid": nil},
+		squirrel.NotEq{"external_aid": nil},
+	})
 }

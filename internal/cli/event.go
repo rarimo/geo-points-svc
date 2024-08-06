@@ -8,6 +8,6 @@ import (
 func eventStart(cfg config.Config, data int) {
 	err := event.Run(cfg, data)
 	if err != nil {
-		cfg.Log().Error("Error starting event: %v", err)
+		cfg.Log().Errorf("Error starting event: %s", err)
 	}
 }

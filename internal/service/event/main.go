@@ -13,27 +13,27 @@ func Run(cfg config.Config, date int) error {
 	log := cfg.Log()
 	db := cfg.DB()
 
-	balances := pg.NewBalances(db)
+	balancesQ := pg.NewBalances(db)
 	events := pg.NewEvents(db)
 
-	users, err := balances.FilterByCreatedBefore(date).FilterVerified().Select()
+	balances, err := balancesQ.FilterByCreatedBefore(date).FilterVerified().Select()
 
 	if err != nil {
 		log.WithError(err).Error("failed to filter by updated before")
 		return err
 	}
 
-	if users == nil {
-		log.Infof("no users found")
+	if len(balances) == 0 {
+		log.Infof("no balances found")
 		return nil
 	}
 
 	var userNullifiers []string
-	for _, user := range users {
+	for _, user := range balances {
 		userNullifiers = append(userNullifiers, user.Nullifier)
 	}
 
-	existingEvents, err := events.FilterByType(models.TypeEarlyTest).FilterByNullifiers(userNullifiers).Select()
+	existingEvents, err := events.FilterByType(models.TypeEarlyTest).Select()
 	if err != nil {
 		log.WithError(err).Error("failed to filter events")
 		return err
@@ -44,7 +44,7 @@ func Run(cfg config.Config, date int) error {
 		existingEventsMap[event.Nullifier] = event
 	}
 
-	for _, user := range users {
+	for _, user := range balances {
 		if _, exists := existingEventsMap[user.Nullifier]; !exists {
 			err = events.Insert(data.Event{
 				Nullifier: user.Nullifier,

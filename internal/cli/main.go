@@ -32,7 +32,7 @@ func Run(args []string) bool {
 
 		event    = app.Command("event", "claim event command")
 		eventCmd = event.Command("create-early-test", "claim event command")
-		data     = eventCmd.Arg("-before", "data after ...").Required().Int()
+		data     = eventCmd.Arg("before", "data after ...").Required().Int()
 	)
 
 	cmd, err := app.Parse(args[1:])
