@@ -94,7 +94,7 @@ func Run(cfg config.Config, date int) error {
 				return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
 			}
 
-			err = balancesQ.FilterByNullifier(balance.Nullifier).Update(map[string]any{
+			err = balancesQ.New().FilterByNullifier(balance.Nullifier).Update(map[string]any{
 				data.ColAmount: pg.AddToValue(data.ColAmount, totalPoints),
 				data.ColLevel:  level,
 			})
