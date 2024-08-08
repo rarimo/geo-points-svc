@@ -21,7 +21,7 @@ func Run(cfg config.Config, date int) error {
 	eventsQ := pg.NewEvents(db)
 	referralsQ := pg.NewReferrals(db)
 
-	evType := evTypes.Get(models.TypeEarlyTest, evtypes.FilterInactive, evtypes.FilterByAutoClaim(true))
+	evType := evTypes.Get(models.TypeEarlyTest, evtypes.FilterInactive)
 	if evType == nil {
 		log.Infof("Event type %s is inactive", models.TypeEarlyTest)
 		return nil
@@ -50,7 +50,7 @@ func Run(cfg config.Config, date int) error {
 		Select()
 
 	if err != nil {
-		log.WithError(err).Error("Failed to select %s events")
+		log.WithError(err).Errorf("Failed to select %s events", err)
 		return err
 	}
 
