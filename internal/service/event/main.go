@@ -38,20 +38,19 @@ func Run(cfg config.Config, date int) error {
 		return nil
 	}
 
-	nullifiers := make([]string, 0)
+	nullifiers := make([]string, 0, len(balances))
 
 	for _, balance := range balances {
 		nullifiers = append(nullifiers, balance.Nullifier)
 	}
 
 	filteredEvents, err := eventsQ.
-		FilterByType(models.TypeEarlyTest).
 		FilterByStatus(data.EventFulfilled).
 		FilterByNullifier(nullifiers...).
 		Select()
 
 	if err != nil {
-		log.WithError(err).Error("failed to filter eventsQ")
+		log.WithError(err).Error("Failed to select %s events")
 		return err
 	}
 
