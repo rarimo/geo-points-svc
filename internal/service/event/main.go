@@ -44,7 +44,13 @@ func Run(cfg config.Config, date int) error {
 		nullifiers = append(nullifiers, balance.Nullifier)
 	}
 
+	claimTypes := evTypes.Names(evtypes.FilterByAutoClaim(true))
+	if len(claimTypes) == 0 {
+		return nil
+	}
+
 	filteredEvents, err := eventsQ.
+		FilterByType(claimTypes...).
 		FilterByStatus(data.EventFulfilled).
 		FilterByNullifier(nullifiers...).
 		Select()
