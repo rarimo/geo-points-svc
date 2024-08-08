@@ -32,7 +32,7 @@ func Run(args []string) bool {
 
 		event    = app.Command("event", "claim event command")
 		eventCmd = event.Command("create-early-test", "claim event command")
-		data     = eventCmd.Arg("before", "data after ...").Required().Int()
+		date     = eventCmd.Arg("before", "date after ...").Required().Int()
 	)
 
 	cmd, err := app.Parse(args[1:])
@@ -53,7 +53,7 @@ func Run(args []string) bool {
 	case migrateDownCmd.FullCommand():
 		err = MigrateDown(cfg)
 	case eventCmd.FullCommand():
-		eventStart(cfg, *data)
+		eventStart(cfg, *date)
 	default:
 		log.Errorf("unknown command %s", cmd)
 		return false

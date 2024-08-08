@@ -22,6 +22,7 @@ func Run(cfg config.Config, date int) error {
 	referralsQ := pg.NewReferrals(db)
 
 	evType := evTypes.Get(models.TypeEarlyTest, evtypes.FilterInactive)
+	log.Infof("point")
 	if evType == nil {
 		log.Infof("Event type %s is inactive", models.TypeEarlyTest)
 		return nil
@@ -45,6 +46,7 @@ func Run(cfg config.Config, date int) error {
 	}
 
 	filteredEvents, err := eventsQ.
+		FilterByType(models.TypeEarlyTest).
 		FilterByStatus(data.EventFulfilled).
 		FilterByNullifier(nullifiers...).
 		Select()
@@ -60,7 +62,7 @@ func Run(cfg config.Config, date int) error {
 	}
 
 	for _, balance := range balances {
-		err = eventsQ.Transaction(func() error {
+		err = eventsQ.New().Transaction(func() error {
 			if _, exists := eventsMap[balance.Nullifier]; exists {
 				return nil
 			}
@@ -82,7 +84,7 @@ func Run(cfg config.Config, date int) error {
 
 			_, err = eventsQ.FilterByNullifier(balance.Nullifier).Update(data.EventClaimed, nil, &evType.Reward)
 			if err != nil {
-				return fmt.Errorf("failedt to update %s events for user=%s: %w", models.TypeEarlyTest, balance.Nullifier, err)
+				return fmt.Errorf("failed to update %s events for user=%s: %w", models.TypeEarlyTest, balance.Nullifier, err)
 			}
 
 			totalPoints += evType.Reward
