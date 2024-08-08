@@ -54,47 +54,51 @@ func Run(cfg config.Config, date int) error {
 		return err
 	}
 
-	EventsMap := make(map[string]data.Event)
+	eventsMap := make(map[string]string, len(filteredEvents))
 	for _, event := range filteredEvents {
-		EventsMap[event.Nullifier] = event
+		eventsMap[event.Nullifier] = ""
 	}
 
 	for _, balance := range balances {
-		if _, exists := EventsMap[balance.Nullifier]; exists {
-			continue
-		}
+		err = eventsQ.Transaction(func() error {
+			if _, exists := eventsMap[balance.Nullifier]; exists {
+				return nil
+			}
 
-		err = eventsQ.Insert(data.Event{
-			Nullifier: balance.Nullifier,
-			Type:      models.TypeEarlyTest,
-			Status:    data.EventFulfilled,
+			err = eventsQ.Insert(data.Event{
+				Nullifier: balance.Nullifier,
+				Type:      models.TypeEarlyTest,
+				Status:    data.EventFulfilled,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to insert `early_test` event: %w", err)
+			}
+
+			var totalPoints int64
+
+			_, err = eventsQ.FilterByNullifier(balance.Nullifier).Update(data.EventClaimed, nil, &evType.Reward)
+			if err != nil {
+				return fmt.Errorf("failedt to update %s events for user=%s: %w", models.TypeEarlyTest, balance.Nullifier, err)
+			}
+
+			totalPoints += evType.Reward
+
+			level, err := handlers.DoLevelRefUpgrade(lvls, referralsQ, &balance, totalPoints)
+			if err != nil {
+				return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
+			}
+
+			err = balancesQ.FilterByNullifier(balance.Nullifier).Update(map[string]any{
+				data.ColAmount: pg.AddToValue(data.ColAmount, totalPoints),
+				data.ColLevel:  level,
+			})
+
+			if err != nil {
+				return fmt.Errorf("error update balance amount and level: %w", err)
+			}
+
+			return nil
 		})
-		if err != nil {
-			return fmt.Errorf("failed to insert `early_test` event: %w", err)
-		}
-
-		var totalPoints int64
-
-		_, err = eventsQ.FilterByNullifier(nullifiers...).Update(data.EventClaimed, nil, &evType.Reward)
-		if err != nil {
-			return fmt.Errorf("failedt to update %s events for user=%s: %w", models.TypeEarlyTest, balance.Nullifier, err)
-		}
-
-		totalPoints += evType.Reward
-
-		level, err := handlers.DoLevelRefUpgrade(lvls, referralsQ, &balance, totalPoints)
-		if err != nil {
-			return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
-		}
-
-		err = balancesQ.FilterByNullifier(balance.Nullifier).Update(map[string]any{
-			data.ColAmount: pg.AddToValue(data.ColAmount, totalPoints),
-			data.ColLevel:  level,
-		})
-
-		if err != nil {
-			return fmt.Errorf("error update balance amount and level: %w", err)
-		}
 	}
 
 	return nil
