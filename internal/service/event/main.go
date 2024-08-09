@@ -27,8 +27,8 @@ func Run(cfg config.Config, date int) error {
 		log.Infof("Event type %s is inactive", models.TypeEarlyTest)
 		return nil
 	}
-	//.FilterVerified()
-	balances, err := balancesQ.FilterByCreatedBefore(date).Select()
+
+	balances, err := balancesQ.FilterByCreatedBefore(date).FilterVerified().Select()
 
 	if err != nil {
 		log.WithError(err).Error("failed to filter by updated before")
@@ -47,7 +47,6 @@ func Run(cfg config.Config, date int) error {
 
 	filteredEvents, err := eventsQ.
 		FilterByType(models.TypeEarlyTest).
-		FilterByStatus(data.EventFulfilled).
 		FilterByNullifier(nullifiers...).
 		Select()
 
