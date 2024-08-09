@@ -27,8 +27,8 @@ func Run(cfg config.Config, date int) error {
 		log.Infof("Event type %s is inactive", models.TypeEarlyTest)
 		return nil
 	}
-
-	balances, err := balancesQ.FilterByCreatedBefore(date).FilterVerified().Select()
+	//.FilterVerified()
+	balances, err := balancesQ.FilterByCreatedBefore(date).Select()
 
 	if err != nil {
 		log.WithError(err).Error("failed to filter by updated before")
@@ -56,15 +56,16 @@ func Run(cfg config.Config, date int) error {
 		return err
 	}
 
-	eventsMap := make(map[string]string, len(filteredEvents))
+	eventsMap := make(map[string]struct{}, len(filteredEvents))
+
 	for _, event := range filteredEvents {
-		eventsMap[event.Nullifier] = event.ID
+		eventsMap[event.Nullifier] = struct{}{}
 	}
 
 	for _, balance := range balances {
 		err = eventsQ.New().Transaction(func() error {
 			if _, exists := eventsMap[balance.Nullifier]; exists {
-				log.Infof("Event %s has nullifier %s is already done", eventsMap[balance.Nullifier], balance.Nullifier)
+				log.Infof("Event %s is already done for user with nullifier %s ", models.TypeEarlyTest, balance.Nullifier)
 				return nil
 			}
 
