@@ -3,7 +3,7 @@ log:
   disable_sentry: true
 
 db:
-  url: postgres://points:points@localhost:5440/points?sslmode=disable
+  url: postgres://points:points@localhost:5432/points?sslmode=disable
 
 listener:
   addr: localhost:8000
@@ -116,12 +116,10 @@ auth:
 verifier:
   allowed_age: 18
   allowed_identity_timestamp: 1715698750
-
 poseidonsmt_root_verifier:
   rpc: evm_rpc_url
   contract: poseidon_smt_contract_address
   request_timeout: 10s
-
 poll_verifier:
   rpc: evm_rpc_url
   proposal_state_address: 0x123...123
