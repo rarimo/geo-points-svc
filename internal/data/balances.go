@@ -54,6 +54,8 @@ type BalancesQ interface {
 	FilterByInternalAID(aid string) BalancesQ
 	FilterByExternalAID(aid string) BalancesQ
 	FilterBySharedHash(hash string) BalancesQ
+	FilterByCreatedBefore(date int) BalancesQ
+	FilterVerified() BalancesQ
 }
 
 type WithoutPassportEventBalance struct {

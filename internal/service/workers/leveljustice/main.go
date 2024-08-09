@@ -37,5 +37,4 @@ func Run(cfg config.Config, sig chan struct{}) {
 	}
 
 	sig <- struct{}{}
-
 }
