@@ -1,7 +1,6 @@
 package evtypes
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
@@ -26,15 +25,6 @@ func FilterNotStarted(ev models.EventType) bool {
 }
 
 func FilterInactive(ev models.EventType) bool {
-	if ev.Disabled {
-		fmt.Println("ev.Disabled")
-	}
-	if FilterExpired(ev) {
-		fmt.Println("FilterExpired")
-	}
-	if FilterNotStarted(ev) {
-		fmt.Println("FilterNotStarted")
-	}
 	return ev.Disabled || FilterExpired(ev) || FilterNotStarted(ev)
 }
 
