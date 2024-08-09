@@ -3,7 +3,7 @@ log:
   disable_sentry: true
 
 db:
-  url: postgres://points:points@localhost:5432/points?sslmode=disable
+  url: postgres://points:points@localhost:5440/points?sslmode=disable
 
 listener:
   addr: localhost:8000
@@ -91,6 +91,14 @@ event_types:
       short_description: Short description
       auto_claim: true
       qr_code_value: "qr_code_base64_string"
+    - name: early_test
+      title: one-time event
+      reward: 5
+      frequency: unlimited
+      description: one time event
+      short_description: Short description
+      auto_claim: true
+      no_auto_open: true
 
 levels:
   downgradeable: false
