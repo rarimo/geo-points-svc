@@ -7,9 +7,7 @@ import (
 )
 
 func eventStart(cfg config.Config, data int) {
-	evTypesSig := make(chan struct{})
-	go evtypes.InitForOneTimeEvent(cfg, evTypesSig)
-	<-evTypesSig
+	evtypes.InitForOneTimeEvent(cfg)
 
 	err := event.Run(cfg, data)
 	if err != nil {

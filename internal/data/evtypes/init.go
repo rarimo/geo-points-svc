@@ -41,7 +41,7 @@ func Init(_ context.Context, cfg extConfig, sig chan struct{}) {
 	types.Push(dbTypes...)
 }
 
-func InitForOneTimeEvent(cfg extConfig, sig chan struct{}) {
+func InitForOneTimeEvent(cfg extConfig) {
 	var (
 		log   = cfg.Log().WithField("who", "evtypes")
 		q     = pg.NewEventTypes(cfg.DB().Clone())
@@ -55,7 +55,6 @@ func InitForOneTimeEvent(cfg extConfig, sig chan struct{}) {
 
 	defer func() {
 		types.dbSynced = true
-		sig <- struct{}{}
 	}()
 
 	log.Debugf("Adding/overwriting event types from DB: %+v", dbTypes)
