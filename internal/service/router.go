@@ -32,7 +32,7 @@ func Run(ctx context.Context, cfg config.Config) {
 	r.Route("/integrations/geo-points-svc/v1", func(r chi.Router) {
 		r.Route("/public", func(r chi.Router) {
 			r.Route("/balances", func(r chi.Router) {
-				r.Use(authMW)
+				//r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Get("/", handlers.GetBalance)
@@ -46,7 +46,7 @@ func Run(ctx context.Context, cfg config.Config) {
 
 			})
 			r.Route("/events", func(r chi.Router) {
-				r.Use(authMW)
+				//r.Use(authMW)
 				r.Get("/", handlers.ListEvents)
 				r.Post("/poll", handlers.FulfillPollEvent)
 				r.Route("/{id}", func(r chi.Router) {

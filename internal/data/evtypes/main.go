@@ -1,8 +1,6 @@
 package evtypes
 
 import (
-	"fmt"
-
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 )
@@ -93,8 +91,6 @@ func (t *Types) Push(types ...models.EventType) {
 
 func (t *Types) ensureInitialized() {
 	if t.m == nil || t.list == nil || !t.dbSynced {
-		txt := fmt.Sprintf("t.m - %+v, t.lisy - %+v, t.dbSynced %+v", t.m, t.list, t.dbSynced)
-		fmt.Println(txt)
 		panic("event types are not correctly initialized")
 	}
 }
