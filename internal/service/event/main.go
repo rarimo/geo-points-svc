@@ -56,13 +56,16 @@ func Run(cfg config.Config, date int) error {
 		return err
 	}
 
+	eventsMap := make(map[string]string, len(filteredEvents))
+	for _, event := range filteredEvents {
+		eventsMap[event.Nullifier] = event.ID
+	}
+
 	for _, balance := range balances {
 		err = eventsQ.New().Transaction(func() error {
-			for _, event := range filteredEvents {
-				if event.Nullifier == balance.Nullifier {
-					log.Infof("Event %s has nullifier %s", balance.Nullifier, balance.Nullifier)
-					return nil
-				}
+			if _, exists := eventsMap[balance.Nullifier]; exists {
+				log.Infof("Event %s has nullifier %s is already done", eventsMap[balance.Nullifier], balance.Nullifier)
+				return nil
 			}
 
 			err = eventsQ.Insert(data.Event{
@@ -79,22 +82,18 @@ func Run(cfg config.Config, date int) error {
 				return nil
 			}
 
-			var totalPoints int64
-
 			_, err = eventsQ.FilterByNullifier(balance.Nullifier).Update(data.EventFulfilled, nil, &evType.Reward)
 			if err != nil {
 				return fmt.Errorf("failed to update %s events for user=%s: %w", models.TypeEarlyTest, balance.Nullifier, err)
 			}
 
-			totalPoints += evType.Reward
-
-			level, err := handlers.DoLevelRefUpgrade(lvls, referralsQ, &balance, totalPoints)
+			level, err := handlers.DoLevelRefUpgrade(lvls, referralsQ, &balance, evType.Reward)
 			if err != nil {
 				return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
 			}
 
 			err = balancesQ.New().FilterByNullifier(balance.Nullifier).Update(map[string]any{
-				data.ColAmount: pg.AddToValue(data.ColAmount, totalPoints),
+				data.ColAmount: pg.AddToValue(data.ColAmount, evType.Reward),
 				data.ColLevel:  level,
 			})
 
