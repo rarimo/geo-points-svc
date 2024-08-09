@@ -41,7 +41,7 @@ func Init(_ context.Context, cfg extConfig, sig chan struct{}) {
 	types.Push(dbTypes...)
 }
 
-func InitFoOneTimeEvent(cfg extConfig, sig chan struct{}) {
+func InitForOneTimeEvent(cfg extConfig, sig chan struct{}) {
 	var (
 		log   = cfg.Log().WithField("who", "evtypes")
 		q     = pg.NewEventTypes(cfg.DB().Clone())

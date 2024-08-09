@@ -23,7 +23,6 @@ func Run(cfg config.Config, date int) error {
 
 	evType := evTypes.Get(models.TypeEarlyTest, evtypes.FilterInactive)
 
-	log.Infof("point")
 	if evType == nil {
 		log.Infof("Event type %s is inactive", models.TypeEarlyTest)
 		return nil
@@ -57,15 +56,13 @@ func Run(cfg config.Config, date int) error {
 		return err
 	}
 
-	eventsMap := make(map[string]string, len(filteredEvents))
-	for _, event := range filteredEvents {
-		eventsMap[event.Nullifier] = ""
-	}
-
 	for _, balance := range balances {
 		err = eventsQ.New().Transaction(func() error {
-			if _, exists := eventsMap[balance.Nullifier]; exists {
-				return nil
+			for _, event := range filteredEvents {
+				if event.Nullifier == balance.Nullifier {
+					log.Infof("Event %s has nullifier %s", balance.Nullifier, balance.Nullifier)
+					return nil
+				}
 			}
 
 			err = eventsQ.Insert(data.Event{
@@ -73,6 +70,7 @@ func Run(cfg config.Config, date int) error {
 				Type:      models.TypeEarlyTest,
 				Status:    data.EventFulfilled,
 			})
+
 			if err != nil {
 				return fmt.Errorf("failed to insert `early_test` event: %w", err)
 			}
@@ -83,7 +81,7 @@ func Run(cfg config.Config, date int) error {
 
 			var totalPoints int64
 
-			_, err = eventsQ.FilterByNullifier(balance.Nullifier).Update(data.EventClaimed, nil, &evType.Reward)
+			_, err = eventsQ.FilterByNullifier(balance.Nullifier).Update(data.EventFulfilled, nil, &evType.Reward)
 			if err != nil {
 				return fmt.Errorf("failed to update %s events for user=%s: %w", models.TypeEarlyTest, balance.Nullifier, err)
 			}
@@ -107,6 +105,5 @@ func Run(cfg config.Config, date int) error {
 			return nil
 		})
 	}
-
 	return nil
 }

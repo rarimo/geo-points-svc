@@ -20,7 +20,7 @@ func eventStart(cfg config.Config, data int) {
 		}()
 	}
 
-	run(func() { evtypes.InitFoOneTimeEvent(cfg, evTypesSig) })
+	run(func() { evtypes.InitForOneTimeEvent(cfg, evTypesSig) })
 	<-evTypesSig
 
 	fmt.Println("ini end")
