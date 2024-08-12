@@ -25,10 +25,17 @@ func (p *OffsetParams) Validate() error {
 	}.Filter()
 }
 
-func (p *OffsetParams) GetLinks(r *http.Request) *resources.Links {
+func (p *OffsetParams) GetLinks(r *http.Request, resourceCount uint64) *resources.Links {
 	result := resources.Links{
 		Self: p.getLink(r, p.PageNumber),
-		Next: p.getLink(r, p.PageNumber+1),
+	}
+
+	if p.PageNumber != 0 {
+		result.Prev = p.getLink(r, p.PageNumber-1)
+	}
+
+	if p.Limit*p.PageNumber < resourceCount {
+		result.Next = p.getLink(r, p.PageNumber+1)
 	}
 	return &result
 }
