@@ -35,6 +35,11 @@ func Run(ctx context.Context, cfg config.Config) {
 				r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
+					r.Route("/daily_question", func(r chi.Router) {
+						r.Get("/status", handlers.GetStatusDailyQuestions)
+						//r.Get("/question", handlers)
+						//r.Post("/answer", handlers)
+					})
 					r.Get("/", handlers.GetBalance)
 					r.Patch("/", handlers.ActivateBalance)
 					r.Post("/verifypassport", handlers.VerifyInternalPassport)
