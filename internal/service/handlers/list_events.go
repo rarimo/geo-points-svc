@@ -75,19 +75,17 @@ func ListEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var eventsCount int
-	if req.Count {
-		eventsCount, err = EventsQ(r).
-			FilterByNullifier(*req.FilterNullifier).
-			FilterByStatus(req.FilterStatus...).
-			FilterByType(req.FilterType...).
-			FilterInactiveNotClaimed(inactiveTypes...).
-			Count()
-		if err != nil {
-			Log(r).WithError(err).Errorf("Failed to count filtered events: nullifier=%s status=%v type=%v",
-				*req.FilterNullifier, req.FilterStatus, req.FilterType)
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
+	eventsCount, err = EventsQ(r).
+		FilterByNullifier(*req.FilterNullifier).
+		FilterByStatus(req.FilterStatus...).
+		FilterByType(req.FilterType...).
+		FilterInactiveNotClaimed(inactiveTypes...).
+		Count()
+	if err != nil {
+		Log(r).WithError(err).Errorf("Failed to count filtered events: nullifier=%s status=%v type=%v",
+			*req.FilterNullifier, req.FilterStatus, req.FilterType)
+		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 
 	meta, err := getOrderedEventsMeta(events, r)
@@ -98,7 +96,7 @@ func ListEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := newEventsResponse(events, meta)
-	resp.Links = req.OffsetParams.GetLinks(r)
+	resp.Links = req.OffsetParams.GetLinks(r, uint64(eventsCount))
 	if req.Count {
 		_ = resp.PutMeta(struct {
 			EventsCount int `json:"events_count"`
