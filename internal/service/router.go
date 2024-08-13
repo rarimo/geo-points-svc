@@ -32,13 +32,15 @@ func Run(ctx context.Context, cfg config.Config) {
 	r.Route("/integrations/geo-points-svc/v1", func(r chi.Router) {
 		r.Route("/public", func(r chi.Router) {
 			r.Route("/balances", func(r chi.Router) {
-				r.Use(authMW)
+				//TODO come back authentication:
+				//r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Route("/daily_question", func(r chi.Router) {
-						r.Get("/status", handlers.GetStatusDailyQuestions)
-						//r.Get("/question", handlers)
-						//r.Post("/answer", handlers)
+						r.Get("/status", handlers.GetDailyQuestionsStatus)
+						//TODO make endpoints:
+						//r.Get("/question", handlers.GetDailyQuestion)
+						//r.Post("/send_answer", handlers.SendDailyQuestion)
 					})
 					r.Get("/", handlers.GetBalance)
 					r.Patch("/", handlers.ActivateBalance)

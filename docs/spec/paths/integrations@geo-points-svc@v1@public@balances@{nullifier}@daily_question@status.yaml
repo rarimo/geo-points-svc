@@ -1,0 +1,21 @@
+get:
+  parameters:
+    - $ref: '#/components/parameters/DailyQuestionsStatus'
+  response:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/DailyQuestionsStatus'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    500:
+      $ref: '#/components/responses/internalError'

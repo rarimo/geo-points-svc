@@ -66,20 +66,21 @@ func (q *dailyQuestions) Count() (int64, error) {
 	return res.Count, nil
 }
 
-func (q *dailyQuestions) CountActive() (int64, error) {
-	res := struct {
-		Count int64 `db:"count"`
-	}{}
-
-	if err := q.db.Get(&res, q.counter.Where("active = TRUE")); err != nil {
-		return 0, fmt.Errorf("get active daily_questions: %w", err)
+func (q *dailyQuestions) Select() ([]data.DailyQuestions, error) {
+	var res []data.DailyQuestions
+	if err := q.db.Select(&res, q.selector); err != nil {
+		return res, fmt.Errorf("select daily_questions: %w", err)
 	}
-
-	return res.Count, nil
+	return res, nil
 }
 
 func (q *dailyQuestions) FilteredActive(status bool) data.DailyQuestionsQ {
 	return q.applyCondition(squirrel.Eq{"active": status})
+}
+
+func (q *dailyQuestions) FilteredStartAt(date int) data.DailyQuestionsQ {
+	res := q.applyCondition(squirrel.Gt{"starts_at": date})
+	return res
 }
 
 func (q *dailyQuestions) applyCondition(cond squirrel.Sqlizer) data.DailyQuestionsQ {

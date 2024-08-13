@@ -1,0 +1,26 @@
+allOf:
+  - $ref: "#/components/schemas/DailyQuestionsKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - availability
+          - already_done_for_user
+          - time_to_next
+        properties:
+          availability:
+            type: boolean
+            description: availability questions of the day
+            example: false
+          already_done_for_user:
+            type: boolean
+            description: question of the day already done for user
+            example: true
+          time_to_next:
+            type: integer
+            format: int64
+            description: time to next question of the day
+            example: 312334324

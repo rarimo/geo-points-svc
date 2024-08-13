@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS daily_questions (
     time_for_answer INTEGER NOT NULL,
     bounty INTEGER NOT NULL,
     answer_options JSONB NOT NULL,
-    active BOOLEAN DEFAULT TRUE
+    active BOOLEAN DEFAULT TRUE,
+    starts_at INTEGER
 );
 
 -- +migrate Down

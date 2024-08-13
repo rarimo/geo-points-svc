@@ -7,6 +7,7 @@ type DailyQuestions struct {
 	Bounty        int    `db:"bounty"`
 	AnswerOptions string `db:"answer_options"`
 	Active        bool   `db:"active"`
+	StartsAt      int    `db:"starts_at"`
 }
 
 type DailyQuestionsQ interface {
@@ -15,7 +16,8 @@ type DailyQuestionsQ interface {
 	Update(map[string]any) error
 
 	Count() (int64, error)
-	CountActive() (int64, error)
+	Select() ([]DailyQuestions, error)
 
 	FilteredActive(status bool) DailyQuestionsQ
+	FilteredStartAt(date int) DailyQuestionsQ
 }
