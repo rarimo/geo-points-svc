@@ -12,6 +12,7 @@ const (
 	BALANCE              ResourceType = "balance"
 	CLAIM_EVENT          ResourceType = "claim_event"
 	CREATE_BALANCE       ResourceType = "create_balance"
+	DAILY_QUESTION       ResourceType = "daily_question"
 	EVENT_CLAIMING_STATE ResourceType = "event_claiming_state"
 	EVENT                ResourceType = "event"
 	EVENT_TYPE           ResourceType = "event_type"

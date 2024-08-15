@@ -55,7 +55,7 @@ func CtxBalancesQ(q data.BalancesQ) func(context.Context) context.Context {
 	}
 }
 
-func CtxDailyQuestionsQ(q data.DailyQuestionsQ) func(context.Context) context.Context {
+func CtxDailyQuestionsQ(q data.DailyQuestionQ) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, dailyQuestionsQCtxKey, q)
 	}
@@ -65,8 +65,8 @@ func BalancesQ(r *http.Request) data.BalancesQ {
 	return r.Context().Value(balancesQCtxKey).(data.BalancesQ).New()
 }
 
-func DailyQuestionsQ(r *http.Request) data.DailyQuestionsQ {
-	return r.Context().Value(dailyQuestionsQCtxKey).(data.DailyQuestionsQ).New()
+func DailyQuestionsQ(r *http.Request) data.DailyQuestionQ {
+	return r.Context().Value(dailyQuestionsQCtxKey).(data.DailyQuestionQ).New()
 }
 
 func CtxReferralsQ(q data.ReferralsQ) func(context.Context) context.Context {

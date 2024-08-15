@@ -1,7 +1,10 @@
 package pg
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/rarimo/geo-points-svc/internal/data"
@@ -10,15 +13,15 @@ import (
 
 const dailyQuestionsTable = "daily_questions"
 
-type dailyQuestions struct {
+type dailyQuestionsQ struct {
 	db       *pgdb.DB
 	selector squirrel.SelectBuilder
 	updater  squirrel.UpdateBuilder
 	counter  squirrel.SelectBuilder
 }
 
-func NewDailyQuestions(db *pgdb.DB) data.DailyQuestionsQ {
-	return &dailyQuestions{
+func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionQ {
+	return &dailyQuestionsQ{
 		db:       db,
 		selector: squirrel.Select("*").From(dailyQuestionsTable),
 		updater:  squirrel.Update(dailyQuestionsTable),
@@ -26,17 +29,18 @@ func NewDailyQuestions(db *pgdb.DB) data.DailyQuestionsQ {
 	}
 }
 
-func (q *dailyQuestions) New() data.DailyQuestionsQ {
-	return NewDailyQuestions(q.db)
+func (q *dailyQuestionsQ) New() data.DailyQuestionQ {
+	return NewDailyQuestionsQ(q.db)
 }
 
-func (q *dailyQuestions) Insert(quest data.DailyQuestions) error {
+func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 	stmt := squirrel.Insert(dailyQuestionsTable).SetMap(map[string]interface{}{
 		"title":           quest.Title,
 		"time_for_answer": quest.TimeForAnswer,
-		"bounty":          quest.Bounty,
+		"reward":          quest.Reward,
 		"answer_options":  quest.AnswerOptions,
 		"active":          quest.Active,
+		"starts_at":       quest.StartsAt,
 	})
 
 	if err := q.db.Exec(stmt); err != nil {
@@ -46,7 +50,7 @@ func (q *dailyQuestions) Insert(quest data.DailyQuestions) error {
 	return nil
 }
 
-func (q *dailyQuestions) Update(fields map[string]any) error {
+func (q *dailyQuestionsQ) Update(fields map[string]any) error {
 	if err := q.db.Exec(q.updater.SetMap(fields)); err != nil {
 		return fmt.Errorf("update daily_questions: %w", err)
 	}
@@ -54,7 +58,7 @@ func (q *dailyQuestions) Update(fields map[string]any) error {
 	return nil
 }
 
-func (q *dailyQuestions) Count() (int64, error) {
+func (q *dailyQuestionsQ) Count() (int64, error) {
 	res := struct {
 		Count int64 `db:"count"`
 	}{}
@@ -66,24 +70,45 @@ func (q *dailyQuestions) Count() (int64, error) {
 	return res.Count, nil
 }
 
-func (q *dailyQuestions) Select() ([]data.DailyQuestions, error) {
-	var res []data.DailyQuestions
+func (q *dailyQuestionsQ) Select() ([]data.DailyQuestion, error) {
+	var res []data.DailyQuestion
 	if err := q.db.Select(&res, q.selector); err != nil {
 		return res, fmt.Errorf("select daily_questions: %w", err)
 	}
 	return res, nil
 }
 
-func (q *dailyQuestions) FilteredActive(status bool) data.DailyQuestionsQ {
+func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
+	var res data.DailyQuestion
+
+	if err := q.db.Get(&res, q.selector); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get balance: %w", err)
+	}
+
+	return &res, nil
+}
+
+func (q *dailyQuestionsQ) FilterByActive(status bool) data.DailyQuestionQ {
 	return q.applyCondition(squirrel.Eq{"active": status})
 }
 
-func (q *dailyQuestions) FilteredStartAt(date int) data.DailyQuestionsQ {
-	res := q.applyCondition(squirrel.Gt{"starts_at": date})
-	return res
+func (q *dailyQuestionsQ) FilterByStartAt(date time.Time) data.DailyQuestionQ {
+	return q.applyCondition(squirrel.Gt{"starts_at": date})
+
 }
 
-func (q *dailyQuestions) applyCondition(cond squirrel.Sqlizer) data.DailyQuestionsQ {
+func (q *dailyQuestionsQ) FilterByCreatedAt(date time.Time) data.DailyQuestionQ {
+	return q.applyCondition(squirrel.Gt{"created_at": date})
+}
+
+func (q *dailyQuestionsQ) FilterByID(ID int) data.DailyQuestionQ {
+	return q.applyCondition(squirrel.Eq{"id": ID})
+}
+
+func (q *dailyQuestionsQ) applyCondition(cond squirrel.Sqlizer) data.DailyQuestionQ {
 	q.selector = q.selector.Where(cond)
 	q.updater = q.updater.Where(cond)
 	q.counter = q.counter.Where(cond)

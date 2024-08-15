@@ -22,6 +22,8 @@ const (
 	TypeExternalPassportScan = "external_passport_scan"
 	TypePollParticipation    = "poll_participation"
 	TypeEarlyTest            = "early_test"
+	TypeDailyQuestion        = "daily_question"
+	TypeDailyQuestionPost    = "daily_question_post"
 )
 
 const (

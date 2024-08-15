@@ -1,23 +1,29 @@
 package data
 
-type DailyQuestions struct {
-	ID            int    `db:"id"`
-	Title         string `db:"title"`
-	TimeForAnswer int    `db:"time_for_answer"`
-	Bounty        int    `db:"bounty"`
-	AnswerOptions string `db:"answer_options"`
-	Active        bool   `db:"active"`
-	StartsAt      int    `db:"starts_at"`
+import "time"
+
+type DailyQuestion struct {
+	ID            int       `db:"id"`
+	Title         string    `db:"title"`
+	TimeForAnswer int       `db:"time_for_answer"`
+	Reward        int       `db:"reward"`
+	AnswerOptions Jsonb     `db:"answer_options"`
+	Active        bool      `db:"active"`
+	StartsAt      time.Time `db:"starts_at"`
+	CreatedAt     time.Time `db:"created_at"`
 }
 
-type DailyQuestionsQ interface {
-	New() DailyQuestionsQ
-	Insert(DailyQuestions) error
+type DailyQuestionQ interface {
+	New() DailyQuestionQ
+	Insert(DailyQuestion) error
 	Update(map[string]any) error
 
 	Count() (int64, error)
-	Select() ([]DailyQuestions, error)
+	Select() ([]DailyQuestion, error)
+	Get() (*DailyQuestion, error)
 
-	FilteredActive(status bool) DailyQuestionsQ
-	FilteredStartAt(date int) DailyQuestionsQ
+	FilterByActive(status bool) DailyQuestionQ
+	FilterByStartAt(date time.Time) DailyQuestionQ
+	FilterByCreatedAt(date time.Time) DailyQuestionQ
+	FilterByID(ID int) DailyQuestionQ
 }

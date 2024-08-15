@@ -1,0 +1,5 @@
+type: object
+properties:
+  type: string
+  format: json.RawMessage
+  description: Some events require dynamic data, which can be filled into `static` template.

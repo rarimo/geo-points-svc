@@ -3,8 +3,7 @@
  */
 
 package resources
-
-import "github.com/iden3/go-rapidsnark/types"
+import "gitlab.com/tokend/go/xdr"
 
 type FulfillPollEventAttributes struct {
 	// Proof of voting in some poll.

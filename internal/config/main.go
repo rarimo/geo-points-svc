@@ -1,6 +1,9 @@
 package config
 
 import (
+	"log"
+	"time"
+
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -11,6 +14,8 @@ import (
 	"gitlab.com/distributed_lab/kit/pgdb"
 )
 
+const locationName = "Asia/Tbilisi"
+
 type Config interface {
 	comfig.Logger
 	pgdb.Databaser
@@ -20,6 +25,7 @@ type Config interface {
 	evtypes.EventTypeser
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
+	TimeZoneProvider
 
 	Levels() *Levels
 	Verifiers() Verifiers
@@ -35,6 +41,8 @@ type config struct {
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
 
+	timeZone *time.Location
+
 	passport root.VerifierProvider
 
 	levels   comfig.Once
@@ -43,6 +51,10 @@ type config struct {
 }
 
 func New(getter kv.Getter) Config {
+	location, err := time.LoadLocation(locationName)
+	if err != nil {
+		log.Fatalf("error loading location: %v", err)
+	}
 	return &config{
 		getter:                getter,
 		Databaser:             pgdb.NewDatabaser(getter),
@@ -54,5 +66,6 @@ func New(getter kv.Getter) Config {
 		passport:              root.NewVerifierProvider(getter, root.PoseidonSMT),
 		EventTypeser:          evtypes.NewConfig(getter),
 		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
+		timeZone:              location,
 	}
 }

@@ -99,6 +99,14 @@ event_types:
       short_description: Short description
       auto_claim: true
       no_auto_open: true
+    - name: daily_question
+      title: Get daily question
+      reward: 0
+      frequency: unlimited
+      description: This event is used when a user get daily question
+      short_description: event for get daily question
+      auto_claim: true
+      no_auto_open: true
 
 levels:
   downgradeable: false

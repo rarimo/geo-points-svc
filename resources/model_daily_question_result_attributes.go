@@ -4,9 +4,9 @@
 
 package resources
 
-type DailyQuestionsStatusAttributes struct {
-	// question of the day already done for user
-	AlreadyDoneForUser bool `json:"already_done_for_user"`
+type DailyQuestionResultAttributes struct {
+	// Right or wrong answers
+	AnswerStatus bool `json:"answer_status"`
 	// time to next question of the day
 	TimeToNext int64 `json:"time_to_next"`
 }
