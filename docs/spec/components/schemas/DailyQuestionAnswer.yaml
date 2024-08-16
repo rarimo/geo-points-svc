@@ -15,11 +15,6 @@ allOf:
             type: integer
             format: int
             description: ID in table daily_question
-          nullifier:
-            type: string
-            description: Nullifier of the user who gave the answer
-            example: "0x123...abc"
-            pattern: '^0x[0-9a-fA-F]{64}$'
           answer:
             type: string
             example: "That day is May 26, 2025"

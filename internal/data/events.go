@@ -63,6 +63,8 @@ type EventsQ interface {
 	FilterByType(...string) EventsQ
 	FilterByNotType(types ...string) EventsQ
 	FilterByUpdatedAtBefore(int64) EventsQ
+	FilterByCreatedAtAfter(int64) EventsQ
+	FilterByCreatedAtBefore(int64) EventsQ
 	FilterByExternalID(string) EventsQ
 	FilterInactiveNotClaimed(types ...string) EventsQ
 }

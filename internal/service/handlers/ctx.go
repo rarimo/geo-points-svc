@@ -26,7 +26,8 @@ const (
 	verifiersCtxKey
 	sigCalculatorCtxKey
 	voteVerifierCtxKey
-	dailyQuestionsQCtxKey
+	dailyQuestionsCtxKey
+	dailyResponsesCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -57,7 +58,13 @@ func CtxBalancesQ(q data.BalancesQ) func(context.Context) context.Context {
 
 func CtxDailyQuestionsQ(q data.DailyQuestionQ) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, dailyQuestionsQCtxKey, q)
+		return context.WithValue(ctx, dailyQuestionsCtxKey, q)
+	}
+}
+
+func CtxDailyQuestionsResponsesQ(q data.DailyQuestionsResponsesQ) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, dailyResponsesCtxKey, q)
 	}
 }
 
@@ -66,7 +73,11 @@ func BalancesQ(r *http.Request) data.BalancesQ {
 }
 
 func DailyQuestionsQ(r *http.Request) data.DailyQuestionQ {
-	return r.Context().Value(dailyQuestionsQCtxKey).(data.DailyQuestionQ).New()
+	return r.Context().Value(dailyQuestionsCtxKey).(data.DailyQuestionQ).New()
+}
+
+func DailyQuestionsResponsesQ(r *http.Request) data.DailyQuestionsResponsesQ {
+	return r.Context().Value(dailyResponsesCtxKey).(data.DailyQuestionsResponsesQ).New()
 }
 
 func CtxReferralsQ(q data.ReferralsQ) func(context.Context) context.Context {

@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
+	"time"
 
-	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
@@ -14,12 +15,8 @@ import (
 )
 
 func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
-	AlreadyDoneForUser, TimeToNext := false, 0
-
-	// if !auth.Authenticates(UserClaims(r), auth.UserGrant(req.UserNullifier)) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	var AlreadyDoneForUser bool
+	var TimeToNext int64
 
 	req, err := requests.NewGetDailyQuestionsRequest(r)
 	if err != nil {
@@ -28,109 +25,109 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	activeQuestions, err := DailyQuestionsQ(r).FilterByActive(true).Select()
-	Log(r).Infof("len: %v", len(activeQuestions))
+	// Закомментировано, т.к. аутентификация временно отключена
+	// if !auth.Authenticates(UserClaims(r), auth.UserGrant(req.Nullifier)) {
+	// 	ape.RenderErr(w, problems.Unauthorized())
+	// 	return
+	// }
+
+	currentTime := time.Now().UTC()
+
+	activeQuestions, err := DailyQuestionsQ(r).FilterActive().Select()
 	if err != nil {
 		Log(r).Errorf("error getting active questions: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
+	Log(r).Infof("activeQuestions: %v", len(activeQuestions))
 
 	if len(activeQuestions) == 0 {
 		AlreadyDoneForUser = false
+		TimeToNext, err = TimeToNextQuestion(r, currentTime)
 
-		closes, err := TimeToNextQuestion(r)
-
-		if err != nil || closes == -1 {
+		if err != nil || TimeToNext == -2 {
 			Log(r).Errorf("error getting time to next question: %v", err)
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
 
-		TimeToNext = closes
 		ape.Render(w, NewDailyQuestionsStatus(AlreadyDoneForUser, TimeToNext))
 		return
 	}
 
-	checkPassed, err := checkPassedUserQuestion(r, req)
-	if err != nil {
-		Log(r).Errorf("error checkPassedUserQuestion: %v", err)
+	TimeToNext, err = TimeToNextQuestion(r, currentTime)
+
+	if err != nil || TimeToNext == -2 {
+		Log(r).Errorf("error getting time to next question: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	AlreadyDoneForUser = checkPassed
-
-	if !checkPassed {
-		closes, err := TimeToNextQuestion(r)
-		if err != nil || closes != -2 {
-			Log(r).Errorf("error getting time to next question: %v", err)
+	for _, quest := range activeQuestions {
+		AlreadyDoneForUser, err = checkPassedUserQuestion(r, req.Nullifier, quest)
+		if err != nil {
+			Log(r).Errorf("error checkPassedUserQuestion: %v", err)
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
-		TimeToNext = closes
-	} else {
+		if AlreadyDoneForUser {
+			break
+		}
+	}
+
+	if !AlreadyDoneForUser {
 		TimeToNext = 0
 	}
 
 	ape.Render(w, NewDailyQuestionsStatus(AlreadyDoneForUser, TimeToNext))
 }
 
-func TimeToNextQuestion(r *http.Request) (int, error) {
-	activeQuestions, err := DailyQuestionsQ(r).Select()
+func TimeToNextQuestion(r *http.Request, currentTime time.Time) (int64, error) {
+	questions, err := DailyQuestionsQ(r).FilterByStartAt(currentTime).Select()
 	if err != nil {
-		Log(r).Errorf("Error getting all questions: %v", err)
 		return -2, err
 	}
 
-	if len(activeQuestions) == 0 {
-		Log(r).Error("No active questions found")
-		return -1, nil
-	}
-	nowTime := config.NowTime()
-	questions, err := DailyQuestionsQ(r).FilterByStartAt(nowTime).Select()
-
-	if err != nil {
-		Log(r).Errorf("Error getting all questions: %v", err)
-		return -2, err
-	}
 	if len(questions) == 0 {
-		Log(r).Error("No questions found")
 		return -1, nil
 	}
 
-	closes := math.MaxInt64
-
+	closes := int64(math.MaxInt64)
 	for _, q := range questions {
-		if int(q.StartsAt.Unix()) < closes {
-			closes = int(q.StartsAt.Unix())
+		timeToNext := q.StartsAt.Unix() - currentTime.Unix()
+		if timeToNext < closes {
+			closes = timeToNext
 		}
 	}
-	return closes - int(nowTime.Unix()), nil
+
+	return closes, nil
 }
 
-func checkPassedUserQuestion(r *http.Request, req requests.GetDailyQuestionRequest) (bool, error) {
-	eve, err := EventsQ(r).FilterByNullifier(req.UserNullifier).FilterByType(models.TypeDailyQuestion).Get()
+func checkPassedUserQuestion(r *http.Request, nullifier string, question data.DailyQuestion) (bool, error) {
+	event, err := EventsQ(r).
+		FilterByNullifier(nullifier).
+		FilterByType(models.TypeDailyQuestion).
+		FilterByStatus(data.EventFulfilled).
+		FilterByCreatedAtAfter(question.StartsAt.Unix()).
+		FilterByCreatedAtBefore(question.StartsAt.Unix() + question.TimeForAnswer).
+		Get()
+
+	Log(r).Infof("%+v", event)
+
 	if err != nil {
 		Log(r).Errorf("Error getting events: %v", err)
-		return false, err
+		return false, fmt.Errorf("failed to select events for user=%s: %w", nullifier, err)
 	}
-
-	if eve == nil {
-		return true, nil
-	}
-
-	if eve.Status != data.EventOpen {
+	if event == nil {
 		return false, nil
 	}
 
 	return true, nil
 }
 
-func NewDailyQuestionsStatus(AlreadyDoneForUser bool, TimeToNext int) resources.DailyQuestionsStatusAttributes {
+func NewDailyQuestionsStatus(AlreadyDoneForUser bool, TimeToNext int64) resources.DailyQuestionsStatusAttributes {
 	return resources.DailyQuestionsStatusAttributes{
 		AlreadyDoneForUser: AlreadyDoneForUser,
-		TimeToNext:         int64(TimeToNext),
+		TimeToNext:         TimeToNext,
 	}
-
 }

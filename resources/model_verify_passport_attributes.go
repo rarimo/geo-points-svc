@@ -3,12 +3,13 @@
  */
 
 package resources
-import "gitlab.com/tokend/go/xdr"
+
+import "github.com/iden3/go-rapidsnark/types"
 
 type VerifyPassportAttributes struct {
 	// Unique identifier of the passport.
 	AnonymousId string `json:"anonymous_id"`
-	// Query ZK passport verification proof. Required for passport verification endpoint. 
+	// Query ZK passport verification proof. Required for passport verification endpoint.
 	Proof *types.ZKProof `json:"proof,omitempty"`
 	// Unique identifier for linking internal and external passports
 	SharedHash *string `json:"shared_hash,omitempty"`

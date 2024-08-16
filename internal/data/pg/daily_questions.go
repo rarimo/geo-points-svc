@@ -39,7 +39,6 @@ func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 		"time_for_answer": quest.TimeForAnswer,
 		"reward":          quest.Reward,
 		"answer_options":  quest.AnswerOptions,
-		"active":          quest.Active,
 		"starts_at":       quest.StartsAt,
 	})
 
@@ -91,8 +90,9 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	return &res, nil
 }
 
-func (q *dailyQuestionsQ) FilterByActive(status bool) data.DailyQuestionQ {
-	return q.applyCondition(squirrel.Eq{"active": status})
+func (q *dailyQuestionsQ) FilterActive() data.DailyQuestionQ {
+	now := time.Now().Unix()
+	return q.applyCondition(squirrel.Expr("EXTRACT(EPOCH FROM starts_at) + time_for_answer > ? AND EXTRACT(EPOCH FROM starts_at) < ?", now, now))
 }
 
 func (q *dailyQuestionsQ) FilterByStartAt(date time.Time) data.DailyQuestionQ {

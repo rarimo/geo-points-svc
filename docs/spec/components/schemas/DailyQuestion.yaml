@@ -13,7 +13,6 @@ allOf:
           - time_for_answer
           - reward
           - answer_options
-          - active
           - starts_at
           - created_at
         properties:
@@ -28,7 +27,7 @@ allOf:
             example: Georgian capital
           time_for_answer:
             type: integer
-            format: int
+            format: int64
             description: Time for answer
             example: 86400
           reward:
@@ -39,15 +38,10 @@ allOf:
           answer_options:
             $ref: '#/components/schemas/DailyQuestionAnswers'
             description: answer options
-          Active:
-            type: boolean
-            description: Status activity event
-            example: true
           starts_at:
             type: time.Time
-            format: int
+            format: int64
             description: Event start date, after which the event becomes active
           created_at:
             type: time.Time
-            format: int
             description: Event add date

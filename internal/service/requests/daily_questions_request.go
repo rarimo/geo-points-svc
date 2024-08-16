@@ -8,10 +8,10 @@ import (
 )
 
 type GetDailyQuestionRequest struct {
-	UserNullifier string `json:"user_nullifier"`
+	Nullifier string `json:"user_nullifier"`
 }
 
 func NewGetDailyQuestionsRequest(r *http.Request) (req GetDailyQuestionRequest, err error) {
-	req.UserNullifier = strings.ToLower(chi.URLParam(r, "nullifier"))
+	req.Nullifier = strings.ToLower(chi.URLParam(r, "nullifier"))
 	return req, nil
 }

@@ -37,8 +37,8 @@ func Run(ctx context.Context, cfg config.Config) {
 				r.Route("/{nullifier}", func(r chi.Router) {
 					r.Route("/daily_question", func(r chi.Router) {
 						r.Get("/status", handlers.GetDailyQuestionsStatus)
-						r.Get("/question", handlers.GetDailyQuestion)
-						r.Patch("/question", handlers.DailyQuestionAnswer)
+						r.Get("/question", handlers.DailyQuestionRespond)
+						r.Patch("/question", handlers.DailyQuestionCheck)
 					})
 					r.Get("/", handlers.GetBalance)
 					r.Patch("/", handlers.ActivateBalance)

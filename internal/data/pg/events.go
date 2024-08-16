@@ -226,6 +226,14 @@ func (q *events) FilterByUpdatedAtBefore(unix int64) data.EventsQ {
 	return q.applyCondition(squirrel.Lt{"updated_at": unix})
 }
 
+func (q *events) FilterByCreatedAtAfter(unix int64) data.EventsQ {
+	return q.applyCondition(squirrel.Gt{"created_at": unix})
+}
+
+func (q *events) FilterByCreatedAtBefore(unix int64) data.EventsQ {
+	return q.applyCondition(squirrel.Lt{"created_at": unix})
+}
+
 func (q *events) FilterInactiveNotClaimed(types ...string) data.EventsQ {
 	if len(types) == 0 {
 		return q
