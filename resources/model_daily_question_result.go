@@ -10,24 +10,24 @@ type DailyQuestionResult struct {
 	Key
 	Attributes DailyQuestionResultAttributes `json:"attributes"`
 }
-type DailyQuestionResultRequest struct {
+type DailyQuestionResultResponse struct {
 	Data     DailyQuestionResult `json:"data"`
 	Included Included            `json:"included"`
 }
 
-type DailyQuestionResultListRequest struct {
+type DailyQuestionResultListResponse struct {
 	Data     []DailyQuestionResult `json:"data"`
 	Included Included              `json:"included"`
 	Links    *Links                `json:"links"`
 	Meta     json.RawMessage       `json:"meta,omitempty"`
 }
 
-func (r *DailyQuestionResultListRequest) PutMeta(v interface{}) (err error) {
+func (r *DailyQuestionResultListResponse) PutMeta(v interface{}) (err error) {
 	r.Meta, err = json.Marshal(v)
 	return err
 }
 
-func (r *DailyQuestionResultListRequest) GetMeta(out interface{}) error {
+func (r *DailyQuestionResultListResponse) GetMeta(out interface{}) error {
 	return json.Unmarshal(r.Meta, out)
 }
 

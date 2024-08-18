@@ -6,4 +6,6 @@ properties:
     type: integer
     format: int64
     description: id question
-    example: 12
+  type:
+    type: string
+    enum: [daily_question_request ]

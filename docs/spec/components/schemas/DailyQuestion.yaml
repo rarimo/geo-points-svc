@@ -1,7 +1,6 @@
 allOf:
   - $ref: "#/components/schemas/DailyQuestionKey"
   - type: object
-    x-go-is-request: true
     required:
       - attributes
     properties:
@@ -10,9 +9,9 @@ allOf:
         required:
           - ID
           - title
+          - answer_options
           - time_for_answer
           - reward
-          - answer_options
           - starts_at
           - created_at
         properties:
@@ -25,19 +24,17 @@ allOf:
             type: string
             description: Title question
             example: Georgian capital
+          answer_options:
+            $ref: '#/components/schemas/DailyQuestionOptions'
+            description: answer options
           time_for_answer:
             type: integer
             format: int64
             description: Time for answer
-            example: 86400
           reward:
             type: integer
             format: int
             description: Reward for the right answer
-            example: 77
-          answer_options:
-            $ref: '#/components/schemas/DailyQuestionAnswers'
-            description: answer options
           starts_at:
             type: time.Time
             format: int64

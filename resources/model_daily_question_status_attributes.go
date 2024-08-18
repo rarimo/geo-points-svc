@@ -4,7 +4,7 @@
 
 package resources
 
-type DailyQuestionsStatusAttributes struct {
+type DailyQuestionStatusAttributes struct {
 	// question of the day already done for user
 	AlreadyDoneForUser bool `json:"already_done_for_user"`
 	// time to next question of the day

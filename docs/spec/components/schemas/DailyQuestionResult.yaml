@@ -1,21 +1,19 @@
 allOf:
-  - $ref: '#/components/schemas/DailyQuestionKey'
+  - $ref: '#/components/schemas/DailyQuestionResultKey'
   - type: object
-    x-go-is-request: true
     required:
       - attributes
     properties:
       attributes:
         type: object
         required:
-          - time_to_next
           - answer_status
+          - time_to_next
         properties:
+          answer_status:
+            type: boolean
+            description: Right or wrong answers
           time_to_next:
             type: integer
             format: int64
             description: time to next question of the day
-            example: 312334324
-          answer_status:
-            type: boolean
-            description: Right or wrong answers
