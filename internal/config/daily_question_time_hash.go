@@ -5,16 +5,21 @@ type DailyQuestionTimeHash interface {
 	GetDailyQuestionsTimeHash() DailyQuestionsTimeHash
 }
 
-type DailyQuestionsTimeHash map[string]int64
+type DailyQuestionTimeInfo struct {
+	MaxDateToAnswer int64
+	Answered        bool
+}
 
-func (c DailyQuestionsTimeHash) SetDailyQuestionsTimeHash(key string, value int64) {
+type DailyQuestionsTimeHash map[string]DailyQuestionTimeInfo
+
+func (c DailyQuestionsTimeHash) SetDailyQuestionsTimeHash(key string, value DailyQuestionTimeInfo) {
 	if c == nil {
 		c = make(DailyQuestionsTimeHash)
 	}
 	(c)[key] = value
 }
 
-func (c DailyQuestionsTimeHash) GetDailyQuestionsTimeHash(key string) *int64 {
+func (c DailyQuestionsTimeHash) GetDailyQuestionsTimeHash(key string) *DailyQuestionTimeInfo {
 	if c == nil {
 		return nil
 	}

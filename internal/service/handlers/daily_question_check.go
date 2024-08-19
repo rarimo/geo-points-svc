@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -31,9 +32,20 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 
-	if exits := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(req.Nullifier); exits == nil {
+	cell := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(req.Nullifier)
+	if cell == nil {
 		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", req.Nullifier)
 		ape.RenderErr(w, problems.NotAllowed())
+		return
+	}
+	if cell.MaxDateToAnswer < time.Now().UTC().Unix() {
+		Log(r).Infof("Time is up :%s", req.Nullifier)
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+	if cell.Answered {
+		Log(r).Infof("User has already answered: %s", req.Nullifier)
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
@@ -102,6 +114,8 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		if evtypes.FilterByAutoClaim(true)(*evType) {
 			return nil
 		}
+
+		cell.Answered = true
 
 		if answersMap[req.UserAnswer] != true {
 			answerIsTrue = false

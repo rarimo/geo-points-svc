@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -50,7 +52,24 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	SetDailyQuestionTimeWithExpiration(r, balance.Nullifier, time.Now().UTC().Unix(), question.TimeForAnswer)
+	questionEvent, err := EventsQ(r).
+		FilterTodayEvents().
+		FilterByType(models.TypeDailyQuestion).
+		FilterByNullifier(nullifier).
+		Get()
+
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to get active questions")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if questionEvent != nil {
+		Log(r).Infof("User already answered %s", nullifier)
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+
+	SetDailyQuestionTimeWithExpiration(r, balance.Nullifier, time.Now().UTC().Unix(), question.TimeForAnswer, false)
 
 	ape.Render(w, NewDailyQuestion(*question))
 	return
@@ -78,11 +97,14 @@ func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestionAttrib
 	}
 }
 
-func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, timestamp int64, duration int64) {
+func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, timestamp int64, duration int64, status bool) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	DailyQuestionTimeHash(r).SetDailyQuestionsTimeHash(nullifier, timestamp)
+	DailyQuestionTimeHash(r).SetDailyQuestionsTimeHash(nullifier, config.DailyQuestionTimeInfo{
+		MaxDateToAnswer: timestamp + duration,
+		Answered:        status,
+	})
 	Log(r).Infof("add %s %v, length q: %v, mapm %+v", nullifier, duration, len(DailyQuestionTimeHash(r)), DailyQuestionTimeHash(r))
 
 	go func() {
@@ -91,9 +113,11 @@ func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, times
 		mu.Lock()
 		defer mu.Unlock()
 
-		delete(DailyQuestionTimeHash(r), nullifier)
-		Log(r).Infof("Removed entry for nullifier: %s after expiration", nullifier)
-
+		info := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(nullifier)
+		if info.Answered {
+			delete(DailyQuestionTimeHash(r), nullifier)
+			Log(r).Infof("Removed entry for nullifier: %s after expiration", nullifier)
+		}
 	}()
 }
 
