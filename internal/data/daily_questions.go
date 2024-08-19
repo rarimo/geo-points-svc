@@ -12,8 +12,8 @@ type DailyQuestion struct {
 	CreatedAt     time.Time `db:"created_at"`
 }
 
-type DailyQuestionQ interface {
-	New() DailyQuestionQ
+type DailyQuestionsQ interface {
+	New() DailyQuestionsQ
 	Insert(DailyQuestion) error
 	Update(map[string]any) error
 
@@ -21,8 +21,8 @@ type DailyQuestionQ interface {
 	Select() ([]DailyQuestion, error)
 	Get() (*DailyQuestion, error)
 
-	FilterActive() DailyQuestionQ
-	FilterByStartAt(date time.Time) DailyQuestionQ
-	FilterByCreatedAt(date time.Time) DailyQuestionQ
-	FilterByID(ID int) DailyQuestionQ
+	FilterTodayQuestions(timezone string) DailyQuestionsQ
+	FilterByStartAt(date time.Time) DailyQuestionsQ
+	FilterByCreatedAt(date time.Time) DailyQuestionsQ
+	FilterByID(ID int) DailyQuestionsQ
 }

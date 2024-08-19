@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/rarimo/geo-points-svc/internal/data"
@@ -226,12 +227,19 @@ func (q *events) FilterByUpdatedAtBefore(unix int64) data.EventsQ {
 	return q.applyCondition(squirrel.Lt{"updated_at": unix})
 }
 
-func (q *events) FilterByCreatedAtAfter(unix int64) data.EventsQ {
-	return q.applyCondition(squirrel.Gt{"created_at": unix})
-}
+func (q *events) FilterTodayEvents(timezone string) data.EventsQ {
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		loc = time.UTC
+	}
 
-func (q *events) FilterByCreatedAtBefore(unix int64) data.EventsQ {
-	return q.applyCondition(squirrel.Lt{"created_at": unix})
+	todayStart := time.Now().In(loc).Truncate(24 * time.Hour).Unix()
+	todayEnd := todayStart + 24*60*60 - 1
+
+	return q.applyCondition(squirrel.And{
+		squirrel.GtOrEq{"created_at": todayStart},
+		squirrel.LtOrEq{"created_at": todayEnd},
+	})
 }
 
 func (q *events) FilterInactiveNotClaimed(types ...string) data.EventsQ {

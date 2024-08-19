@@ -20,7 +20,7 @@ type dailyQuestionsQ struct {
 	counter  squirrel.SelectBuilder
 }
 
-func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionQ {
+func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionsQ {
 	return &dailyQuestionsQ{
 		db:       db,
 		selector: squirrel.Select("*").From(dailyQuestionsTable),
@@ -29,7 +29,7 @@ func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionQ {
 	}
 }
 
-func (q *dailyQuestionsQ) New() data.DailyQuestionQ {
+func (q *dailyQuestionsQ) New() data.DailyQuestionsQ {
 	return NewDailyQuestionsQ(q.db)
 }
 
@@ -90,25 +90,34 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	return &res, nil
 }
 
-func (q *dailyQuestionsQ) FilterActive() data.DailyQuestionQ {
-	now := time.Now().Unix()
-	return q.applyCondition(squirrel.Expr("EXTRACT(EPOCH FROM starts_at) + time_for_answer > ? AND EXTRACT(EPOCH FROM starts_at) < ?", now, now))
-}
-
-func (q *dailyQuestionsQ) FilterByStartAt(date time.Time) data.DailyQuestionQ {
+func (q *dailyQuestionsQ) FilterByStartAt(date time.Time) data.DailyQuestionsQ {
 	return q.applyCondition(squirrel.Gt{"starts_at": date})
 
 }
 
-func (q *dailyQuestionsQ) FilterByCreatedAt(date time.Time) data.DailyQuestionQ {
+func (q *dailyQuestionsQ) FilterByCreatedAt(date time.Time) data.DailyQuestionsQ {
 	return q.applyCondition(squirrel.Gt{"created_at": date})
 }
 
-func (q *dailyQuestionsQ) FilterByID(ID int) data.DailyQuestionQ {
+func (q *dailyQuestionsQ) FilterTodayQuestions(timezone string) data.DailyQuestionsQ {
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		loc = time.UTC
+	}
+
+	todayStart := time.Now().In(loc).Truncate(24 * time.Hour)
+	todayEnd := todayStart.Add(24 * time.Hour).Add(-time.Nanosecond)
+
+	return q.applyCondition(squirrel.And{
+		squirrel.GtOrEq{"starts_at": todayStart},
+		squirrel.LtOrEq{"starts_at": todayEnd},
+	})
+}
+func (q *dailyQuestionsQ) FilterByID(ID int) data.DailyQuestionsQ {
 	return q.applyCondition(squirrel.Eq{"id": ID})
 }
 
-func (q *dailyQuestionsQ) applyCondition(cond squirrel.Sqlizer) data.DailyQuestionQ {
+func (q *dailyQuestionsQ) applyCondition(cond squirrel.Sqlizer) data.DailyQuestionsQ {
 	q.selector = q.selector.Where(cond)
 	q.updater = q.updater.Where(cond)
 	q.counter = q.counter.Where(cond)

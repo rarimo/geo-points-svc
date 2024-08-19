@@ -16,23 +16,18 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
-func DailyQuestionCheck(w http.ResponseWriter, r *http.Request) {
+func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	answerIsTrue := true
-	currentTime := time.Now().UTC()
 
-	req, err := requests.NewAnswerDailyQuestionData(r)
+	req, err := requests.NewDailyQuestionAnswer(r)
 	if err != nil {
 		Log(r).Errorf("error getting active questions: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	//if !auth.Authenticates(UserClaims(r), auth.UserGrant(req.Nullifier)) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	question, err := DailyQuestionsQ(r).FilterTodayQuestions(req.Timezone).Get()
 
-	question, err := DailyQuestionsQ(r).FilterByID(req.QuestionID).FilterActive().Get()
 	if question == nil {
 		Log(r).Errorf("error getting question: %v", err)
 		ape.RenderErr(w, problems.NotFound())
@@ -48,18 +43,6 @@ func DailyQuestionCheck(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Errorf("Failed to get balance by nullifier")
 		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	questionData, err := DailyQuestionsResponsesQ(r).FilterByQuestionID(question.ID).FilterByNullifier(req.Nullifier).Get()
-	if err != nil {
-		Log(r).WithError(err).Errorf("Failed to get balance by nullifier")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-	if questionData == nil {
-		Log(r).Errorf("error getting question data")
-		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
@@ -79,8 +62,7 @@ func DailyQuestionCheck(w http.ResponseWriter, r *http.Request) {
 		eventCheck, err := EventsQ(r).
 			FilterByNullifier(req.Nullifier).
 			FilterByType(models.TypeDailyQuestion).
-			FilterByCreatedAtAfter(question.CreatedAt.Unix()).
-			FilterByUpdatedAtBefore(currentTime.Unix()).
+			FilterTodayEvents(req.Timezone).
 			Get()
 
 		if eventCheck != nil {
@@ -101,7 +83,7 @@ func DailyQuestionCheck(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 
-		if answersMap[req.Answer] != true {
+		if answersMap[req.UserAnswer] != true {
 			answerIsTrue = false
 			Log(r).Infof("Anser wrong")
 			return nil
@@ -124,7 +106,12 @@ func DailyQuestionCheck(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 
-	TimeToNext, err := TimeToNextQuestion(r, time.Now())
+	location, err := time.LoadLocation(req.Timezone)
+	if err != nil {
+		location = time.UTC
+	}
+
+	TimeToNext, err := TimeToNextQuestion(r, location)
 	ape.Render(w, NewDailyAnswer(answerIsTrue, int(TimeToNext)))
 }
 
@@ -144,48 +131,4 @@ func NewDailyAnswer(answerStatus bool, TimeToNext int) resources.DailyQuestionRe
 		AnswerStatus: answerStatus,
 		TimeToNext:   int64(TimeToNext),
 	}
-}
-
-func autoClaimDailyQuestionEventsForBalance(r *http.Request, balance *data.Balance, question *data.DailyQuestion) error {
-	if balance == nil {
-		Log(r).Debug("Balance absent. Events not claimed.")
-		return nil
-	}
-
-	//if balance.IsDisabled() || !balance.IsVerified() {
-	//	Log(r).Debug("User not eligible for event claiming. Events not claimed.")
-	//	return nil
-	//}
-
-	event, err := EventsQ(r).
-		FilterByNullifier(balance.Nullifier).
-		FilterByType(models.TypeDailyQuestion).
-		FilterByStatus(data.EventFulfilled).
-		FilterByCreatedAtAfter(question.StartsAt.Unix()).
-		FilterByCreatedAtBefore(question.StartsAt.Unix() + question.TimeForAnswer).
-		Get()
-
-	if err != nil {
-		return fmt.Errorf("failed to select events for user=%s: %w", balance.Nullifier, err)
-	}
-	if event != nil {
-		return fmt.Errorf("user already claimed events for user=%s", balance.Nullifier)
-	}
-
-	totalPoints := balance.Amount + int64(question.Reward)
-
-	level, err := DoLevelRefUpgrade(Levels(r), ReferralsQ(r), balance, totalPoints)
-	if err != nil {
-		return fmt.Errorf("failed to do lvlup and referrals updates: %w", err)
-	}
-
-	err = BalancesQ(r).FilterByNullifier(balance.Nullifier).Update(map[string]any{
-		data.ColAmount: pg.AddToValue(data.ColAmount, totalPoints),
-		data.ColLevel:  level,
-	})
-	if err != nil {
-		return fmt.Errorf("update balance amount and level: %w", err)
-	}
-
-	return nil
 }

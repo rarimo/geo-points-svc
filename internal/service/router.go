@@ -32,14 +32,9 @@ func Run(ctx context.Context, cfg config.Config) {
 	r.Route("/integrations/geo-points-svc/v1", func(r chi.Router) {
 		r.Route("/public", func(r chi.Router) {
 			r.Route("/balances", func(r chi.Router) {
-				//r.Use(authMW)
+				r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
 				r.Route("/{nullifier}", func(r chi.Router) {
-					r.Route("/daily_question", func(r chi.Router) {
-						r.Get("/status", handlers.GetDailyQuestionsStatus)
-						r.Get("/question", handlers.DailyQuestionRespond)
-						r.Patch("/question", handlers.DailyQuestionCheck)
-					})
 					r.Get("/", handlers.GetBalance)
 					r.Patch("/", handlers.ActivateBalance)
 					r.Post("/verifypassport", handlers.VerifyInternalPassport)
@@ -48,7 +43,11 @@ func Run(ctx context.Context, cfg config.Config) {
 						r.Post("/external", handlers.VerifyExternalPassport)
 					})
 				})
-
+			})
+			r.Route("/daily_question/{nullifier}", func(r chi.Router) {
+				r.Get("/status", handlers.GetDailyQuestionsStatus)
+				r.Get("/", handlers.GetDailyQuestion)
+				r.Post("/", handlers.CheckDailyQuestion)
 			})
 			r.Route("/events", func(r chi.Router) {
 				r.Use(authMW)
