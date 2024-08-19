@@ -15,10 +15,10 @@ func NewDailyQuestionAnswer(r *http.Request) (req resources.DailyQuestionUserAns
 		err = newDecodeError("body", err)
 		return
 	}
-	req.Nullifier = strings.ToLower(chi.URLParam(r, "nullifier"))
+	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
 	return req, validation.Errors{
-		"nullifier": validation.Validate(req.Nullifier, validation.Required, validation.Match(nullifierRegexp)),
+		"nullifier": validation.Validate(nullifier, validation.Required, validation.Match(nullifierRegexp)),
 		"answer":    validation.Validate(req.UserAnswer, validation.Required),
 		"timezone":  validation.Validate(req.Timezone, validation.Required),
 	}.Filter()

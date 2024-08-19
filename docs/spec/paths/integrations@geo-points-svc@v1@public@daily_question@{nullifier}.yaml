@@ -1,9 +1,12 @@
 get:
-  description: daily question
+  tags:
+    - Daily Question
+  description: Get daily question for user
   parameters:
-    - $ref: '#/components/parameters/DailyQuestion'
-      name: Signature
-      description: Signature of the request
+    - $ref: '#/components/parameters/UserTimezone'
+      name: user timezone
+      description: |
+        needed so that different users have access to questions at different times, depending on their geolocation
   response:
     200:
       description: Success
@@ -24,6 +27,8 @@ get:
       $ref: '#/components/responses/internalError'
 
 patch:
+    tags:
+    - Daily Question
     description: Send daily question answer
     requestBody:
       content:
@@ -34,7 +39,7 @@ patch:
               - data
             properties:
               data:
-                $ref: '#/components/schemas/DailyQuestionAnswer'
+                $ref: '#/components/schemas/DailyQuestionUserAnswer'
     response:
       200:
         description: Success

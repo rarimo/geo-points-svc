@@ -4,9 +4,9 @@
 
 package resources
 
-type DailyQuestionUserAccessAttributes struct {
+type UserTimezoneAttributes struct {
 	// Nullifier of the points owner
-	Nullifier string `json:"nullifier"`
+	Nullifier *string `json:"nullifier,omitempty"`
 	// timezone
 	Timezone string `json:"timezone"`
 }

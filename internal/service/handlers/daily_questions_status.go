@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -20,29 +22,33 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 	}
 
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
+
 	dailyQuestionEvent, err := EventsQ(r).
-		FilterByNullifier(req.Nullifier).
+		FilterByNullifier(*req.Nullifier).
 		FilterTodayEvents(req.Timezone).
+		FilterByType(models.TypeDailyQuestion).
 		Get()
 
 	if err != nil {
-		Log(r).WithError(err).Error("error getting daily questions status")
+		Log(r).WithError(err).Error("error getting event daily_question")
 		ape.RenderErr(w, problems.InternalError())
 	}
 
-	location, err := time.LoadLocation(req.Timezone)
-	if err != nil {
-		location = time.UTC
-	}
+	location := GetLocationFromTimezone(req.Timezone)
 
 	if dailyQuestionEvent != nil {
 		alreadyDoneForUser = true
 		timeToNext, err = TimeToNextQuestion(r, location)
 		ape.Render(w, NewDailyQuestionsStatus(alreadyDoneForUser, timeToNext))
-	} else {
-		timeToNext = 0
+		return
 	}
-
+	timeToNext = 0
+	ape.Render(w, NewDailyQuestionsStatus(alreadyDoneForUser, timeToNext))
+	return
 }
 
 func TimeToNextQuestion(r *http.Request, loc *time.Location) (int64, error) {

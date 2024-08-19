@@ -8,4 +8,4 @@ properties:
     description: id question
   type:
     type: string
-    enum: [daily_question_user_details]
+    enum: [user_timezone]

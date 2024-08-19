@@ -3,7 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
+	"time"
 
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -11,11 +14,20 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
+var mu sync.Mutex
+
 func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.NewDailyQuestionUserAccess(r)
 	if err != nil {
 		Log(r).WithError(err).Error("error getting daily question user details")
 	}
+
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
+
+	location := GetLocationFromTimezone(req.Timezone)
 
 	question, err := DailyQuestionsQ(r).
 		FilterTodayQuestions(req.Timezone).
@@ -25,6 +37,8 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
+
+	SetDailyQuestionTimeWithExpiration(r, *req.Nullifier, time.Now().In(location).Unix(), question.TimeForAnswer)
 
 	ape.Render(w, NewDailyQuestion(*question))
 }
@@ -49,4 +63,30 @@ func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestionAttrib
 		TimeForAnswer: question.TimeForAnswer,
 		StartsAt:      question.StartsAt.Unix(),
 	}
+}
+
+func GetLocationFromTimezone(timezone string) *time.Location {
+	location, err := time.LoadLocation(timezone)
+	if err != nil {
+		Log(nil).WithError(err).Errorf("error loading timezone, defaulting to UTC")
+		return time.UTC
+	}
+	return location
+}
+
+func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, timestamp int64, duration int64) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	DailyQuestionTimeHash(r).SetDailyQuestionsTimeHash(nullifier, timestamp)
+
+	go func() {
+		time.Sleep(time.Duration(duration) * time.Second)
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		delete(DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(), nullifier)
+		Log(r).Infof("Removed entry for nullifier: %s after expiration", nullifier)
+	}()
 }

@@ -21,6 +21,9 @@ type Config interface {
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
 
+	GetDailyQuestionsTimeHash() map[string]int64
+	SetDailyQuestionsTimeHash(key string, value int64)
+
 	Levels() *Levels
 	Verifiers() Verifiers
 }
@@ -35,6 +38,8 @@ type config struct {
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
 
+	dailyQuestionsTimeHash map[string]int64
+
 	passport root.VerifierProvider
 
 	levels   comfig.Once
@@ -44,15 +49,16 @@ type config struct {
 
 func New(getter kv.Getter) Config {
 	return &config{
-		getter:                getter,
-		Databaser:             pgdb.NewDatabaser(getter),
-		Listenerer:            comfig.NewListenerer(getter),
-		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		Auther:                auth.NewAuther(getter), //nolint:misspell
-		PollVerifierer:        NewPollVerifier(getter),
-		Broadcasterer:         broadcaster.New(getter),
-		passport:              root.NewVerifierProvider(getter, root.PoseidonSMT),
-		EventTypeser:          evtypes.NewConfig(getter),
-		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
+		getter:                 getter,
+		Databaser:              pgdb.NewDatabaser(getter),
+		Listenerer:             comfig.NewListenerer(getter),
+		Logger:                 comfig.NewLogger(getter, comfig.LoggerOpts{}),
+		Auther:                 auth.NewAuther(getter), //nolint:misspell
+		PollVerifierer:         NewPollVerifier(getter),
+		Broadcasterer:          broadcaster.New(getter),
+		dailyQuestionsTimeHash: make(map[string]int64),
+		passport:               root.NewVerifierProvider(getter, root.PoseidonSMT),
+		EventTypeser:           evtypes.NewConfig(getter),
+		SigCalculatorProvider:  hmacsig.NewCalculatorProvider(getter),
 	}
 }

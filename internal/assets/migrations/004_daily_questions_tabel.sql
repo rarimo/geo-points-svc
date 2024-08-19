@@ -10,5 +10,4 @@ CREATE TABLE IF NOT EXISTS daily_questions (
 );
 
 -- +migrate Down
-DROP TABLE IF EXISTS daily_question_responses;
 DROP TABLE IF EXISTS daily_questions;

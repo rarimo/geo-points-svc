@@ -1,6 +1,9 @@
 get:
+  tags:
+    - Daily Question
+  description: User access to question
   parameters:
-    - $ref: '#/components/parameters/DailyQuestionsStatus'
+    - $ref: '#/components/parameters/UserTimezone'
   response:
     200:
       description: Success

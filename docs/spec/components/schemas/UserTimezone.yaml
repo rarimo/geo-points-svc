@@ -1,5 +1,5 @@
 allOf:
-  - $ref: "#/components/schemas/DailyQuestionUserDetailsKey"
+  - $ref: "#/components/schemas/UserTimezoneKey"
   - type: object
     required:
       - attributes
@@ -7,7 +7,6 @@ allOf:
       attributes:
         type: object
         required:
-          - nullifier
           - timezone
         properties:
           timezone:

@@ -7,7 +7,6 @@ allOf:
       attributes:
         type: object
         required:
-          - nullifier
           - user_answer
           - timezone
         properties:

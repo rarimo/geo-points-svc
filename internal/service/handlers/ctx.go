@@ -27,6 +27,7 @@ const (
 	sigCalculatorCtxKey
 	voteVerifierCtxKey
 	dailyQuestionsCtxKey
+	dailyQuestionTimeHash
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -117,6 +118,10 @@ func CtxVerifiers(v config.Verifiers) func(context.Context) context.Context {
 
 func Verifiers(r *http.Request) config.Verifiers {
 	return r.Context().Value(verifiersCtxKey).(config.Verifiers)
+}
+
+func DailyQuestionTimeHash(r *http.Request) config.DailyQuestionsTimeHash {
+	return r.Context().Value(dailyQuestionTimeHash).(config.DailyQuestionsTimeHash)
 }
 
 func CtxPollVerifier(v *config.PollVerifier) func(context.Context) context.Context {
