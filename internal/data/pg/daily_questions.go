@@ -99,13 +99,8 @@ func (q *dailyQuestionsQ) FilterByCreatedAt(date time.Time) data.DailyQuestionsQ
 	return q.applyCondition(squirrel.Gt{"created_at": date})
 }
 
-func (q *dailyQuestionsQ) FilterTodayQuestions(timezone string) data.DailyQuestionsQ {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		loc = time.UTC
-	}
-
-	todayStart := time.Now().In(loc).Truncate(24 * time.Hour)
+func (q *dailyQuestionsQ) FilterTodayQuestions() data.DailyQuestionsQ {
+	todayStart := time.Now().UTC().Truncate(24 * time.Hour)
 	todayEnd := todayStart.Add(24 * time.Hour).Add(-time.Nanosecond)
 
 	return q.applyCondition(squirrel.And{
@@ -113,6 +108,7 @@ func (q *dailyQuestionsQ) FilterTodayQuestions(timezone string) data.DailyQuesti
 		squirrel.LtOrEq{"starts_at": todayEnd},
 	})
 }
+
 func (q *dailyQuestionsQ) FilterByID(ID int) data.DailyQuestionsQ {
 	return q.applyCondition(squirrel.Eq{"id": ID})
 }

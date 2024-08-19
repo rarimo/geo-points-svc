@@ -21,7 +21,7 @@ type DailyQuestionsQ interface {
 	Select() ([]DailyQuestion, error)
 	Get() (*DailyQuestion, error)
 
-	FilterTodayQuestions(timezone string) DailyQuestionsQ
+	FilterTodayQuestions() DailyQuestionsQ
 	FilterByStartAt(date time.Time) DailyQuestionsQ
 	FilterByCreatedAt(date time.Time) DailyQuestionsQ
 	FilterByID(ID int) DailyQuestionsQ

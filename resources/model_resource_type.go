@@ -21,6 +21,5 @@ const (
 	EVENT_TYPE                 ResourceType = "event_type"
 	FULFILL_POLL_EVENT         ResourceType = "fulfill_poll_event"
 	FULFILL_QR_EVENT           ResourceType = "fulfill_qr_event"
-	USER_TIMEZONE              ResourceType = "user_timezone"
 	VERIFY_PASSPORT            ResourceType = "verify_passport"
 )

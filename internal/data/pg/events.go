@@ -227,13 +227,8 @@ func (q *events) FilterByUpdatedAtBefore(unix int64) data.EventsQ {
 	return q.applyCondition(squirrel.Lt{"updated_at": unix})
 }
 
-func (q *events) FilterTodayEvents(timezone string) data.EventsQ {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		loc = time.UTC
-	}
-
-	todayStart := time.Now().In(loc).Truncate(24 * time.Hour).Unix()
+func (q *events) FilterTodayEvents() data.EventsQ {
+	todayStart := time.Now().UTC().Truncate(24 * time.Hour).Unix()
 	todayEnd := todayStart + 24*60*60 - 1
 
 	return q.applyCondition(squirrel.And{

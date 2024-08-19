@@ -3,11 +3,11 @@ package handlers
 import (
 	"math"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/rarimo/geo-auth-svc/pkg/auth"
+	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
-	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -16,20 +16,28 @@ import (
 func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 	alreadyDoneForUser := false
 	var timeToNext int64
-	req, err := requests.NewDailyQuestionUserAccess(r)
-	if err != nil {
-		Log(r).WithError(err).Error("error getting daily questions status")
-		ape.RenderErr(w, problems.InternalError())
-	}
+	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
-		ape.RenderErr(w, problems.Unauthorized())
+	//if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
+
+	balance, err := BalancesQ(r).FilterByNullifier(nullifier).Get()
+	if err != nil {
+		Log(r).WithError(err).Errorf("Failed to get balance by nullifier %v", nullifier)
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if balance == nil {
+		Log(r).Errorf("error getting balance by nullifier")
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
 	dailyQuestionEvent, err := EventsQ(r).
-		FilterByNullifier(*req.Nullifier).
-		FilterTodayEvents(req.Timezone).
+		FilterByNullifier(balance.Nullifier).
+		FilterTodayEvents().
 		FilterByType(models.TypeDailyQuestion).
 		Get()
 
@@ -37,22 +45,20 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		Log(r).WithError(err).Error("error getting event daily_question")
 		ape.RenderErr(w, problems.InternalError())
 	}
-
-	location := GetLocationFromTimezone(req.Timezone)
-
 	if dailyQuestionEvent != nil {
 		alreadyDoneForUser = true
-		timeToNext, err = TimeToNextQuestion(r, location)
+		timeToNext, err = TimeToNextQuestion(r)
 		ape.Render(w, NewDailyQuestionsStatus(alreadyDoneForUser, timeToNext))
 		return
 	}
+
 	timeToNext = 0
 	ape.Render(w, NewDailyQuestionsStatus(alreadyDoneForUser, timeToNext))
 	return
 }
 
-func TimeToNextQuestion(r *http.Request, loc *time.Location) (int64, error) {
-	now := time.Now().In(loc)
+func TimeToNextQuestion(r *http.Request) (int64, error) {
+	now := time.Now()
 	questions, err := DailyQuestionsQ(r).FilterByStartAt(now).Select()
 	if err != nil {
 		return -2, err

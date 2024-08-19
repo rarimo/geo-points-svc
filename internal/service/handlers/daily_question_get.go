@@ -3,12 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/rarimo/geo-auth-svc/pkg/auth"
+	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-points-svc/internal/data"
-	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -17,30 +17,43 @@ import (
 var mu sync.Mutex
 
 func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	req, err := requests.NewDailyQuestionUserAccess(r)
-	if err != nil {
-		Log(r).WithError(err).Error("error getting daily question user details")
-	}
+	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
-		ape.RenderErr(w, problems.Unauthorized())
+	//if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
+
+	balance, err := BalancesQ(r).FilterByNullifier(nullifier).Get()
+	if err != nil {
+		Log(r).WithError(err).Errorf("Failed to get balance by nullifier")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if balance == nil {
+		Log(r).Errorf("error getting balance by nullifier")
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	location := GetLocationFromTimezone(req.Timezone)
-
 	question, err := DailyQuestionsQ(r).
-		FilterTodayQuestions(req.Timezone).
+		FilterTodayQuestions().
 		Get()
+	if question == nil {
+		Log(r).Errorf("error getting daily question")
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to get active questions")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	SetDailyQuestionTimeWithExpiration(r, *req.Nullifier, time.Now().In(location).Unix(), question.TimeForAnswer)
+	SetDailyQuestionTimeWithExpiration(r, balance.Nullifier, time.Now().UTC().Unix(), question.TimeForAnswer)
 
 	ape.Render(w, NewDailyQuestion(*question))
+	return
 }
 
 func ConvertJsonbToDailyQuestionAnswers(jb data.Jsonb) map[string]interface{} {
@@ -65,20 +78,12 @@ func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestionAttrib
 	}
 }
 
-func GetLocationFromTimezone(timezone string) *time.Location {
-	location, err := time.LoadLocation(timezone)
-	if err != nil {
-		Log(nil).WithError(err).Errorf("error loading timezone, defaulting to UTC")
-		return time.UTC
-	}
-	return location
-}
-
 func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, timestamp int64, duration int64) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	DailyQuestionTimeHash(r).SetDailyQuestionsTimeHash(nullifier, timestamp)
+	Log(r).Infof("add %s %v, length q: %v, mapm %+v", nullifier, duration, len(DailyQuestionTimeHash(r)), DailyQuestionTimeHash(r))
 
 	go func() {
 		time.Sleep(time.Duration(duration) * time.Second)
@@ -86,7 +91,17 @@ func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, times
 		mu.Lock()
 		defer mu.Unlock()
 
-		delete(DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(), nullifier)
+		delete(DailyQuestionTimeHash(r), nullifier)
 		Log(r).Infof("Removed entry for nullifier: %s after expiration", nullifier)
+
 	}()
+}
+
+func GetLocationFromTimezone(timezone string) *time.Location {
+	location, err := time.LoadLocation(timezone)
+	if err != nil {
+		Log(nil).WithError(err).Errorf("error loading timezone, defaulting to UTC")
+		return time.UTC
+	}
+	return location
 }

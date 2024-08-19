@@ -2,11 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
@@ -27,19 +26,18 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
-		ape.RenderErr(w, problems.Unauthorized())
-		return
-	}
+	//if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
 
-	if _, exits := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash()[*req.Nullifier]; !exits {
+	if exits := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(req.Nullifier); exits == nil {
 		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", req.Nullifier)
 		ape.RenderErr(w, problems.NotAllowed())
 		return
 	}
 
-	question, err := DailyQuestionsQ(r).FilterTodayQuestions(req.Timezone).Get()
-
+	question, err := DailyQuestionsQ(r).FilterTodayQuestions().Get()
 	if err != nil {
 		Log(r).Errorf("error getting question or quesrion inactive: %v", err)
 		ape.RenderErr(w, problems.InternalError())
@@ -51,24 +49,16 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	location := GetLocationFromTimezone(req.Timezone)
-
-	currentTime := time.Now().In(location).Unix()
-	if currentTime > question.StartsAt.Unix()+question.TimeForAnswer {
-		Log(r).Errorf("time limit exceeded for answering the question")
-		ape.RenderErr(w, problems.Forbidden())
-		return
-	}
-
-	balance, err := BalancesQ(r).FilterByNullifier(*req.Nullifier).Get()
+	balance, err := BalancesQ(r).FilterByNullifier(req.Nullifier).Get()
 	if err != nil {
-		Log(r).WithError(err).Errorf("Failed to get balance by nullifier")
+		Log(r).WithError(err).Errorf("Failed to get balance by nullifier %s", req.Nullifier)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if balance == nil {
 		Log(r).Errorf("error getting balance by nullifier")
 		ape.RenderErr(w, problems.NotFound())
+		return
 	}
 
 	answersMap, err := JSONBToMap(question.AnswerOptions)
@@ -78,6 +68,8 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	errDuplicateEvent := fmt.Errorf("user already send answer %s", req.Nullifier)
+
 	err = EventsQ(r).Transaction(func() error {
 		evType := EventTypes(r).Get(models.TypeDailyQuestion, evtypes.FilterInactive)
 		if evType == nil {
@@ -85,17 +77,20 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		}
 
 		eventCheck, err := EventsQ(r).
-			FilterByNullifier(*req.Nullifier).
+			FilterByNullifier(req.Nullifier).
 			FilterByType(models.TypeDailyQuestion).
-			FilterTodayEvents(req.Timezone).
+			FilterTodayEvents().
 			Get()
 
+		if err != nil {
+			return err
+		}
 		if eventCheck != nil {
-			return problems.Forbidden()
+			return errDuplicateEvent
 		}
 
 		err = EventsQ(r).Insert(data.Event{
-			Nullifier: *req.Nullifier,
+			Nullifier: req.Nullifier,
 			Type:      models.TypeDailyQuestion,
 			Status:    data.EventFulfilled,
 		})
@@ -130,13 +125,20 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 		return nil
 	})
+
 	if err != nil {
+		if errors.Is(err, errDuplicateEvent) {
+			Log(r).Infof("User already submitted an answer: %s", req.Nullifier)
+			ape.RenderErr(w, problems.Conflict())
+			return
+		}
+
 		Log(r).WithError(err).Errorf("error updating daily questions: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	TimeToNext, err := TimeToNextQuestion(r, location)
+	TimeToNext, err := TimeToNextQuestion(r)
 	if err != nil {
 		Log(r).WithError(err).Errorf("error updating daily questions: %v", err)
 		ape.RenderErr(w, problems.InternalError())

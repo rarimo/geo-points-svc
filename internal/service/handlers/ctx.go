@@ -120,6 +120,12 @@ func Verifiers(r *http.Request) config.Verifiers {
 	return r.Context().Value(verifiersCtxKey).(config.Verifiers)
 }
 
+func CtxDailyQuestionTimeHash(v config.DailyQuestionsTimeHash) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, dailyQuestionTimeHash, v)
+	}
+}
+
 func DailyQuestionTimeHash(r *http.Request) config.DailyQuestionsTimeHash {
 	return r.Context().Value(dailyQuestionTimeHash).(config.DailyQuestionsTimeHash)
 }

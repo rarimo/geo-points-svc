@@ -7,8 +7,8 @@ allOf:
       attributes:
         type: object
         required:
+          - nullifier
           - user_answer
-          - timezone
         properties:
           nullifier:
             type: string
@@ -18,6 +18,3 @@ allOf:
           user_answer:
             type: string
             description: user answer
-          timezone:
-            type: string
-            description: timezone

@@ -6,9 +6,7 @@ package resources
 
 type DailyQuestionUserAnswerAttributes struct {
 	// Nullifier of the points owner
-	Nullifier *string `json:"nullifier,omitempty"`
-	// timezone
-	Timezone string `json:"timezone"`
+	Nullifier string `json:"nullifier"`
 	// user answer
 	UserAnswer string `json:"user_answer"`
 }
