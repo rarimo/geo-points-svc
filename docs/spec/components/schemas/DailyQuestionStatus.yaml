@@ -15,6 +15,5 @@ allOf:
             description: question of the day already done for user
             example: true
           time_to_next:
-            type: integer
-            format: int64
+            type: string
             description: time to next question of the day

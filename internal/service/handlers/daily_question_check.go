@@ -177,6 +177,6 @@ func JSONBToMap(data data.Jsonb) (map[string]interface{}, error) {
 func NewDailyAnswer(answerStatus bool, TimeToNext int) resources.DailyQuestionResultAttributes {
 	return resources.DailyQuestionResultAttributes{
 		AnswerStatus: answerStatus,
-		TimeToNext:   int64(TimeToNext),
+		TimeToNext:   FormatTimeToNext(int64(TimeToNext)),
 	}
 }

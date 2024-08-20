@@ -8,5 +8,5 @@ type DailyQuestionStatusAttributes struct {
 	// question of the day already done for user
 	AlreadyDoneForUser bool `json:"already_done_for_user"`
 	// time to next question of the day
-	TimeToNext int64 `json:"time_to_next"`
+	TimeToNext string `json:"time_to_next"`
 }

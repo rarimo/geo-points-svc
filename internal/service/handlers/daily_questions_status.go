@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"strings"
@@ -80,9 +81,26 @@ func TimeToNextQuestion(r *http.Request) (int64, error) {
 	return closes, nil
 }
 
+func FormatTimeToNext(TimeToNext int64) string {
+	if TimeToNext == -1 {
+		return "soon"
+	}
+
+	days := TimeToNext / (24 * 3600)
+	TimeToNext %= 24 * 3600
+	hours := TimeToNext / 3600
+	TimeToNext %= 3600
+	minutes := TimeToNext / 60
+	seconds := TimeToNext % 60
+
+	return fmt.Sprintf("%dd:%02dh:%02dm:%02ds", days, hours, minutes, seconds)
+}
+
 func NewDailyQuestionsStatus(AlreadyDoneForUser bool, TimeToNext int64) resources.DailyQuestionStatusAttributes {
+	timeToNextStr := FormatTimeToNext(TimeToNext)
+
 	return resources.DailyQuestionStatusAttributes{
 		AlreadyDoneForUser: AlreadyDoneForUser,
-		TimeToNext:         TimeToNext,
+		TimeToNext:         timeToNextStr,
 	}
 }

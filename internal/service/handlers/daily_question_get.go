@@ -113,6 +113,10 @@ func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, times
 	})
 	Log(r).Infof("add %s %v, length q: %v, mapm %+v", nullifier, duration, len(DailyQuestionTimeHash(r)), DailyQuestionTimeHash(r))
 
+	now := time.Now()
+	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+	timeUntilEndOfDay := endOfDay.Sub(now)
+
 	go func() {
 		time.Sleep(time.Duration(duration) * time.Second)
 
@@ -120,18 +124,19 @@ func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, times
 		defer mu.Unlock()
 
 		info := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(nullifier)
+		if info == nil {
+			return
+		}
+
 		if info.Answered {
 			delete(DailyQuestionTimeHash(r), nullifier)
-			Log(r).Infof("Removed entry for nullifier: %s after expiration", nullifier)
+			Log(r).Infof("Removed entry for nullifier: %s after answer", nullifier)
+		} else {
+			time.Sleep(timeUntilEndOfDay - time.Duration(duration)*time.Second)
+			mu.Lock()
+			defer mu.Unlock()
+			delete(DailyQuestionTimeHash(r), nullifier)
+			Log(r).Infof("Removed entry for nullifier: %s at the end of the day", nullifier)
 		}
 	}()
-}
-
-func GetLocationFromTimezone(timezone string) *time.Location {
-	location, err := time.LoadLocation(timezone)
-	if err != nil {
-		Log(nil).WithError(err).Errorf("error loading timezone, defaulting to UTC")
-		return time.UTC
-	}
-	return location
 }

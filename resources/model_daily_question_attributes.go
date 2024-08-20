@@ -9,8 +9,6 @@ import (
 )
 
 type DailyQuestionAttributes struct {
-	// ID question
-	ID            int                    `json:"ID"`
 	AnswerOptions map[string]interface{} `json:"answer_options"`
 	// Event add date
 	CreatedAt time.Time `json:"created_at"`

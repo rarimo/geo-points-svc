@@ -14,6 +14,5 @@ allOf:
             type: boolean
             description: Right or wrong answers
           time_to_next:
-            type: integer
-            format: int64
+            type: string
             description: time to next question of the day
