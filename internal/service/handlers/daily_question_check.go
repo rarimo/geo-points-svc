@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
@@ -27,10 +28,10 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
 
 	cell := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(req.Nullifier)
 	if cell == nil {
