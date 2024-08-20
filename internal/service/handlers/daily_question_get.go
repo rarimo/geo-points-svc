@@ -87,14 +87,19 @@ func ConvertJsonbToDailyQuestionAnswers(jb data.Jsonb) map[string]interface{} {
 	return res
 }
 
-func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestionAttributes {
-	return resources.DailyQuestionAttributes{
-		ID:            question.ID,
-		Title:         question.Title,
-		Reward:        question.Reward,
-		AnswerOptions: ConvertJsonbToDailyQuestionAnswers(question.AnswerOptions),
-		TimeForAnswer: question.TimeForAnswer,
-		StartsAt:      question.StartsAt.Unix(),
+func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestion {
+	return resources.DailyQuestion{
+		Key: resources.Key{
+			ID:   string(rune(question.ID)),
+			Type: resources.DAILY_QUESTION,
+		},
+		Attributes: resources.DailyQuestionAttributes{
+			Title:         question.Title,
+			Reward:        question.Reward,
+			AnswerOptions: ConvertJsonbToDailyQuestionAnswers(question.AnswerOptions),
+			TimeForAnswer: question.TimeForAnswer,
+			StartsAt:      question.StartsAt.Unix(),
+		},
 	}
 }
 

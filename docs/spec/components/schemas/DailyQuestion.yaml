@@ -3,11 +3,17 @@ allOf:
   - type: object
     required:
       - attributes
+      - ID
+
     properties:
+      ID:
+        type: integer
+        format: int
+        description: ID question
+        example: 88
       attributes:
         type: object
         required:
-          - ID
           - title
           - answer_options
           - time_for_answer
@@ -15,11 +21,6 @@ allOf:
           - starts_at
           - created_at
         properties:
-          ID:
-            type: integer
-            format: int
-            description: ID question
-            example: 88
           title:
             type: string
             description: Title question
