@@ -28,7 +28,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(*req.Nullifier)) {
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(req.Nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}
