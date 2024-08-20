@@ -24,8 +24,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxVerifiers(cfg.Verifiers()),
 			handlers.CtxSigCalculator(cfg.SigCalculator()),
 			handlers.CtxPollVerifier(cfg.PollVerifier()),
-			handlers.CtxDailyQuestionTimeHash(cfg.DailyQuestionsTimeHash()),
-			handlers.CtxLocation(cfg.Location()),
+			handlers.CtxDailyQuestion(cfg.DailyQuestions()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)
@@ -46,7 +45,7 @@ func Run(ctx context.Context, cfg config.Config) {
 					})
 				})
 			})
-			r.Route("/daily_question/{nullifier}", func(r chi.Router) {
+			r.Route("/daily_questions/{nullifier}", func(r chi.Router) {
 				r.Get("/status", handlers.GetDailyQuestionsStatus)
 				r.Get("/", handlers.GetDailyQuestion)
 				r.Post("/", handlers.CheckDailyQuestion)

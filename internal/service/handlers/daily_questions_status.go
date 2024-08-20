@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"fmt"
-	"math"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -16,7 +15,8 @@ import (
 )
 
 func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
-	var timeToNext int64
+	var timeToNext time.Time
+	cfg := DailyQuestions(r)
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
@@ -38,7 +38,7 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 
 	dailyQuestionEvent, err := EventsQ(r).
 		FilterByNullifier(balance.Nullifier).
-		FilterTodayEvents(Location(r).String()).
+		FilterTodayEvents(cfg.Timezone).
 		FilterByType(models.TypeDailyQuestion).
 		Get()
 
@@ -48,10 +48,12 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	timeToNext, err = TimeToQuestionUnix(r)
-	if err != nil {
+	quesDataArr, err := GetQuestionQueue(r)
+	if err != nil || len(quesDataArr) == 0 {
 		Log(r).WithError(err).Error("error getting time to next question")
-		timeToNext = -1
+		timeToNext = time.Date(1900, time.January, 1, 0, 0, 0, 0, time.UTC)
+	} else {
+		timeToNext = quesDataArr[0]
 	}
 
 	if dailyQuestionEvent != nil {
@@ -59,55 +61,38 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionsStatus(false, timeToNext))
+	ape.Render(w, NewDailyQuestionsStatus(false, time.Now()))
 	return
 }
 
-func TimeToQuestionUnix(r *http.Request) (int64, error) {
-	questions, err := DailyQuestionsQ(r).FilterByStartAtToday(Location(r).String()).Select()
+func GetQuestionQueue(r *http.Request) ([]time.Time, error) {
+	questions, err := DailyQuestionsQ(r).
+		FilterTodayQuestions(DailyQuestions(r).Timezone).
+		Select()
+
 	if err != nil {
-		return -2, err
+		return nil, err
 	}
 
 	if len(questions) == 0 {
-		return -1, nil
+		return nil, nil
 	}
 
-	closes := int64(math.MaxInt64)
-	for _, q := range questions {
-		timeToNext := q.StartsAt.Unix() - time.Now().Unix()
-		if timeToNext < closes {
-			closes = timeToNext
-		}
+	times := make([]time.Time, len(questions))
+	for i, q := range questions {
+		times[i] = q.StartsAt
 	}
 
-	return closes, nil
+	sort.Slice(times, func(i, j int) bool {
+		return times[i].Before(times[j])
+	})
+
+	return times, nil
 }
 
-func FormatUnixTimeToDate(TimeToNext int64) string {
-	if TimeToNext == -1 {
-		return "soon"
-	}
-
-	if TimeToNext < 0 {
-		return "0d:00h:00m:00s"
-	}
-
-	days := TimeToNext / (24 * 3600)
-	TimeToNext %= 24 * 3600
-	hours := TimeToNext / 3600
-	TimeToNext %= 3600
-	minutes := TimeToNext / 60
-	seconds := TimeToNext % 60
-
-	return fmt.Sprintf("%dd:%02dh:%02dm:%02ds", days, hours, minutes, seconds)
-}
-
-func NewDailyQuestionsStatus(AlreadyDoneForUser bool, TimeToNext int64) resources.DailyQuestionStatusAttributes {
-	timeToNextStr := FormatUnixTimeToDate(TimeToNext)
-
+func NewDailyQuestionsStatus(AlreadyDoneForUser bool, timeToNextStr time.Time) resources.DailyQuestionStatusAttributes {
 	return resources.DailyQuestionStatusAttributes{
 		AlreadyDoneForUser: AlreadyDoneForUser,
-		TimeToNext:         timeToNextStr,
+		TimeToNext:         timeToNextStr.String(),
 	}
 }

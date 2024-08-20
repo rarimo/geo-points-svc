@@ -1,8 +1,6 @@
 package config
 
 import (
-	"time"
-
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -23,10 +21,9 @@ type Config interface {
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
 
-	DailyQuestionsTimeHash() DailyQuestionsTimeHash
 	Levels() *Levels
 	Verifiers() Verifiers
-	Location() Location
+	DailyQuestions() *DailyQuestions
 }
 
 type config struct {
@@ -39,33 +36,25 @@ type config struct {
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
 
-	dailyQuestionsTimeHash DailyQuestionsTimeHash
-	timeLocation           Location
-
 	passport root.VerifierProvider
 
-	levels   comfig.Once
-	verifier comfig.Once
-	getter   kv.Getter
+	DailyQuestion comfig.Once
+	levels        comfig.Once
+	verifier      comfig.Once
+	getter        kv.Getter
 }
 
 func New(getter kv.Getter) Config {
-	location, err := time.LoadLocation("Asia/Tbilisi")
-	if err != nil {
-		panic("Error load location in config")
-	}
 	return &config{
-		getter:                 getter,
-		Databaser:              pgdb.NewDatabaser(getter),
-		Listenerer:             comfig.NewListenerer(getter),
-		Logger:                 comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		Auther:                 auth.NewAuther(getter), //nolint:misspell
-		PollVerifierer:         NewPollVerifier(getter),
-		Broadcasterer:          broadcaster.New(getter),
-		dailyQuestionsTimeHash: make(DailyQuestionsTimeHash),
-		timeLocation:           location,
-		passport:               root.NewVerifierProvider(getter, root.PoseidonSMT),
-		EventTypeser:           evtypes.NewConfig(getter),
-		SigCalculatorProvider:  hmacsig.NewCalculatorProvider(getter),
+		getter:                getter,
+		Databaser:             pgdb.NewDatabaser(getter),
+		Listenerer:            comfig.NewListenerer(getter),
+		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
+		Auther:                auth.NewAuther(getter), //nolint:misspell
+		PollVerifierer:        NewPollVerifier(getter),
+		Broadcasterer:         broadcaster.New(getter),
+		passport:              root.NewVerifierProvider(getter, root.PoseidonSMT),
+		EventTypeser:          evtypes.NewConfig(getter),
+		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
 	}
 }

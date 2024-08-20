@@ -23,8 +23,7 @@ type DailyQuestionsQ interface {
 	Select() ([]DailyQuestion, error)
 	Get() (*DailyQuestion, error)
 
-	FilterTodayQuestions(location string) DailyQuestionsQ
-	FilterByStartAtToday(location string) DailyQuestionsQ
+	FilterTodayQuestions(offset int) DailyQuestionsQ
 	FilterByCreatedAt(date time.Time) DailyQuestionsQ
 	FilterByID(ID int) DailyQuestionsQ
 }

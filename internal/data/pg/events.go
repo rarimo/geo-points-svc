@@ -227,12 +227,11 @@ func (q *events) FilterByUpdatedAtBefore(unix int64) data.EventsQ {
 	return q.applyCondition(squirrel.Lt{"updated_at": unix})
 }
 
-func (q *events) FilterTodayEvents(location string) data.EventsQ {
-	loc, _ := time.LoadLocation(location)
-	//Don't check the error because we have already done this in the config
-	now := time.Now().In(loc)
+func (q *events) FilterTodayEvents(offset int) data.EventsQ {
+	location := time.FixedZone(fmt.Sprintf("GMT%+d", offset), offset*3600)
+	now := time.Now().In(location)
 
-	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
 	todayEnd := todayStart.Add(24 * time.Hour).Add(-time.Nanosecond)
 
 	utcStart := todayStart.UTC().Unix()

@@ -90,37 +90,20 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	return &res, nil
 }
 
-func (q *dailyQuestionsQ) FilterByStartAtToday(location string) data.DailyQuestionsQ {
-	loc, _ := time.LoadLocation(location)
+func (q *dailyQuestionsQ) FilterByCreatedAt(date time.Time) data.DailyQuestionsQ {
+	return q.applyCondition(squirrel.Gt{"created_at": date})
+}
 
-	now := time.Now().In(loc)
-	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).UTC()
+func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ {
+	location := time.FixedZone(fmt.Sprintf("GMT%+d", offset), offset*3600)
+
+	now := time.Now().In(location)
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location).UTC()
 	todayEnd := todayStart.Add(24 * time.Hour).Add(-time.Nanosecond).UTC()
 
 	return q.applyCondition(squirrel.And{
 		squirrel.GtOrEq{"starts_at": todayStart},
 		squirrel.LtOrEq{"starts_at": todayEnd},
-	})
-}
-
-func (q *dailyQuestionsQ) FilterByCreatedAt(date time.Time) data.DailyQuestionsQ {
-	return q.applyCondition(squirrel.Gt{"created_at": date})
-}
-
-func (q *dailyQuestionsQ) FilterTodayQuestions(location string) data.DailyQuestionsQ {
-	loc, _ := time.LoadLocation(location)
-	//Don't check the error because we have already done this in the config
-	now := time.Now().In(loc)
-
-	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
-	todayEnd := todayStart.Add(24 * time.Hour).Add(-time.Nanosecond)
-
-	utcStart := todayStart.UTC()
-	utcEnd := todayEnd.UTC()
-
-	return q.applyCondition(squirrel.And{
-		squirrel.GtOrEq{"starts_at": utcStart},
-		squirrel.LtOrEq{"starts_at": utcEnd},
 	})
 }
 

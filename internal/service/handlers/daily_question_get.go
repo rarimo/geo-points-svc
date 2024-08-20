@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
-	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -22,6 +21,7 @@ var mu sync.Mutex
 
 func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
+	cfg := DailyQuestions(r)
 
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
@@ -40,10 +40,8 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	location := Location(r).String()
-
 	question, err := DailyQuestionsQ(r).
-		FilterTodayQuestions(location).
+		FilterTodayQuestions(cfg.Timezone).
 		Get()
 	if question == nil {
 		Log(r).Errorf("error getting daily question")
@@ -57,7 +55,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	questionEvent, err := EventsQ(r).
-		FilterTodayEvents(location).
+		FilterTodayEvents(cfg.Timezone).
 		FilterByType(models.TypeDailyQuestion).
 		FilterByNullifier(nullifier).
 		Get()
@@ -73,24 +71,23 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	SetDailyQuestionTimeWithExpiration(r, balance.Nullifier, time.Now().UTC().Unix(), question.TimeForAnswer, false)
+	deadline := cfg.GetFromQuestionsQueue(nullifier)
+	if deadline != nil {
+		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", nullifier)
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+
+	cfg.SetDailyQuestionTimeWithExpiration(questionEvent, balance.Nullifier, time.Now().UTC().Unix()+question.TimeForAnswer)
 
 	ape.Render(w, NewDailyQuestion(*question))
 	return
 }
 
-func ConvertJsonbToDailyQuestionAnswers(jb data.Jsonb) map[string]interface{} {
-	var res map[string]interface{}
-
-	err := json.Unmarshal(jb, &res)
-	if err != nil {
-		return res
-	}
-
-	return res
-}
-
 func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestion {
+	var q map[string]interface{}
+	_ = json.Unmarshal(question.AnswerOptions, &q)
+
 	return resources.DailyQuestion{
 		Key: resources.Key{
 			ID:   strconv.Itoa(question.ID),
@@ -99,51 +96,9 @@ func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestion {
 		Attributes: resources.DailyQuestionAttributes{
 			Title:         question.Title,
 			Reward:        question.Reward,
-			AnswerOptions: ConvertJsonbToDailyQuestionAnswers(question.AnswerOptions),
+			AnswerOptions: q,
 			TimeForAnswer: question.TimeForAnswer,
 			StartsAt:      question.StartsAt.Unix(),
 		},
 	}
-}
-
-func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, timestamp int64, duration int64, status bool) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	DailyQuestionTimeHash(r).SetDailyQuestionsTimeHash(nullifier, config.DailyQuestionTimeInfo{
-		MaxDateToAnswer: timestamp + duration,
-		Answered:        status,
-	})
-	Log(r).Infof("add %s %v, length q: %v, mapm %+v", nullifier, duration, len(DailyQuestionTimeHash(r)), DailyQuestionTimeHash(r))
-
-	now := time.Now()
-	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
-	timeUntilEndOfDay := endOfDay.Sub(now)
-
-	go func() {
-		defer func() {
-			mu.Lock()
-			defer mu.Unlock()
-
-			info := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(nullifier)
-			if info == nil {
-				return
-			}
-
-			if info.Answered || time.Now().After(endOfDay) {
-				delete(DailyQuestionTimeHash(r), nullifier)
-				Log(r).Infof("Removed entry for nullifier: %s", nullifier)
-			}
-		}()
-
-		time.Sleep(time.Duration(duration) * time.Second)
-
-		mu.Lock()
-		info := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(nullifier)
-		mu.Unlock()
-
-		if info != nil && !info.Answered {
-			time.Sleep(timeUntilEndOfDay - time.Duration(duration)*time.Second)
-		}
-	}()
 }
