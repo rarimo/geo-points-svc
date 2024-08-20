@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -16,8 +15,6 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
-
-var mu sync.Mutex
 
 func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
