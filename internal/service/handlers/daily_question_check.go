@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
@@ -27,7 +28,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
+	Log(r).Infof("A")
 	if !auth.Authenticates(UserClaims(r), auth.UserGrant(req.Nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
@@ -50,12 +51,15 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	question, err := DailyQuestionsQ(r).FilterTodayQuestions().Get()
+	location := Location(r).String()
+
+	question, err := DailyQuestionsQ(r).FilterTodayQuestions(location).Get()
 	if err != nil {
 		Log(r).Errorf("error getting question or quesrion inactive: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
+
 	if question == nil {
 		Log(r).Errorf("error getting question: %v", err)
 		ape.RenderErr(w, problems.NotFound())
@@ -92,7 +96,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		eventCheck, err := EventsQ(r).
 			FilterByNullifier(req.Nullifier).
 			FilterByType(models.TypeDailyQuestion).
-			FilterTodayEvents().
+			FilterTodayEvents(location).
 			Get()
 
 		if err != nil {
@@ -153,10 +157,11 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	TimeToNext, err := TimeToNextQuestion(r)
+	TimeToNext, err := TimeToNextQuestionUnix(r)
 	if err != nil {
 		Log(r).WithError(err).Errorf("error updating daily questions: %v", err)
 		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 
 	ape.Render(w, NewDailyAnswer(answerIsTrue, int(TimeToNext)))
@@ -177,6 +182,38 @@ func JSONBToMap(data data.Jsonb) (map[string]interface{}, error) {
 func NewDailyAnswer(answerStatus bool, TimeToNext int) resources.DailyQuestionResultAttributes {
 	return resources.DailyQuestionResultAttributes{
 		AnswerStatus: answerStatus,
-		TimeToNext:   FormatTimeToNext(int64(TimeToNext)),
+		TimeToNext:   FormatUnixTimeToDate(int64(TimeToNext)),
 	}
+}
+
+func TimeToNextQuestionUnix(r *http.Request) (int64, error) {
+	questions, err := DailyQuestionsQ(r).FilterByStartAtToday(Location(r).String()).Select()
+	if err != nil {
+		return -2, err
+	}
+
+	var futureTimes []int64
+	now := time.Now().Unix()
+
+	for _, q := range questions {
+		timeToNext := q.StartsAt.Unix() - now
+		if timeToNext > 0 { // Учитываем только будущее время
+			futureTimes = append(futureTimes, timeToNext)
+		}
+	}
+
+	if len(futureTimes) == 0 {
+		return -1, nil // Нет предстоящих вопросов
+	}
+
+	// Сортируем по возрастанию
+	sort.Slice(futureTimes, func(i, j int) bool {
+		return futureTimes[i] < futureTimes[j]
+	})
+
+	if len(futureTimes) > 1 {
+		return futureTimes[1], nil // Возвращаем второе минимальное значение
+	}
+
+	return -1, nil // Если второго элемента нет, возвращаем -1
 }

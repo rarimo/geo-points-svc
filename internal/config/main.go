@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-auth-svc/pkg/hmacsig"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -24,6 +26,7 @@ type Config interface {
 	DailyQuestionsTimeHash() DailyQuestionsTimeHash
 	Levels() *Levels
 	Verifiers() Verifiers
+	Location() Location
 }
 
 type config struct {
@@ -37,6 +40,7 @@ type config struct {
 	PollVerifierer
 
 	dailyQuestionsTimeHash DailyQuestionsTimeHash
+	timeLocation           Location
 
 	passport root.VerifierProvider
 
@@ -46,6 +50,10 @@ type config struct {
 }
 
 func New(getter kv.Getter) Config {
+	location, err := time.LoadLocation("Asia/Tbilisi")
+	if err != nil {
+		panic("Error load location in config")
+	}
 	return &config{
 		getter:                 getter,
 		Databaser:              pgdb.NewDatabaser(getter),
@@ -55,6 +63,7 @@ func New(getter kv.Getter) Config {
 		PollVerifierer:         NewPollVerifier(getter),
 		Broadcasterer:          broadcaster.New(getter),
 		dailyQuestionsTimeHash: make(DailyQuestionsTimeHash),
+		timeLocation:           location,
 		passport:               root.NewVerifierProvider(getter, root.PoseidonSMT),
 		EventTypeser:           evtypes.NewConfig(getter),
 		SigCalculatorProvider:  hmacsig.NewCalculatorProvider(getter),

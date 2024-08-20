@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -39,8 +40,10 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	location := Location(r).String()
+
 	question, err := DailyQuestionsQ(r).
-		FilterTodayQuestions().
+		FilterTodayQuestions(location).
 		Get()
 	if question == nil {
 		Log(r).Errorf("error getting daily question")
@@ -54,7 +57,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	questionEvent, err := EventsQ(r).
-		FilterTodayEvents().
+		FilterTodayEvents(location).
 		FilterByType(models.TypeDailyQuestion).
 		FilterByNullifier(nullifier).
 		Get()
@@ -90,7 +93,7 @@ func ConvertJsonbToDailyQuestionAnswers(jb data.Jsonb) map[string]interface{} {
 func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestion {
 	return resources.DailyQuestion{
 		Key: resources.Key{
-			ID:   string(rune(question.ID)),
+			ID:   strconv.Itoa(question.ID),
 			Type: resources.DAILY_QUESTION,
 		},
 		Attributes: resources.DailyQuestionAttributes{
@@ -118,25 +121,29 @@ func SetDailyQuestionTimeWithExpiration(r *http.Request, nullifier string, times
 	timeUntilEndOfDay := endOfDay.Sub(now)
 
 	go func() {
+		defer func() {
+			mu.Lock()
+			defer mu.Unlock()
+
+			info := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(nullifier)
+			if info == nil {
+				return
+			}
+
+			if info.Answered || time.Now().After(endOfDay) {
+				delete(DailyQuestionTimeHash(r), nullifier)
+				Log(r).Infof("Removed entry for nullifier: %s", nullifier)
+			}
+		}()
+
 		time.Sleep(time.Duration(duration) * time.Second)
 
 		mu.Lock()
-		defer mu.Unlock()
-
 		info := DailyQuestionTimeHash(r).GetDailyQuestionsTimeHash(nullifier)
-		if info == nil {
-			return
-		}
+		mu.Unlock()
 
-		if info.Answered {
-			delete(DailyQuestionTimeHash(r), nullifier)
-			Log(r).Infof("Removed entry for nullifier: %s after answer", nullifier)
-		} else {
+		if info != nil && !info.Answered {
 			time.Sleep(timeUntilEndOfDay - time.Duration(duration)*time.Second)
-			mu.Lock()
-			defer mu.Unlock()
-			delete(DailyQuestionTimeHash(r), nullifier)
-			Log(r).Infof("Removed entry for nullifier: %s at the end of the day", nullifier)
 		}
 	}()
 }

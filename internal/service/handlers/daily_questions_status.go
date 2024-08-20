@@ -16,7 +16,6 @@ import (
 )
 
 func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
-	alreadyDoneForUser := false
 	var timeToNext int64
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
@@ -39,29 +38,33 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 
 	dailyQuestionEvent, err := EventsQ(r).
 		FilterByNullifier(balance.Nullifier).
-		FilterTodayEvents().
+		FilterTodayEvents(Location(r).String()).
 		FilterByType(models.TypeDailyQuestion).
 		Get()
 
 	if err != nil {
 		Log(r).WithError(err).Error("error getting event daily_question")
 		ape.RenderErr(w, problems.InternalError())
-	}
-	if dailyQuestionEvent != nil {
-		alreadyDoneForUser = true
-		timeToNext, err = TimeToNextQuestion(r)
-		ape.Render(w, NewDailyQuestionsStatus(alreadyDoneForUser, timeToNext))
 		return
 	}
 
-	timeToNext = 0
-	ape.Render(w, NewDailyQuestionsStatus(alreadyDoneForUser, timeToNext))
+	timeToNext, err = TimeToQuestionUnix(r)
+	if err != nil {
+		Log(r).WithError(err).Error("error getting time to next question")
+		timeToNext = -1
+	}
+
+	if dailyQuestionEvent != nil {
+		ape.Render(w, NewDailyQuestionsStatus(true, timeToNext))
+		return
+	}
+
+	ape.Render(w, NewDailyQuestionsStatus(false, timeToNext))
 	return
 }
 
-func TimeToNextQuestion(r *http.Request) (int64, error) {
-	now := time.Now()
-	questions, err := DailyQuestionsQ(r).FilterByStartAt(now).Select()
+func TimeToQuestionUnix(r *http.Request) (int64, error) {
+	questions, err := DailyQuestionsQ(r).FilterByStartAtToday(Location(r).String()).Select()
 	if err != nil {
 		return -2, err
 	}
@@ -72,7 +75,7 @@ func TimeToNextQuestion(r *http.Request) (int64, error) {
 
 	closes := int64(math.MaxInt64)
 	for _, q := range questions {
-		timeToNext := q.StartsAt.Unix() - now.Unix()
+		timeToNext := q.StartsAt.Unix() - time.Now().Unix()
 		if timeToNext < closes {
 			closes = timeToNext
 		}
@@ -81,9 +84,13 @@ func TimeToNextQuestion(r *http.Request) (int64, error) {
 	return closes, nil
 }
 
-func FormatTimeToNext(TimeToNext int64) string {
+func FormatUnixTimeToDate(TimeToNext int64) string {
 	if TimeToNext == -1 {
 		return "soon"
+	}
+
+	if TimeToNext < 0 {
+		return "0d:00h:00m:00s"
 	}
 
 	days := TimeToNext / (24 * 3600)
@@ -97,7 +104,7 @@ func FormatTimeToNext(TimeToNext int64) string {
 }
 
 func NewDailyQuestionsStatus(AlreadyDoneForUser bool, TimeToNext int64) resources.DailyQuestionStatusAttributes {
-	timeToNextStr := FormatTimeToNext(TimeToNext)
+	timeToNextStr := FormatUnixTimeToDate(TimeToNext)
 
 	return resources.DailyQuestionStatusAttributes{
 		AlreadyDoneForUser: AlreadyDoneForUser,

@@ -25,6 +25,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxSigCalculator(cfg.SigCalculator()),
 			handlers.CtxPollVerifier(cfg.PollVerifier()),
 			handlers.CtxDailyQuestionTimeHash(cfg.DailyQuestionsTimeHash()),
+			handlers.CtxLocation(cfg.Location()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)

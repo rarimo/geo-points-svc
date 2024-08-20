@@ -1,6 +1,8 @@
 package data
 
-import "time"
+import (
+	"time"
+)
 
 type DailyQuestion struct {
 	ID            int       `db:"id"`
@@ -21,8 +23,8 @@ type DailyQuestionsQ interface {
 	Select() ([]DailyQuestion, error)
 	Get() (*DailyQuestion, error)
 
-	FilterTodayQuestions() DailyQuestionsQ
-	FilterByStartAt(date time.Time) DailyQuestionsQ
+	FilterTodayQuestions(location string) DailyQuestionsQ
+	FilterByStartAtToday(location string) DailyQuestionsQ
 	FilterByCreatedAt(date time.Time) DailyQuestionsQ
 	FilterByID(ID int) DailyQuestionsQ
 }

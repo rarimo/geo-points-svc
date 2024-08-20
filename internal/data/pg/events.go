@@ -227,14 +227,23 @@ func (q *events) FilterByUpdatedAtBefore(unix int64) data.EventsQ {
 	return q.applyCondition(squirrel.Lt{"updated_at": unix})
 }
 
-func (q *events) FilterTodayEvents() data.EventsQ {
-	todayStart := time.Now().UTC().Truncate(24 * time.Hour).Unix()
-	todayEnd := todayStart + 24*60*60 - 1
+func (q *events) FilterTodayEvents(location string) data.EventsQ {
+	loc, _ := time.LoadLocation(location)
+	//Don't check the error because we have already done this in the config
+	now := time.Now().In(loc)
 
-	return q.applyCondition(squirrel.And{
-		squirrel.GtOrEq{"created_at": todayStart},
-		squirrel.LtOrEq{"created_at": todayEnd},
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	todayEnd := todayStart.Add(24 * time.Hour).Add(-time.Nanosecond)
+
+	utcStart := todayStart.UTC().Unix()
+	utcEnd := todayEnd.UTC().Unix()
+
+	res := q.applyCondition(squirrel.And{
+		squirrel.GtOrEq{"created_at": utcStart},
+		squirrel.LtOrEq{"created_at": utcEnd},
 	})
+
+	return res
 }
 
 func (q *events) FilterInactiveNotClaimed(types ...string) data.EventsQ {

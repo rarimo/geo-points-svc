@@ -3,14 +3,7 @@ allOf:
   - type: object
     required:
       - attributes
-      - ID
-
     properties:
-      ID:
-        type: integer
-        format: int
-        description: ID question
-        example: 88
       attributes:
         type: object
         required:
