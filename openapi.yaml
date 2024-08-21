@@ -386,6 +386,130 @@ paths:
                 $ref: '#/components/schemas/Errors'
         '500':
           $ref: '#/components/responses/internalError'
+  '/integrations/geo-points-svc/v1/public/daily_questions/{nullifier}':
+    get:
+      tags:
+        - Daily Questions
+      summary: Get daily question
+      description: |
+        Get a daily question. The user must be 
+        authorized and verified (passport scanned, 
+        verified field is true).
+      operationId: getDailyQuestion
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyQuestions'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '404':
+          description: There is no question in current day.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '409':
+          description: User already answer current day question.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
+    post:
+      tags:
+        - Daily Questions
+      summary: Answer question
+      description: |
+        Answer question. The user must be 
+        authorized and verified (passport scanned, 
+        verified field is true).
+      operationId: answerDailyQuestion
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/DailyQuestionAnswers'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyQuestionAnswers'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '404':
+          description: User haven't active question or deadline already passed.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
+  '/integrations/geo-points-svc/v1/public/daily_questions/{nullifier}/status':
+    get:
+      tags:
+        - Daily Questions
+      summary: Daily question status
+      description: |
+        Get the status of questions. The user must be 
+        authorized and verified (passport scanned, 
+        verified field is true). 
+        Returns NotFound if next question absent.
+      operationId: dailyQuestionsStatus
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyQuestionsStatus'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '404':
+          description: Next question not exist.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
   /integrations/geo-points-svc/v1/public/event_types:
     get:
       tags:
@@ -1112,6 +1236,133 @@ components:
           type: string
           enum:
             - create_balance
+    DailyQuestionAnswers:
+      allOf:
+        - $ref: '#/components/schemas/DailyQuestionsKey'
+        - type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - answer
+              properties:
+                answer:
+                  type: integer
+                  format: int64
+                  description: Selected/correct answer option
+    DailyQuestionOptions:
+      type: object
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: integer
+          format: int
+          description: Answer number for the question
+        title:
+          type: string
+          description: Answer text
+    DailyQuestions:
+      allOf:
+        - $ref: '#/components/schemas/DailyQuestionsKey'
+        - type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - title
+                - deadline
+                - options
+              properties:
+                title:
+                  type: string
+                  description: Question title
+                  example: Georgian capital
+                deadline:
+                  type: timestamp
+                  format: int64
+                  description: |
+                    Time limit after which it is impossible to answer the question.
+                    Calculated as current time + time for answer
+                  example: 1724240939
+                options:
+                  type: array
+                  description: 'Answer options. Minimum 2, maximum 6'
+                  items:
+                    $ref: '#/components/schemas/DailyQuestionOptions'
+                  example:
+                    - id: 0
+                      title: ''
+                    - id: 1
+                      title: ''
+                    - id: 2
+                      title: ''
+    DailyQuestionsKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: Question id
+        type:
+          type: string
+          enum:
+            - daily_questions
+    DailyQuestionsStatus:
+      allOf:
+        - $ref: '#/components/schemas/DailyQuestionsStatusKey'
+        - type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - next_question_date
+                - time_for_answer
+                - reward
+              properties:
+                next_question_date:
+                  type: timestamp
+                  format: int64
+                  description: |
+                    Time when the next question will be available. 
+                    If the time is in the past, then there is a question 
+                    on this day and the user has not yet answered it. 
+                    If the time is in the future, then the user has either 
+                    already answered the question on the current day or 
+                    there was no question on the current day.
+                  example: 1725018539
+                time_for_answer:
+                  type: integer
+                  format: int64
+                  description: The time within which the user has to answer this question after receiving it.
+                  example: 30
+                reward:
+                  type: integer
+                  format: int64
+                  description: The number of points the user will receive if they answer the question correctly.
+                  example: 5
+    DailyQuestionsStatusKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: Question id
+        type:
+          type: string
+          enum:
+            - daily_questions_status
     Errors:
       description: 'Standard JSON:API error'
       type: object
