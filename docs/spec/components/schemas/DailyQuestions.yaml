@@ -15,13 +15,6 @@ allOf:
             type: string
             description: Question title
             example: Georgian capital
-          deadline:
-            type: timestamp
-            format: int64
-            description: |
-              Time limit after which it is impossible to answer the question.
-              Calculated as current time + time for answer
-            example: 1724240939
           options:
             type: array
             description: Answer options. Minimum 2, maximum 6
