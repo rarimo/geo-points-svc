@@ -1,10 +1,16 @@
 get:
   tags:
-    - Daily Question
-  description: User access to question
-  parameters:
-    - $ref: '#/components/parameters/UserTimezone'
-  response:
+    - Daily Questions
+  summary: Daily question status
+  description: |
+    Get the status of questions. The user must be 
+    authorized and verified (passport scanned, 
+    verified field is true). 
+    Returns NotFound if next question absent.
+  operationId: dailyQuestionsStatus
+  security:
+    - BearerAuth: []
+  responses:
     200:
       description: Success
       content:
@@ -20,5 +26,11 @@ get:
       $ref: '#/components/responses/invalidParameter'
     401:
       $ref: '#/components/responses/invalidAuth'
+    404:
+      description: Next question not exist.
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
     500:
       $ref: '#/components/responses/internalError'

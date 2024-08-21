@@ -1,13 +1,15 @@
 get:
   tags:
-    - Daily Question
-  description: Get daily question for user
-  parameters:
-    - $ref: '#/components/parameters/UserTimezone'
-      name: user timezone
-      description: |
-        needed so that different users have access to questions at different times, depending on their geolocation
-  response:
+    - Daily Questions
+  summary: Get daily question
+  description: |
+    Get a daily question. The user must be 
+    authorized and verified (passport scanned, 
+    verified field is true).
+  operationId: getDailyQuestion
+  security:
+    - BearerAuth: []
+  responses:
     200:
       description: Success
       content:
@@ -18,19 +20,50 @@ get:
               - data
             properties:
               data:
-                $ref: '#/components/schemas/DailyQuestion'
+                $ref: '#/components/schemas/DailyQuestions'
     400:
       $ref: '#/components/responses/invalidParameter'
     401:
       $ref: '#/components/responses/invalidAuth'
+    404:
+      description: There is no question in current day.
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    409:
+      description: User already answer current day question.
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
     500:
       $ref: '#/components/responses/internalError'
 
-patch:
-    tags:
-    - Daily Question
-    description: Send daily question answer
-    requestBody:
+post:
+  tags:
+    - Daily Questions
+  summary: Answer question
+  description: |
+    Answer question. The user must be 
+    authorized and verified (passport scanned, 
+    verified field is true).
+  operationId: answerDailyQuestion
+  security:
+    - BearerAuth: []
+  requestBody:
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/DailyQuestionAnswers'
+  responses:
+    200:
+      description: Success
       content:
         application/vnd.api+json:
           schema:
@@ -39,22 +72,16 @@ patch:
               - data
             properties:
               data:
-                $ref: '#/components/schemas/DailyQuestionUserAnswer'
-    response:
-      200:
-        description: Success
-        content:
-          application/vnd.api+json:
-            schema:
-              type: object
-              required:
-                - data
-              properties:
-                data:
-                  $ref: '#/components/schemas/DailyQuestion'
-      400:
-        $ref: '#/components/responses/invalidParameter'
-      401:
-        $ref: '#/components/responses/invalidAuth'
-      500:
-        $ref: '#/components/responses/internalError'
+                $ref: '#/components/schemas/DailyQuestionAnswers'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    404:
+      description: User haven't active question or deadline already passed.
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    500:
+      $ref: '#/components/responses/internalError'

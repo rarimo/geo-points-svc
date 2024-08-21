@@ -1,5 +1,12 @@
 type: object
+required:
+  - id
+  - title
 properties:
-  type: string
-  format: json.RawMessage
-  description: Some events require dynamic data, which can be filled into `static` template.
+  id:
+    type: integer
+    format: int
+    description: Answer number for the question
+  title:
+    type: string
+    description: Answer text
