@@ -44,6 +44,7 @@ func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 		"num_correct_answers":   quest.NumCorrectAnswers,
 		"num_incorrect_answers": quest.NumIncorrectAnswers,
 		"num_no_answer":         quest.NumNoAnswer,
+		"num_all_participants":  quest.NumAllParticipants,
 	})
 
 	if err := q.db.Exec(stmt); err != nil {
@@ -124,15 +125,20 @@ func (q *dailyQuestionsQ) IncrementCorrectAnswer() error {
 }
 
 func (q *dailyQuestionsQ) IncrementIncorrectAnswer() error {
-	stmt := q.updater.Set("num_incorrect_answers", squirrel.Expr("num_incorrect_answers + 1"))
+	stmt := q.updater.
+		Set("num_incorrect_answers", squirrel.Expr("num_incorrect_answers + 1"))
+
 	if err := q.db.Exec(stmt); err != nil {
 		return fmt.Errorf("increment incorrect answer: %w", err)
 	}
 	return nil
 }
 
-func (q *dailyQuestionsQ) IncrementNoAnswer() error {
-	stmt := q.updater.Set("num_no_answer", squirrel.Expr("num_no_answer + 1"))
+func (q *dailyQuestionsQ) IncrementAllParticipants() error {
+	stmt := q.updater.
+		Set("num_all_participants", squirrel.Expr("num_all_participants + 1")).
+		Set("num_no_answer", squirrel.Expr("num_all_participants + 1 - num_correct_answers - num_incorrect_answers"))
+
 	if err := q.db.Exec(stmt); err != nil {
 		return fmt.Errorf("increment no answer: %w", err)
 	}

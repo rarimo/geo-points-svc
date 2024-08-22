@@ -8,6 +8,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type DailyQuestions struct {
@@ -58,7 +59,7 @@ func (q *DailyQuestions) GetDeadline(key string) *int64 {
 	return &value
 }
 
-func (q *DailyQuestions) SetDeadlineTimer(eve *data.Event, nullifier string, deadline int64) {
+func (q *DailyQuestions) SetDeadlineTimer(log *logan.Entry, question data.DailyQuestionsQ, eve *data.Event, nullifier string, deadline int64) {
 	now := time.Now().UTC()
 
 	q.muDeadlines.Lock()
@@ -69,13 +70,17 @@ func (q *DailyQuestions) SetDeadlineTimer(eve *data.Event, nullifier string, dea
 		q.muDeadlines.Lock()
 		defer q.muDeadlines.Unlock()
 
-		getTime := q.GetDeadline(nullifier)
-		if getTime != nil && deadline <= time.Now().UTC().Unix() {
+		if deadline <= time.Now().UTC().Unix() {
 			if eve != nil {
 				delete(q.Deadlines, nullifier)
 			}
 		}
 	})
+
+	err := question.IncrementAllParticipants()
+	if err != nil {
+		log.Infof("Failed to increment all participants: %v", err)
+	}
 }
 
 func (q *DailyQuestions) ResponderExists(responder string) bool {

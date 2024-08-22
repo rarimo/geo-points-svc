@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS daily_questions (
     correct_answer INTEGER NOT NULL,
     num_correct_answers INTEGER DEFAULT 0,
     num_incorrect_answers INTEGER DEFAULT 0,
-    num_no_answer INTEGER DEFAULT 0
+    num_no_answer INTEGER DEFAULT 0,
+    num_all_participants INTEGER DEFAULT 0
 );
 
 -- +migrate Down

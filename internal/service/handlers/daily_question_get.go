@@ -58,7 +58,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		FilterTodayQuestions(cfg.Timezone).
 		Get()
 	if question == nil {
-		Log(r).Error("error getting daily question")
+		Log(r).Error("Error getting daily question")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
@@ -76,7 +76,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nowTime := time.Now().UTC()
-	cfg.SetDeadlineTimer(questionEvent, balance.Nullifier, nowTime.Unix()+question.TimeForAnswer)
+	cfg.SetDeadlineTimer(Log(r), DailyQuestionsQ(r), questionEvent, balance.Nullifier, nowTime.Unix()+question.TimeForAnswer)
 
 	options, err := ConvertJsonbToDailyQuestionOptions(question.AnswerOptions)
 	if err != nil {
