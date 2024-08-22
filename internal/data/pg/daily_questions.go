@@ -40,6 +40,7 @@ func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 		"reward":          quest.Reward,
 		"answer_options":  quest.AnswerOptions,
 		"starts_at":       quest.StartsAt,
+		"correct_answer":  quest.CorrectAnswer,
 	})
 
 	if err := q.db.Exec(stmt); err != nil {
@@ -107,7 +108,7 @@ func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ 
 	})
 }
 
-func (q *dailyQuestionsQ) FilterByID(ID int) data.DailyQuestionsQ {
+func (q *dailyQuestionsQ) FilterByID(ID int64) data.DailyQuestionsQ {
 	return q.applyCondition(squirrel.Eq{"id": ID})
 }
 

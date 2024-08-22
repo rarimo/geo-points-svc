@@ -3,19 +3,20 @@ package handlers
 import (
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
-	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
+	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
 func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
-	var timeToNext time.Time
+	var timeToNext int64
 	cfg := DailyQuestions(r)
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
@@ -36,46 +37,41 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dailyQuestionEvent, err := EventsQ(r).
-		FilterByNullifier(balance.Nullifier).
-		FilterTodayEvents(cfg.Timezone).
-		FilterByType(models.TypeDailyQuestion).
-		Get()
-
+	timeToNext, err = TimeToNextQuestion(r)
 	if err != nil {
-		Log(r).WithError(err).Error("error getting event daily_question")
+		Log(r).WithError(err).Error("error getting time to next question")
+		timeToNext = -1
+	}
+
+	question, err := DailyQuestionsQ(r).
+		FilterTodayQuestions(cfg.Timezone).
+		Get()
+	if err != nil {
+		Log(r).WithError(err).Error("error getting daily question")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
-	quesDataArr, err := GetQuestionQueue(r)
-	if err != nil || len(quesDataArr) == 0 {
-		Log(r).WithError(err).Error("error getting time to next question")
-		timeToNext = time.Date(1900, time.January, 1, 0, 0, 0, 0, time.UTC)
-	} else {
-		timeToNext = quesDataArr[0]
-	}
-
-	if dailyQuestionEvent != nil {
-		ape.Render(w, NewDailyQuestionsStatus(true, timeToNext))
+	if question == nil {
+		Log(r).Infof("Not found question today %v", question)
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionsStatus(false, time.Now()))
+	ape.Render(w, NewDailyQuestionsStatus(timeToNext, question))
 	return
 }
 
-func GetQuestionQueue(r *http.Request) ([]time.Time, error) {
+func TimeToNextQuestion(r *http.Request) (int64, error) {
 	questions, err := DailyQuestionsQ(r).
 		FilterTodayQuestions(DailyQuestions(r).Timezone).
 		Select()
 
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 
 	if len(questions) == 0 {
-		return nil, nil
+		return -1, nil
 	}
 
 	times := make([]time.Time, len(questions))
@@ -87,12 +83,27 @@ func GetQuestionQueue(r *http.Request) ([]time.Time, error) {
 		return times[i].Before(times[j])
 	})
 
-	return times, nil
+	now := time.Now().UTC()
+
+	for _, t := range times {
+		if t.After(now) {
+			return t.Unix(), nil
+		}
+	}
+
+	return -1, nil
 }
 
-func NewDailyQuestionsStatus(AlreadyDoneForUser bool, timeToNextStr time.Time) resources.DailyQuestionStatusAttributes {
-	return resources.DailyQuestionStatusAttributes{
-		AlreadyDoneForUser: AlreadyDoneForUser,
-		TimeToNext:         timeToNextStr.String(),
+func NewDailyQuestionsStatus(timeToNextStr int64, question *data.DailyQuestion) resources.DailyQuestionsStatus {
+	return resources.DailyQuestionsStatus{
+		Key: resources.Key{
+			ID:   strconv.Itoa(int(question.ID)),
+			Type: resources.DAILY_QUESTIONS,
+		},
+		Attributes: resources.DailyQuestionsStatusAttributes{
+			NextQuestionDate: timeToNextStr,
+			Reward:           int64(question.Reward),
+			TimeForAnswer:    question.TimeForAnswer,
+		},
 	}
 }

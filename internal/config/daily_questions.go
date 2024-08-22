@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -10,12 +11,12 @@ import (
 	"gitlab.com/distributed_lab/kit/kv"
 )
 
-var mu sync.Mutex
-var endOfDayMutex sync.Mutex
-
 type DailyQuestions struct {
-	Timezone       int
-	QuestionsQueue map[string]int64
+	Timezone    int
+	Deadlines   map[string]int64
+	Responders  []string
+	muDeadlines sync.RWMutex
+	muResponses sync.RWMutex
 }
 
 func (c *config) DailyQuestions() *DailyQuestions {
@@ -34,71 +35,104 @@ func (c *config) DailyQuestions() *DailyQuestions {
 		res := cfg.Timezone
 
 		return &DailyQuestions{
-			Timezone:       res,
-			QuestionsQueue: make(map[string]int64),
+			Timezone:    res,
+			Deadlines:   make(map[string]int64),
+			Responders:  make([]string, 0),
+			muDeadlines: sync.RWMutex{},
+			muResponses: sync.RWMutex{},
 		}
 
 	}).(*DailyQuestions)
 }
 
-func (c DailyQuestions) InsertInQuestionsQueue(key string, value int64) {
-	if c.QuestionsQueue == nil {
-		c.QuestionsQueue = make(map[string]int64)
-	}
-	(c).QuestionsQueue[key] = value
-}
+func (q *DailyQuestions) GetDeadline(key string) *int64 {
+	q.muDeadlines.RLock()
+	defer q.muDeadlines.RUnlock()
 
-func (c DailyQuestions) GetFromQuestionsQueue(key string) *int64 {
-	if c.QuestionsQueue == nil {
+	if q.Deadlines == nil {
 		return nil
 	}
-	value, exists := c.QuestionsQueue[key]
+	value, exists := q.Deadlines[key]
 	if !exists {
 		return nil
 	}
 	return &value
 }
 
-func (c DailyQuestions) SetDailyQuestionTimeWithExpiration(eve *data.Event, nullifier string, deadline int64) {
-	c.InsertInQuestionsQueue(nullifier, deadline)
-
+func (q *DailyQuestions) SetDeadlineTimer(eve *data.Event, nullifier string, deadline int64) {
 	now := time.Now().UTC()
 
 	go func() {
+		q.muDeadlines.Lock()
+		q.Deadlines[nullifier] = deadline
+		q.muDeadlines.Unlock()
+
 		time.Sleep(time.Duration(deadline) * time.Second)
 
-		mu.Lock()
-		defer mu.Unlock()
+		q.muDeadlines.Lock()
+		defer q.muDeadlines.Unlock()
 
-		getTime := c.GetFromQuestionsQueue(nullifier)
+		getTime := q.GetDeadline(nullifier)
 		if now.Unix() < *getTime+deadline {
 			if eve != nil {
-				delete(c.QuestionsQueue, nullifier)
+				delete(q.Deadlines, nullifier)
 			}
 		}
 	}()
-
-	go func() {
-		endOfDayMutex.Lock()
-		defer endOfDayMutex.Unlock()
-
-		c.RemoveAllQuestionsAtEndDay()
-	}()
 }
 
-func (c DailyQuestions) RemoveAllQuestionsAtEndDay() {
-	now := time.Now().UTC()
-	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
-	timeUntilEndOfDay := endOfDay.Sub(now)
+func (q *DailyQuestions) ResponderExists(responder string) bool {
+	q.muResponses.RLock()
+	defer q.muResponses.RUnlock()
 
-	go func() {
-		time.Sleep(timeUntilEndOfDay)
-
-		mu.Lock()
-		defer mu.Unlock()
-
-		for nullifier := range c.QuestionsQueue {
-			delete(c.QuestionsQueue, nullifier)
+	log.Printf("Checking if responder exists: %s", responder)
+	for _, r := range q.Responders {
+		log.Printf("Comparing with responder: %s", r)
+		if r == responder {
+			log.Printf("Responder found: %s", responder)
+			return true
 		}
-	}()
+	}
+	log.Printf("Responder not found: %s", responder)
+	return false
 }
+
+func (q *DailyQuestions) SetResponsesTimer(responder string, interval time.Duration) {
+	q.muResponses.Lock()
+	defer q.muResponses.Unlock()
+
+	for _, r := range q.Responders {
+		if r == responder {
+		}
+	}
+	q.Responders = append(q.Responders, responder)
+
+	time.AfterFunc(interval, func() {
+		q.muResponses.Lock()
+		defer q.muResponses.Unlock()
+
+		for i, r := range q.Responders {
+			if r == responder {
+				q.Responders = append(q.Responders[:i], q.Responders[i+1:]...)
+				break
+			}
+		}
+	})
+}
+
+//func (q *DailyQuestions) RemoveAllQuestionsAtEndDay() {
+//	now := time.Now().UTC()
+//	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+//	timeUntilEndOfDay := endOfDay.Sub(now)
+//
+//	go func() {
+//		time.Sleep(timeUntilEndOfDay)
+//
+//		q.muDeadlines.Lock()
+//		defer q.muDeadlines.Unlock()
+//
+//		for nullifier := range q.Deadlines {
+//			delete(q.Deadlines, nullifier)
+//		}
+//	}()
+//}

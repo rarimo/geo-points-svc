@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS daily_questions (
     reward INTEGER NOT NULL,
     answer_options JSONB NOT NULL,
     starts_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+    created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    correct_answer INTEGER NOT NULL
 );
 
 -- +migrate Down

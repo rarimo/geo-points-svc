@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -19,65 +20,64 @@ import (
 )
 
 func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	answerIsTrue := true
 	cfg := DailyQuestions(r)
+	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
 	req, err := requests.NewDailyQuestionAnswer(r)
 	if err != nil {
-		Log(r).Errorf("error getting active questions: %v", err)
+		Log(r).Errorf("Error getting active questions: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(req.Nullifier)) {
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}
 
 	question, err := DailyQuestionsQ(r).FilterTodayQuestions(cfg.Timezone).Get()
 	if err != nil {
-		Log(r).Errorf("error getting question or quesrion inactive: %v", err)
+		Log(r).Errorf("Error getting question or quesrion inactive: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if question == nil {
-		Log(r).Errorf("error getting question: %v", err)
+		Log(r).Errorf("Error getting question: %v", err)
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	deadline := cfg.GetFromQuestionsQueue(req.Nullifier)
-	if deadline == nil {
-		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", req.Nullifier)
-		ape.RenderErr(w, problems.NotAllowed())
-		return
-	}
-	if *deadline < time.Now().UTC().Unix() {
-		Log(r).Errorf("Time is up: %s", req.Nullifier)
-		ape.RenderErr(w, problems.Forbidden())
-		return
-	}
-
-	balance, err := BalancesQ(r).FilterByNullifier(req.Nullifier).Get()
+	balance, err := BalancesQ(r).FilterByNullifier(nullifier).Get()
 	if err != nil {
-		Log(r).WithError(err).Errorf("Failed to get balance by nullifier %s", req.Nullifier)
+		Log(r).WithError(err).Errorf("Failed to get balance by nullifier %s", nullifier)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if balance == nil {
-		Log(r).Errorf("error getting balance by nullifier")
+		Log(r).Errorf("Error getting balance by nullifier")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	answersMap, err := JSONBToMap(question.AnswerOptions)
-	if err != nil {
-		Log(r).WithError(err).Errorf("error converting answer options to map")
-		ape.RenderErr(w, problems.InternalError())
+	if cfg.ResponderExists(nullifier) {
+		Log(r).Infof("User is already answered %s", nullifier)
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
-	errDuplicateEvent := fmt.Errorf("user already send answer %s", req.Nullifier)
+	deadline := cfg.GetDeadline(nullifier)
+	if deadline == nil {
+		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", nullifier)
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+	if *deadline < time.Now().UTC().Unix() {
+		Log(r).Errorf("Time is up: %s", nullifier)
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+
+	errDuplicateEvent := fmt.Errorf("user already send answer %s", nullifier)
 
 	err = EventsQ(r).Transaction(func() error {
 		evType := EventTypes(r).Get(models.TypeDailyQuestion, evtypes.FilterInactive)
@@ -85,14 +85,8 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("event type %s is inactive", models.TypeDailyQuestion)
 		}
 
-		if answersMap[req.UserAnswer] != true {
-			answerIsTrue = false
-			Log(r).Infof("User %s anser wrong", req.UserAnswer)
-			return nil
-		}
-
 		event, err := EventsQ(r).
-			FilterByNullifier(req.Nullifier).
+			FilterByNullifier(nullifier).
 			FilterByType(models.TypeDailyQuestion).
 			FilterTodayEvents(cfg.Timezone).
 			Get()
@@ -104,8 +98,13 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return errDuplicateEvent
 		}
 
+		if question.CorrectAnswer != req.Answer {
+			Log(r).Infof("wrong answer for daily question: %v", req.Answer)
+			return nil
+		}
+
 		err = EventsQ(r).Insert(data.Event{
-			Nullifier: req.Nullifier,
+			Nullifier: nullifier,
 			Type:      models.TypeDailyQuestion,
 			Status:    data.EventFulfilled,
 		})
@@ -137,46 +136,30 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, errDuplicateEvent) {
-			Log(r).Infof("User already submitted an answer: %s", req.Nullifier)
+			Log(r).Infof("User already submitted an answer: %s", nullifier)
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
 
-		Log(r).WithError(err).Errorf("error updating daily questions: %v", err)
+		Log(r).WithError(err).Errorf("Error updating daily questions: %v", err)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	TimeToNext, err := GetQuestionQueue(r)
-	if err != nil {
-		Log(r).WithError(err).Errorf("error updating daily questions: %v", err)
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	if len(TimeToNext) < 2 {
-		ape.Render(w, NewDailyAnswer(answerIsTrue, time.Date(1900, time.January, 1, 0, 0, 0, 0, time.UTC)))
-		return
-	}
-
-	ape.Render(w, NewDailyAnswer(answerIsTrue, TimeToNext[1]))
+	cfg.SetResponsesTimer(balance.Nullifier, time.Duration(*deadline-time.Now().UTC().Unix())*time.Second)
+	Log(r).Infof("responses: %+v", cfg.Responders)
+	ape.Render(w, NewDailyAnswer(question.ID, nullifier))
 	return
 }
 
-func JSONBToMap(data data.Jsonb) (map[string]interface{}, error) {
-	var result map[string]interface{}
-
-	err := json.Unmarshal(data, &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal JSONB: %w", err)
-	}
-
-	return result, nil
-}
-
-func NewDailyAnswer(answerStatus bool, TimeToNext time.Time) resources.DailyQuestionResultAttributes {
-	return resources.DailyQuestionResultAttributes{
-		AnswerStatus: answerStatus,
-		TimeToNext:   TimeToNext.String(),
+func NewDailyAnswer(answerIndex int64, nullifier string) resources.DailyQuestionAnswers {
+	return resources.DailyQuestionAnswers{
+		Key: resources.Key{
+			ID:   nullifier,
+			Type: resources.DAILY_QUESTIONS,
+		},
+		Attributes: resources.DailyQuestionAnswersAttributes{
+			Answer: answerIndex,
+		},
 	}
 }

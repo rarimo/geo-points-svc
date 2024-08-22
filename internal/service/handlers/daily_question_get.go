@@ -37,20 +37,6 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	question, err := DailyQuestionsQ(r).
-		FilterTodayQuestions(cfg.Timezone).
-		Get()
-	if question == nil {
-		Log(r).Errorf("error getting daily question")
-		ape.RenderErr(w, problems.NotFound())
-		return
-	}
-	if err != nil {
-		Log(r).WithError(err).Error("Failed to get active questions")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
 	questionEvent, err := EventsQ(r).
 		FilterTodayEvents(cfg.Timezone).
 		FilterByType(models.TypeDailyQuestion).
@@ -68,34 +54,61 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deadline := cfg.GetFromQuestionsQueue(nullifier)
+	question, err := DailyQuestionsQ(r).
+		FilterTodayQuestions(cfg.Timezone).
+		Get()
+	if question == nil {
+		Log(r).Errorf("error getting daily question")
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to get active questions")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	deadline := cfg.GetDeadline(nullifier)
 	if deadline != nil {
 		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", nullifier)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
-	cfg.SetDailyQuestionTimeWithExpiration(questionEvent, balance.Nullifier, time.Now().UTC().Unix()+question.TimeForAnswer)
+	nowTime := time.Now().UTC()
+	cfg.SetDeadlineTimer(questionEvent, balance.Nullifier, nowTime.Unix()+question.TimeForAnswer)
 
-	ape.Render(w, NewDailyQuestion(*question))
+	options, err := ConvertJsonbToDailyQuestionOptions(question.AnswerOptions)
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to convert json options to daily question options")
+		ape.RenderErr(w, problems.InternalError())
+	}
+	ape.Render(w, NewDailyQuestion(question, nowTime, options))
 	return
 }
 
-func NewDailyQuestion(question data.DailyQuestion) resources.DailyQuestion {
+func ConvertJsonbToDailyQuestionOptions(answerOptions []byte) ([]resources.DailyQuestionOptions, error) {
+	var options []resources.DailyQuestionOptions
+	err := json.Unmarshal(answerOptions, &options)
+	if err != nil {
+		return nil, err
+	}
+	return options, nil
+}
+
+func NewDailyQuestion(question *data.DailyQuestion, receiptTime time.Time, options []resources.DailyQuestionOptions) resources.DailyQuestions {
 	var q map[string]interface{}
 	_ = json.Unmarshal(question.AnswerOptions, &q)
 
-	return resources.DailyQuestion{
+	return resources.DailyQuestions{
 		Key: resources.Key{
-			ID:   strconv.Itoa(question.ID),
-			Type: resources.DAILY_QUESTION,
+			ID:   strconv.Itoa(int(question.ID)),
+			Type: resources.DAILY_QUESTIONS,
 		},
-		Attributes: resources.DailyQuestionAttributes{
-			Title:         question.Title,
-			Reward:        question.Reward,
-			AnswerOptions: q,
-			TimeForAnswer: question.TimeForAnswer,
-			StartsAt:      question.StartsAt.Unix(),
+		Attributes: resources.DailyQuestionsAttributes{
+			Deadline: question.TimeForAnswer + receiptTime.Unix(),
+			Options:  options,
+			Title:    question.Title,
 		},
 	}
 }
