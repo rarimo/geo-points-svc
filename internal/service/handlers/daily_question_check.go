@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
@@ -29,10 +30,10 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
 
 	question, err := DailyQuestionsQ(r).FilterTodayQuestions(cfg.Timezone).Get()
 	if err != nil {
