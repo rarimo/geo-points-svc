@@ -58,7 +58,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		FilterTodayQuestions(cfg.Timezone).
 		Get()
 	if question == nil {
-		Log(r).Errorf("error getting daily question")
+		Log(r).Error("error getting daily question")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
@@ -82,6 +82,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to convert json options to daily question options")
 		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 	ape.Render(w, NewDailyQuestion(question, nowTime, options))
 	return

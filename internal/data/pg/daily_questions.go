@@ -44,7 +44,7 @@ func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 	})
 
 	if err := q.db.Exec(stmt); err != nil {
-		return fmt.Errorf("insert daily_questions %+v: %w", quest, err)
+		return fmt.Errorf("insert daily questions %+v: %w", quest, err)
 	}
 
 	return nil
@@ -52,7 +52,7 @@ func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 
 func (q *dailyQuestionsQ) Update(fields map[string]any) error {
 	if err := q.db.Exec(q.updater.SetMap(fields)); err != nil {
-		return fmt.Errorf("update daily_questions: %w", err)
+		return fmt.Errorf("update daily questions: %w", err)
 	}
 
 	return nil
@@ -64,7 +64,7 @@ func (q *dailyQuestionsQ) Count() (int64, error) {
 	}{}
 
 	if err := q.db.Get(&res, q.counter); err != nil {
-		return 0, fmt.Errorf("get daily_questions: %w", err)
+		return 0, fmt.Errorf("count daily questions: %w", err)
 	}
 
 	return res.Count, nil
@@ -73,7 +73,7 @@ func (q *dailyQuestionsQ) Count() (int64, error) {
 func (q *dailyQuestionsQ) Select() ([]data.DailyQuestion, error) {
 	var res []data.DailyQuestion
 	if err := q.db.Select(&res, q.selector); err != nil {
-		return res, fmt.Errorf("select daily_questions: %w", err)
+		return res, fmt.Errorf("select daily questions: %w", err)
 	}
 	return res, nil
 }
@@ -85,7 +85,7 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("get balance: %w", err)
+		return nil, fmt.Errorf("get daily question: %w", err)
 	}
 
 	return &res, nil

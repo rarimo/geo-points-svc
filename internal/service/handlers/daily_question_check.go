@@ -42,7 +42,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if question == nil {
-		Log(r).Errorf("Error getting question: %v", err)
+		Log(r).Error("Error getting question, question is nil")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
@@ -99,7 +99,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if question.CorrectAnswer != req.Answer {
-			Log(r).Infof("wrong answer for daily question: %v", req.Answer)
+			Log(r).Infof("Wrong answer for daily question: %v", req.Answer)
 			return nil
 		}
 
@@ -147,7 +147,6 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cfg.SetResponsesTimer(balance.Nullifier, time.Duration(*deadline-time.Now().UTC().Unix())*time.Second)
-	Log(r).Infof("responses: %+v", cfg.Responders)
 	ape.Render(w, NewDailyAnswer(question.ID, nullifier))
 	return
 }

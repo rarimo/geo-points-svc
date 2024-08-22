@@ -113,19 +113,11 @@ func (q *DailyQuestions) SetResponsesTimer(responder string, interval time.Durat
 	})
 }
 
-//func (q *DailyQuestions) RemoveAllQuestionsAtEndDay() {
-//	now := time.Now().UTC()
-//	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
-//	timeUntilEndOfDay := endOfDay.Sub(now)
-//
-//	go func() {
-//		time.Sleep(timeUntilEndOfDay)
-//
-//		q.muDeadlines.Lock()
-//		defer q.muDeadlines.Unlock()
-//
-//		for nullifier := range q.Deadlines {
-//			delete(q.Deadlines, nullifier)
-//		}
-//	}()
-//}
+func (q *DailyQuestions) ClearDeadlines() int {
+	q.muDeadlines.Lock()
+	defer q.muDeadlines.Unlock()
+
+	count := len(q.Deadlines)
+	q.Deadlines = make(map[string]int64)
+	return count
+}

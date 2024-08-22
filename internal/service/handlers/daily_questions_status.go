@@ -32,14 +32,14 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if balance == nil {
-		Log(r).Errorf("error getting balance by nullifier")
+		Log(r).Errorf("Error getting balance by nullifier %v", nullifier)
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
 	timeToNext, err = TimeToNextQuestion(r)
 	if err != nil {
-		Log(r).WithError(err).Error("error getting time to next question")
+		Log(r).WithError(err).Error("Error getting time to next question")
 		timeToNext = -1
 	}
 
@@ -47,7 +47,7 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 		FilterTodayQuestions(cfg.Timezone).
 		Get()
 	if err != nil {
-		Log(r).WithError(err).Error("error getting daily question")
+		Log(r).WithError(err).Error("Error getting daily question")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}

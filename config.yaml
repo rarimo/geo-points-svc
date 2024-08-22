@@ -108,6 +108,9 @@ event_types:
       auto_claim: true
       no_auto_open: true
 
+daily_questions:
+  timezone: +4
+
 levels:
   downgradeable: false
   levels:
