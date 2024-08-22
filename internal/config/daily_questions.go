@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -62,38 +61,32 @@ func (q *DailyQuestions) GetDeadline(key string) *int64 {
 func (q *DailyQuestions) SetDeadlineTimer(eve *data.Event, nullifier string, deadline int64) {
 	now := time.Now().UTC()
 
-	go func() {
-		q.muDeadlines.Lock()
-		q.Deadlines[nullifier] = deadline
-		q.muDeadlines.Unlock()
+	q.muDeadlines.Lock()
+	q.Deadlines[nullifier] = deadline
+	q.muDeadlines.Unlock()
 
-		time.Sleep(time.Duration(deadline) * time.Second)
-
+	time.AfterFunc(time.Duration(deadline)*time.Second, func() {
 		q.muDeadlines.Lock()
 		defer q.muDeadlines.Unlock()
 
 		getTime := q.GetDeadline(nullifier)
-		if now.Unix() < *getTime+deadline {
+		if getTime != nil && now.Unix()+deadline <= time.Now().UTC().Unix() {
 			if eve != nil {
 				delete(q.Deadlines, nullifier)
 			}
 		}
-	}()
+	})
 }
 
 func (q *DailyQuestions) ResponderExists(responder string) bool {
 	q.muResponses.RLock()
 	defer q.muResponses.RUnlock()
 
-	log.Printf("Checking if responder exists: %s", responder)
 	for _, r := range q.Responders {
-		log.Printf("Comparing with responder: %s", r)
 		if r == responder {
-			log.Printf("Responder found: %s", responder)
 			return true
 		}
 	}
-	log.Printf("Responder not found: %s", responder)
 	return false
 }
 
