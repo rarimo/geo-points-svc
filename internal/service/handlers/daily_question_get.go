@@ -76,7 +76,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nowTime := time.Now().UTC()
-	cfg.SetDeadlineTimer(Log(r), DailyQuestionsQ(r), questionEvent, balance.Nullifier, nowTime.Unix()+question.TimeForAnswer)
+	cfg.SetDeadlineTimer(Log(r), DailyQuestionsQ(r), balance.Nullifier, nowTime.Unix()+question.TimeForAnswer)
 
 	options, err := ConvertJsonbToDailyQuestionOptions(question.AnswerOptions)
 	if err != nil {

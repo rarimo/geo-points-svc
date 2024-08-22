@@ -67,7 +67,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	deadline := cfg.GetDeadline(nullifier)
 	if deadline == nil {
-		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", nullifier)
+		Log(r).Errorf("The user's nullifier was not found in inactive requests, it does not exist, or the user has already answered: %s", nullifier)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
@@ -102,7 +102,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			Log(r).Infof("Wrong answer for daily question: %v", req.Answer)
 			err = DailyQuestionsQ(r).FilterTodayQuestions(cfg.Timezone).IncrementIncorrectAnswer()
 			if err != nil {
-				Log(r).WithError(err).Errorf("Error incrementing question answers incorrect answered")
+				Log(r).WithError(err).Errorf("Error incrementing question answers incorect answered")
 			}
 			return nil
 		}

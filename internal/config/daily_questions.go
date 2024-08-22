@@ -59,7 +59,7 @@ func (q *DailyQuestions) GetDeadline(key string) *int64 {
 	return &value
 }
 
-func (q *DailyQuestions) SetDeadlineTimer(log *logan.Entry, question data.DailyQuestionsQ, eve *data.Event, nullifier string, deadline int64) {
+func (q *DailyQuestions) SetDeadlineTimer(log *logan.Entry, question data.DailyQuestionsQ, nullifier string, deadline int64) {
 	now := time.Now().UTC()
 
 	q.muDeadlines.Lock()
@@ -67,14 +67,7 @@ func (q *DailyQuestions) SetDeadlineTimer(log *logan.Entry, question data.DailyQ
 	q.muDeadlines.Unlock()
 
 	time.AfterFunc(time.Duration(deadline-now.Unix())*time.Second, func() {
-		q.muDeadlines.Lock()
-		defer q.muDeadlines.Unlock()
-
-		if deadline <= time.Now().UTC().Unix() {
-			if eve != nil {
-				delete(q.Deadlines, nullifier)
-			}
-		}
+		delete(q.Deadlines, nullifier)
 	})
 
 	err := question.IncrementAllParticipants()

@@ -15,7 +15,6 @@ type DailyQuestion struct {
 	CorrectAnswer       int64     `db:"correct_answer"`
 	NumCorrectAnswers   int64     `db:"num_correct_answers"`
 	NumIncorrectAnswers int64     `db:"num_incorrect_answers"`
-	NumNoAnswer         int64     `db:"num_no_answer"`
 	NumAllParticipants  int64     `db:"num_all_participants"`
 }
 
