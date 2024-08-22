@@ -65,12 +65,12 @@ func (q *DailyQuestions) SetDeadlineTimer(eve *data.Event, nullifier string, dea
 	q.Deadlines[nullifier] = deadline
 	q.muDeadlines.Unlock()
 
-	time.AfterFunc(time.Duration(deadline)*time.Second, func() {
+	time.AfterFunc(time.Duration(deadline-now.Unix())*time.Second, func() {
 		q.muDeadlines.Lock()
 		defer q.muDeadlines.Unlock()
 
 		getTime := q.GetDeadline(nullifier)
-		if getTime != nil && now.Unix()+deadline <= time.Now().UTC().Unix() {
+		if getTime != nil && deadline <= time.Now().UTC().Unix() {
 			if eve != nil {
 				delete(q.Deadlines, nullifier)
 			}
@@ -92,13 +92,13 @@ func (q *DailyQuestions) ResponderExists(responder string) bool {
 
 func (q *DailyQuestions) SetResponsesTimer(responder string, interval time.Duration) {
 	q.muResponses.Lock()
-	defer q.muResponses.Unlock()
 
 	for _, r := range q.Responders {
 		if r == responder {
 		}
 	}
 	q.Responders = append(q.Responders, responder)
+	q.muResponses.Unlock()
 
 	time.AfterFunc(interval, func() {
 		q.muResponses.Lock()

@@ -100,7 +100,17 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 		if question.CorrectAnswer != req.Answer {
 			Log(r).Infof("Wrong answer for daily question: %v", req.Answer)
+			err = DailyQuestionsQ(r).FilterTodayQuestions(cfg.Timezone).IncrementIncorrectAnswer()
+			if err != nil {
+				Log(r).WithError(err).Errorf("Error incrementing question answers incorect answered")
+			}
 			return nil
+		}
+
+		question.NumCorrectAnswers++
+		err = DailyQuestionsQ(r).FilterTodayQuestions(cfg.Timezone).IncrementCorrectAnswer()
+		if err != nil {
+			Log(r).WithError(err).Errorf("Error incrementing question answers corect answered")
 		}
 
 		err = EventsQ(r).Insert(data.Event{

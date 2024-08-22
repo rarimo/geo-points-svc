@@ -50,11 +50,12 @@ func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 	<-noOneIsForgottenSig
 	run(func() { leveljustice.Run(cfg, levelJustice) })
 
+	//service for cleaning daily question deadlines after day
+	run(func() { cleanquestiondeadlines.Run(cfg, cleanDQuestionDeadlines) })
+
 	// service depends on all the workers for good UX
 	<-expiryWatchSig
 	<-levelJustice
 	run(func() { service.Run(ctx, cfg) })
 
-	//service for cleaning daily question deadlines after day
-	run(func() { cleanquestiondeadlines.Run(cfg, cleanDQuestionDeadlines) })
 }

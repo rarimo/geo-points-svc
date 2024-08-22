@@ -35,12 +35,15 @@ func (q *dailyQuestionsQ) New() data.DailyQuestionsQ {
 
 func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 	stmt := squirrel.Insert(dailyQuestionsTable).SetMap(map[string]interface{}{
-		"title":           quest.Title,
-		"time_for_answer": quest.TimeForAnswer,
-		"reward":          quest.Reward,
-		"answer_options":  quest.AnswerOptions,
-		"starts_at":       quest.StartsAt,
-		"correct_answer":  quest.CorrectAnswer,
+		"title":                 quest.Title,
+		"time_for_answer":       quest.TimeForAnswer,
+		"reward":                quest.Reward,
+		"answer_options":        quest.AnswerOptions,
+		"starts_at":             quest.StartsAt,
+		"correct_answer":        quest.CorrectAnswer,
+		"num_correct_answers":   quest.NumCorrectAnswers,
+		"num_incorrect_answers": quest.NumIncorrectAnswers,
+		"num_no_answer":         quest.NumNoAnswer,
 	})
 
 	if err := q.db.Exec(stmt); err != nil {
@@ -110,6 +113,30 @@ func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ 
 
 func (q *dailyQuestionsQ) FilterByID(ID int64) data.DailyQuestionsQ {
 	return q.applyCondition(squirrel.Eq{"id": ID})
+}
+
+func (q *dailyQuestionsQ) IncrementCorrectAnswer() error {
+	stmt := q.updater.Set("num_correct_answers", squirrel.Expr("num_correct_answers + 1"))
+	if err := q.db.Exec(stmt); err != nil {
+		return fmt.Errorf("increment correct answer: %w", err)
+	}
+	return nil
+}
+
+func (q *dailyQuestionsQ) IncrementIncorrectAnswer() error {
+	stmt := q.updater.Set("num_incorrect_answers", squirrel.Expr("num_incorrect_answers + 1"))
+	if err := q.db.Exec(stmt); err != nil {
+		return fmt.Errorf("increment incorrect answer: %w", err)
+	}
+	return nil
+}
+
+func (q *dailyQuestionsQ) IncrementNoAnswer() error {
+	stmt := q.updater.Set("num_no_answer", squirrel.Expr("num_no_answer + 1"))
+	if err := q.db.Exec(stmt); err != nil {
+		return fmt.Errorf("increment no answer: %w", err)
+	}
+	return nil
 }
 
 func (q *dailyQuestionsQ) applyCondition(cond squirrel.Sqlizer) data.DailyQuestionsQ {

@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS daily_questions (
     answer_options JSONB NOT NULL,
     starts_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    correct_answer INTEGER NOT NULL
+    correct_answer INTEGER NOT NULL,
+    num_correct_answers INTEGER DEFAULT 0,
+    num_incorrect_answers INTEGER DEFAULT 0,
+    num_no_answer INTEGER DEFAULT 0
 );
 
 -- +migrate Down
