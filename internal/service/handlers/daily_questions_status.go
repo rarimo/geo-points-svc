@@ -58,7 +58,6 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ape.Render(w, NewDailyQuestionsStatus(timeToNext, question))
-	return
 }
 
 func TimeToNextQuestion(r *http.Request) (int64, error) {

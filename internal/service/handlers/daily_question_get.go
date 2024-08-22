@@ -85,7 +85,6 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ape.Render(w, NewDailyQuestion(question, nowTime, options))
-	return
 }
 
 func ConvertJsonbToDailyQuestionOptions(answerOptions []byte) ([]resources.DailyQuestionOptions, error) {

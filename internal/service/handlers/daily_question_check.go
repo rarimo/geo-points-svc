@@ -102,7 +102,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			Log(r).Infof("Wrong answer for daily question: %v", req.Answer)
 			err = DailyQuestionsQ(r).FilterTodayQuestions(cfg.Timezone).IncrementIncorrectAnswer()
 			if err != nil {
-				Log(r).WithError(err).Errorf("Error incrementing question answers incorect answered")
+				Log(r).WithError(err).Errorf("Error incrementing question answers incorrect answered")
 			}
 			return nil
 		}
@@ -158,7 +158,6 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	cfg.SetResponsesTimer(balance.Nullifier, time.Duration(*deadline-time.Now().UTC().Unix())*time.Second)
 	ape.Render(w, NewDailyAnswer(question.ID, nullifier))
-	return
 }
 
 func NewDailyAnswer(answerIndex int64, nullifier string) resources.DailyQuestionAnswers {
