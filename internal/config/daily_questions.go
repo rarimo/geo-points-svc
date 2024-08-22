@@ -100,6 +100,8 @@ func (q *DailyQuestions) SetResponsesTimer(responder string, interval time.Durat
 
 	for _, r := range q.Responders {
 		if r == responder {
+			q.muResponses.Unlock()
+			return
 		}
 	}
 	q.Responders = append(q.Responders, responder)
