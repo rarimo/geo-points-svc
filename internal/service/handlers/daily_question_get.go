@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
-	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -20,10 +19,10 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 	cfg := DailyQuestions(r)
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
-		ape.RenderErr(w, problems.Unauthorized())
-		return
-	}
+	//if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
 
 	balance, err := BalancesQ(r).FilterByNullifier(nullifier).Get()
 	if err != nil {

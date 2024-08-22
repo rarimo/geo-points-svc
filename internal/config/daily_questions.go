@@ -14,7 +14,7 @@ import (
 type DailyQuestions struct {
 	Timezone    int
 	Deadlines   map[string]int64
-	Responders  []string
+	Responders  map[string]struct{}
 	muDeadlines sync.RWMutex
 	muResponses sync.RWMutex
 }
@@ -37,7 +37,7 @@ func (c *config) DailyQuestions() *DailyQuestions {
 		return &DailyQuestions{
 			Timezone:    res,
 			Deadlines:   make(map[string]int64),
-			Responders:  make([]string, 0),
+			Responders:  make(map[string]struct{}),
 			muDeadlines: sync.RWMutex{},
 			muResponses: sync.RWMutex{},
 		}
@@ -87,36 +87,31 @@ func (q *DailyQuestions) ResponderExists(responder string) bool {
 	q.muResponses.RLock()
 	defer q.muResponses.RUnlock()
 
-	for _, r := range q.Responders {
-		if r == responder {
-			return true
-		}
-	}
-	return false
+	_, exists := q.Responders[responder]
+	return exists
 }
 
 func (q *DailyQuestions) SetResponsesTimer(responder string, interval time.Duration) {
 	q.muResponses.Lock()
 
-	for _, r := range q.Responders {
-		if r == responder {
-			q.muResponses.Unlock()
-			return
-		}
+	if _, exists := q.Responders[responder]; exists {
+		q.muResponses.Unlock()
+		return
 	}
-	q.Responders = append(q.Responders, responder)
+
+	q.Responders[responder] = struct{}{}
 	q.muResponses.Unlock()
 
 	time.AfterFunc(interval, func() {
 		q.muResponses.Lock()
 		defer q.muResponses.Unlock()
 
-		for i, r := range q.Responders {
-			if r == responder {
-				q.Responders = append(q.Responders[:i], q.Responders[i+1:]...)
-				break
-			}
-		}
+		time.AfterFunc(interval, func() {
+			q.muResponses.Lock()
+			defer q.muResponses.Unlock()
+
+			delete(q.Responders, responder)
+		})
 	})
 }
 
