@@ -106,12 +106,7 @@ func (q *DailyQuestions) SetResponsesTimer(responder string, interval time.Durat
 		q.muResponses.Lock()
 		defer q.muResponses.Unlock()
 
-		time.AfterFunc(interval, func() {
-			q.muResponses.Lock()
-			defer q.muResponses.Unlock()
-
-			delete(q.Responders, responder)
-		})
+		delete(q.Responders, responder)
 	})
 }
 
