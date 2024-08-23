@@ -41,7 +41,7 @@ func (c *config) DailyQuestions() *DailyQuestions {
 			panic(fmt.Errorf("timezone must be between -12 and 12"))
 		}
 
-		location := time.FixedZone(fmt.Sprint(cfg.Timezone), cfg.Timezone*int(time.Hour))
+		location := time.FixedZone(fmt.Sprint(cfg.Timezone), cfg.Timezone*3600)
 
 		return &DailyQuestions{
 			Location:  location,
@@ -80,7 +80,7 @@ func (q *DailyQuestions) SetDeadline(nullifier string, id int, duration time.Dur
 	return true
 }
 
-func (q *DailyQuestions) ClearDeadlines() int {
+func (q *DailyQuestions) ClearDeadlines() map[int]int {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
@@ -93,7 +93,14 @@ func (q *DailyQuestions) ClearDeadlines() int {
 	}
 	q.disabled = false
 
-	count := len(q.deadlines)
+	counts := make(map[int]int)
+	for _, k := range q.deadlines {
+		if _, ok := counts[k.ID]; !ok {
+			counts[k.ID] = 0
+		}
+		counts[k.ID]++
+	}
+
 	q.deadlines = make(map[string]Deadline)
-	return count
+	return counts
 }
