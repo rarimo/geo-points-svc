@@ -7,52 +7,58 @@ import (
 
 	"github.com/go-co-op/gocron/v2"
 	"github.com/rarimo/geo-points-svc/internal/config"
+	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/cron"
 )
 
 func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 	cron.Init(cfg.Log())
+	log := cfg.Log().WithField("who", "daily-questions-cleaner")
+
+	eventsQ := pg.NewEvents(cfg.DB().Clone())
+	questionsQ := pg.NewDailyQuestionsQ(cfg.DB().Clone())
 
 	offset := cfg.DailyQuestions().LocalTime(atDayStart(time.Now().UTC())).Hour()
 	_, err := cron.NewJob(
 		gocron.DailyJob(1, gocron.NewAtTimes(gocron.NewAtTime(uint(offset), 0, 0))),
 		gocron.NewTask(func() {
-			cfg.DailyQuestions()
+			counts := cfg.DailyQuestions().ClearDeadlines()
+			if len(counts) == 0 {
+				log.Infof("Questions absent")
+				return
+			}
+
+			err := eventsQ.New().Transaction(func() error {
+				for k := range counts {
+					count, err := eventsQ.New().FilterByQuestionID(k).Count()
+					if err != nil {
+						return fmt.Errorf("failed to get count events by question id: %w", err)
+					}
+
+					err = questionsQ.FilterByID(int64(k)).Update(map[string]any{
+						data.ColCorrectAnswers:  count,
+						data.ColAllParticipants: counts[k],
+					})
+					if err != nil {
+						return fmt.Errorf("failed to update daily question: %w", err)
+					}
+					log.WithField("question_id", k).Infof("Correct answers: %d; Total participants: %d", count, counts[k])
+				}
+				return nil
+			})
+			if err != nil {
+				log.WithError(err).Error("Failed to correct update question statistic")
+			}
 		}),
 		gocron.WithName("daily-questions-cleaner"),
 	)
 	if err != nil {
-		panic(fmt.Errorf(": failed to initialize daily job: %w", err))
+		panic(fmt.Errorf("failed to initialize daily job: %w", err))
 	}
+	sig <- struct{}{}
 
-	for {
-		now := time.Now().UTC().Add(time.Duration(offset) * time.Hour)
-		cfg.Log().Info("Daily Question cleaning start")
-		nextMidnight := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC).
-			Add(time.Duration(offset) * time.Hour)
-
-		durationUntilNextTick := nextMidnight.Sub(now)
-
-		timer := time.NewTimer(durationUntilNextTick)
-
-		select {
-		case <-timer.C:
-			res := cfg.DailyQuestions().ClearDeadlines()
-			cfg.Log().Infof("Cleared daily questions quantity: %v", res)
-
-			timer.Stop()
-
-		case <-sig:
-			cfg.Log().Info("Daily Question cleaning stop")
-			timer.Stop()
-			return
-
-		case <-ctx.Done():
-			cfg.Log().Info("Daily Question cleaning stop")
-			timer.Stop()
-			return
-		}
-	}
+	cron.Start(ctx)
 }
 
 func atDayStart(date time.Time) time.Time {

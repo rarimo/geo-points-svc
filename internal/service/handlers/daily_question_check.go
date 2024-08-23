@@ -124,11 +124,13 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newDailyAnswer(question))
 }
 
-func newDailyAnswer(question *data.DailyQuestion) resources.DailyQuestionAnswers {
-	return resources.DailyQuestionAnswers{
-		Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS),
-		Attributes: resources.DailyQuestionAnswersAttributes{
-			Answer: question.CorrectAnswer,
+func newDailyAnswer(question *data.DailyQuestion) resources.DailyQuestionAnswersResponse {
+	return resources.DailyQuestionAnswersResponse{
+		Data: resources.DailyQuestionAnswers{
+			Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS),
+			Attributes: resources.DailyQuestionAnswersAttributes{
+				Answer: question.CorrectAnswer,
+			},
 		},
 	}
 }

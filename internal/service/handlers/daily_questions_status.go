@@ -56,13 +56,15 @@ func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newDailyQuestionsStatus(question))
 }
 
-func newDailyQuestionsStatus(question *data.DailyQuestion) resources.DailyQuestionsStatus {
-	return resources.DailyQuestionsStatus{
-		Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS),
-		Attributes: resources.DailyQuestionsStatusAttributes{
-			NextQuestionDate: question.StartsAt.Unix(),
-			Reward:           int64(question.Reward),
-			TimeForAnswer:    question.TimeForAnswer,
+func newDailyQuestionsStatus(question *data.DailyQuestion) resources.DailyQuestionsStatusResponse {
+	return resources.DailyQuestionsStatusResponse{
+		Data: resources.DailyQuestionsStatus{
+			Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS_STATUS),
+			Attributes: resources.DailyQuestionsStatusAttributes{
+				NextQuestionDate: question.StartsAt.Unix(),
+				Reward:           int64(question.Reward),
+				TimeForAnswer:    question.TimeForAnswer,
+			},
 		},
 	}
 }

@@ -9,6 +9,12 @@ import (
 	"github.com/rarimo/geo-points-svc/resources"
 )
 
+const (
+	ColCorrectAnswers   = "num_correct_answers"
+	ColIncorrectAnswers = "num_incorrect_answers"
+	ColAllParticipants  = "num_all_participants"
+)
+
 type DailyQuestion struct {
 	ID                  int64     `db:"id"`
 	Title               string    `db:"title"`

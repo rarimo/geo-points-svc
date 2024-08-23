@@ -73,16 +73,18 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, newDailyQuestions(question, options))
 }
 
-func newDailyQuestions(question *data.DailyQuestion, options []resources.DailyQuestionOptions) resources.DailyQuestions {
+func newDailyQuestions(question *data.DailyQuestion, options []resources.DailyQuestionOptions) resources.DailyQuestionsResponse {
 
-	return resources.DailyQuestions{
-		Key: resources.Key{
-			ID:   strconv.Itoa(int(question.ID)),
-			Type: resources.DAILY_QUESTIONS,
-		},
-		Attributes: resources.DailyQuestionsAttributes{
-			Options: options,
-			Title:   question.Title,
+	return resources.DailyQuestionsResponse{
+		Data: resources.DailyQuestions{
+			Key: resources.Key{
+				ID:   strconv.Itoa(int(question.ID)),
+				Type: resources.DAILY_QUESTIONS,
+			},
+			Attributes: resources.DailyQuestionsAttributes{
+				Options: options,
+				Title:   question.Title,
+			},
 		},
 	}
 }
