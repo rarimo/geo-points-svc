@@ -20,7 +20,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 
 	_, err := cron.NewJob(
 		gocron.DailyJob(1, atDayStart),
-		gocron.NewTask(job, cfg, ctx, sig),
+		gocron.NewTask(job, ctx, cfg, sig),
 		gocron.WithName("Daily Questions leaner"),
 	)
 	if err != nil {
@@ -29,7 +29,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 
 }
 
-func job(cfg config.Config, ctx context.Context, sig chan struct{}) {
+func job(ctx context.Context, cfg config.Config, sig chan struct{}) {
 	select {
 	default:
 		res := cfg.DailyQuestions().ClearDeadlines()
