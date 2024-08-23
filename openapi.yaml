@@ -414,6 +414,12 @@ paths:
           $ref: '#/components/responses/invalidParameter'
         '401':
           $ref: '#/components/responses/invalidAuth'
+        '403':
+          description: 'Questions unavailable, try later'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
         '404':
           description: There is no question in current day.
           content:
@@ -498,8 +504,6 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/DailyQuestionsStatus'
-        '400':
-          $ref: '#/components/responses/invalidParameter'
         '401':
           $ref: '#/components/responses/invalidAuth'
         '404':
@@ -1276,7 +1280,6 @@ components:
               type: object
               required:
                 - title
-                - deadline
                 - options
               properties:
                 title:

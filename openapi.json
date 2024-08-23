@@ -615,6 +615,16 @@
           "401": {
             "$ref": "#/components/responses/invalidAuth"
           },
+          "403": {
+            "description": "Questions unavailable, try later",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            }
+          },
           "404": {
             "description": "There is no question in current day.",
             "content": {
@@ -741,9 +751,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "$ref": "#/components/responses/invalidParameter"
           },
           "401": {
             "$ref": "#/components/responses/invalidAuth"
@@ -1897,7 +1904,6 @@
                 "type": "object",
                 "required": [
                   "title",
-                  "deadline",
                   "options"
                 ],
                 "properties": {
