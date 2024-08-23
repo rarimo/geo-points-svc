@@ -1,12 +1,13 @@
 package cleanquestiondeadlines
 
 import (
+	"context"
 	"time"
 
 	"github.com/rarimo/geo-points-svc/internal/config"
 )
 
-func Run(cfg config.Config, sig chan struct{}) {
+func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 	offset := cfg.DailyQuestions().Timezone
 
 	for {
@@ -27,6 +28,11 @@ func Run(cfg config.Config, sig chan struct{}) {
 			timer.Stop()
 
 		case <-sig:
+			cfg.Log().Info("Daily Question cleaning stop")
+			timer.Stop()
+			return
+
+		case <-ctx.Done():
 			cfg.Log().Info("Daily Question cleaning stop")
 			timer.Stop()
 			return

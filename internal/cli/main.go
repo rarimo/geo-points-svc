@@ -66,20 +66,20 @@ func Run(args []string) bool {
 	gracefulStop := make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
 
+	wgch := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(wgch)
+	}()
+
 	select {
 	case <-ctx.Done():
 		cfg.Log().WithError(ctx.Err()).Info("Interrupt signal received")
-	case <-func() chan struct{} {
-		ch := make(chan struct{})
-		go func() {
-			wg.Wait()
-			close(ch)
-		}()
-		return ch
-	}():
-		cfg.Log().Warn("All services stopped")
+		stop()
+		<-wgch
+	case <-wgch:
+		cfg.Log().Warn("all services stopped")
 	}
 
-	stop()
 	return true
 }
