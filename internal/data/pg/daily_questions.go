@@ -35,15 +35,12 @@ func (q *dailyQuestionsQ) New() data.DailyQuestionsQ {
 
 func (q *dailyQuestionsQ) Insert(quest data.DailyQuestion) error {
 	stmt := squirrel.Insert(dailyQuestionsTable).SetMap(map[string]interface{}{
-		"title":                 quest.Title,
-		"time_for_answer":       quest.TimeForAnswer,
-		"reward":                quest.Reward,
-		"answer_options":        quest.AnswerOptions,
-		"starts_at":             quest.StartsAt,
-		"correct_answer":        quest.CorrectAnswer,
-		"num_correct_answers":   quest.NumCorrectAnswers,
-		"num_incorrect_answers": quest.NumIncorrectAnswers,
-		"num_all_participants":  quest.NumAllParticipants,
+		"title":           quest.Title,
+		"time_for_answer": quest.TimeForAnswer,
+		"reward":          quest.Reward,
+		"answer_options":  quest.AnswerOptions,
+		"starts_at":       quest.StartsAt,
+		"correct_answer":  quest.CorrectAnswer,
 	})
 
 	if err := q.db.Exec(stmt); err != nil {
@@ -94,8 +91,12 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	return &res, nil
 }
 
-func (q *dailyQuestionsQ) FilterByCreatedAt(date time.Time) data.DailyQuestionsQ {
-	return q.applyCondition(squirrel.Gt{"created_at": date})
+func (q *dailyQuestionsQ) FilterByCreatedAtAfter(date time.Time) data.DailyQuestionsQ {
+	return q.applyCondition(squirrel.GtOrEq{"created_at": date})
+}
+
+func (q *dailyQuestionsQ) FilterByStartsAtAfter(date time.Time) data.DailyQuestionsQ {
+	return q.applyCondition(squirrel.GtOrEq{"starts_at": date})
 }
 
 func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ {

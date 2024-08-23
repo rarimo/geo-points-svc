@@ -2,13 +2,28 @@ package cleanquestiondeadlines
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/go-co-op/gocron/v2"
 	"github.com/rarimo/geo-points-svc/internal/config"
+	"github.com/rarimo/geo-points-svc/internal/service/workers/cron"
 )
 
 func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
-	offset := cfg.DailyQuestions().Timezone
+	cron.Init(cfg.Log())
+
+	offset := cfg.DailyQuestions().LocalTime(atDayStart(time.Now().UTC())).Hour()
+	_, err := cron.NewJob(
+		gocron.DailyJob(1, gocron.NewAtTimes(gocron.NewAtTime(uint(offset), 0, 0))),
+		gocron.NewTask(func() {
+			cfg.DailyQuestions()
+		}),
+		gocron.WithName("daily-questions-cleaner"),
+	)
+	if err != nil {
+		panic(fmt.Errorf(": failed to initialize daily job: %w", err))
+	}
 
 	for {
 		now := time.Now().UTC().Add(time.Duration(offset) * time.Hour)
@@ -23,7 +38,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 		select {
 		case <-timer.C:
 			res := cfg.DailyQuestions().ClearDeadlines()
-			cfg.Log().Infof("Сleared daily questions quantity: %v", res)
+			cfg.Log().Infof("Cleared daily questions quantity: %v", res)
 
 			timer.Stop()
 
@@ -38,4 +53,9 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 			return
 		}
 	}
+}
+
+func atDayStart(date time.Time) time.Time {
+	year, month, day := date.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, date.Location())
 }

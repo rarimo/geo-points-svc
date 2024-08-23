@@ -7,7 +7,6 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
 	"github.com/rarimo/geo-points-svc/internal/service"
-	"github.com/rarimo/geo-points-svc/internal/service/workers/cleanquestiondeadlines"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/expirywatch"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/leveljustice"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/nooneisforgotten"
@@ -18,12 +17,12 @@ import (
 func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 	// signals indicate the finished initialization of each worker
 	var (
-		reopenerSig             = make(chan struct{})
-		expiryWatchSig          = make(chan struct{})
-		evTypesSig              = make(chan struct{})
-		noOneIsForgottenSig     = make(chan struct{})
-		levelJustice            = make(chan struct{})
-		cleanDQuestionDeadlines = make(chan struct{})
+		reopenerSig         = make(chan struct{})
+		expiryWatchSig      = make(chan struct{})
+		evTypesSig          = make(chan struct{})
+		noOneIsForgottenSig = make(chan struct{})
+		levelJustice        = make(chan struct{})
+		// cleanDQuestionDeadlines = make(chan struct{})
 	)
 
 	run := func(f func()) {
@@ -51,7 +50,7 @@ func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 	run(func() { leveljustice.Run(cfg, levelJustice) })
 
 	//service for cleaning daily question deadlines after day
-	run(func() { cleanquestiondeadlines.Run(ctx, cfg, cleanDQuestionDeadlines) })
+	// run(func() { cleanquestiondeadlines.Run(ctx, cfg, cleanDQuestionDeadlines) })
 
 	// service depends on all the workers for good UX
 	<-expiryWatchSig

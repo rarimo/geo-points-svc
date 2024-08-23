@@ -25,6 +25,12 @@ get:
       $ref: '#/components/responses/invalidParameter'
     401:
       $ref: '#/components/responses/invalidAuth'
+    403:
+      description: Questions unavailable, try later
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
     404:
       description: There is no question in current day.
       content:

@@ -5,18 +5,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rarimo/geo-points-svc/internal/data"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
-	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type DailyQuestions struct {
-	Timezone    int
-	Deadlines   map[string]int64
-	Responders  map[string]struct{}
-	muDeadlines sync.RWMutex
-	muResponses sync.RWMutex
+	Location *time.Location
+
+	deadlines    map[string]Deadline
+	lastDeadline *time.Time
+	disabled     bool
+
+	mu sync.Mutex
+}
+
+type Deadline struct {
+	ID int
+	At time.Time
 }
 
 func (c *config) DailyQuestions() *DailyQuestions {
@@ -32,82 +37,63 @@ func (c *config) DailyQuestions() *DailyQuestions {
 			panic(fmt.Errorf("failed to figure out daily questions config: %w", err))
 		}
 
-		res := cfg.Timezone
+		if cfg.Timezone < -12 || cfg.Timezone > 12 {
+			panic(fmt.Errorf("timezone must be between -12 and 12"))
+		}
+
+		location := time.FixedZone(fmt.Sprint(cfg.Timezone), cfg.Timezone*int(time.Hour))
 
 		return &DailyQuestions{
-			Timezone:    res,
-			Deadlines:   make(map[string]int64),
-			Responders:  make(map[string]struct{}),
-			muDeadlines: sync.RWMutex{},
-			muResponses: sync.RWMutex{},
+			Location:  location,
+			deadlines: make(map[string]Deadline),
+			mu:        sync.Mutex{},
 		}
 
 	}).(*DailyQuestions)
 }
 
-func (q *DailyQuestions) GetDeadline(key string) *int64 {
-	q.muDeadlines.RLock()
-	defer q.muDeadlines.RUnlock()
+func (q *DailyQuestions) LocalTime(date time.Time) time.Time {
+	return date.In(q.Location)
+}
 
-	if q.Deadlines == nil {
+func (q *DailyQuestions) GetDeadline(nullifier string) *Deadline {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	deadline, ok := q.deadlines[nullifier]
+	if !ok {
 		return nil
 	}
-	value, exists := q.Deadlines[key]
-	if !exists {
-		return nil
-	}
-	return &value
+	return &deadline
 }
 
-func (q *DailyQuestions) SetDeadlineTimer(log *logan.Entry, question data.DailyQuestionsQ, nullifier string, deadline int64) {
-	now := time.Now().UTC()
-
-	q.muDeadlines.Lock()
-	q.Deadlines[nullifier] = deadline
-	q.muDeadlines.Unlock()
-
-	time.AfterFunc(time.Duration(deadline-now.Unix())*time.Second, func() {
-		delete(q.Deadlines, nullifier)
-	})
-
-	err := question.IncrementAllParticipants()
-	if err != nil {
-		log.Infof("Failed to increment all participants: %v", err)
-	}
-}
-
-func (q *DailyQuestions) ResponderExists(responder string) bool {
-	q.muResponses.RLock()
-	defer q.muResponses.RUnlock()
-
-	_, exists := q.Responders[responder]
-	return exists
-}
-
-func (q *DailyQuestions) SetResponsesTimer(responder string, interval time.Duration) {
-	q.muResponses.Lock()
-
-	if _, exists := q.Responders[responder]; exists {
-		q.muResponses.Unlock()
-		return
+func (q *DailyQuestions) SetDeadline(nullifier string, id int, duration time.Duration) bool {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	if q.disabled {
+		return false
 	}
 
-	q.Responders[responder] = struct{}{}
-	q.muResponses.Unlock()
-
-	time.AfterFunc(interval, func() {
-		q.muResponses.Lock()
-		defer q.muResponses.Unlock()
-
-		delete(q.Responders, responder)
-	})
+	date := time.Now().UTC().Add(duration)
+	q.deadlines[nullifier] = Deadline{ID: id, At: date}
+	q.lastDeadline = &date
+	return true
 }
 
 func (q *DailyQuestions) ClearDeadlines() int {
-	q.muDeadlines.Lock()
-	defer q.muDeadlines.Unlock()
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
-	count := len(q.Deadlines)
-	q.Deadlines = make(map[string]int64)
+	q.disabled = true
+	if q.lastDeadline != nil && q.lastDeadline.After(time.Now().UTC()) {
+		q.mu.Unlock()
+		timer := time.NewTimer(q.lastDeadline.Sub(time.Now().UTC()))
+		<-timer.C
+		q.mu.Lock()
+	}
+	q.disabled = false
+
+	count := len(q.deadlines)
+	q.deadlines = make(map[string]Deadline)
 	return count
 }
