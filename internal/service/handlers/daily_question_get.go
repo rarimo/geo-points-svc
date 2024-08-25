@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,7 +9,6 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
-	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -18,97 +16,75 @@ import (
 
 func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
-	cfg := DailyQuestions(r)
+	dq := DailyQuestions(r)
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
+	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}
 
+	log := Log(r).WithField("nullifier", nullifier)
+
 	balance, err := BalancesQ(r).FilterByNullifier(nullifier).Get()
 	if err != nil {
-		Log(r).WithError(err).Errorf("Failed to get balance by nullifier")
+		log.WithError(err).Error("Failed to get balance by nullifier")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if balance == nil {
-		Log(r).Errorf("error getting balance by nullifier")
+		log.Debug("Balance absent")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	questionEvent, err := EventsQ(r).
-		FilterTodayEvents(cfg.Timezone).
-		FilterByType(models.TypeDailyQuestion).
-		FilterByNullifier(nullifier).
-		Get()
-
-	if err != nil {
-		Log(r).WithError(err).Error("Failed to get active questions")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-	if questionEvent != nil {
-		Log(r).Infof("User already answered %s", nullifier)
-		ape.RenderErr(w, problems.Forbidden())
-		return
-	}
-
-	question, err := DailyQuestionsQ(r).
-		FilterTodayQuestions(cfg.Timezone).
-		Get()
-	if question == nil {
-		Log(r).Error("Error getting daily question")
-		ape.RenderErr(w, problems.NotFound())
-		return
-	}
-	if err != nil {
-		Log(r).WithError(err).Error("Failed to get active questions")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	deadline := cfg.GetDeadline(nullifier)
+	deadline := dq.GetDeadline(nullifier)
 	if deadline != nil {
-		Log(r).Errorf("The user's nullifier was not found in active requests, it does not exist, or the user has already answered: %s", nullifier)
+		log.Debugf("Question already recieved with deadline %s", deadline.At)
+		ape.RenderErr(w, problems.Conflict())
+		return
+	}
+
+	localDayStart := atDayStart(dq.LocalTime(time.Now().UTC()))
+	question, err := DailyQuestionsQ(r).FilterByStartsAtAfter(localDayStart).Get()
+	if err != nil {
+		log.WithError(err).Error("Failed to get question")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if question == nil || !question.StartsAt.Before(localDayStart.Add(24*time.Hour)) {
+		log.Debugf("Next question: %+v", question)
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
+	if !dq.SetDeadline(nullifier, int(question.ID), time.Duration(question.TimeForAnswer)*time.Second) {
+		log.Debug("Worker clear deadlines before next question, now getting questions unavailable")
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
-	nowTime := time.Now().UTC()
-	cfg.SetDeadlineTimer(Log(r), DailyQuestionsQ(r), balance.Nullifier, nowTime.Unix()+question.TimeForAnswer)
-
-	options, err := ConvertJsonbToDailyQuestionOptions(question.AnswerOptions)
+	options, err := question.ExtractOptions()
 	if err != nil {
-		Log(r).WithError(err).Error("Failed to convert json options to daily question options")
+		log.WithError(err).Errorf("Failed to extract options from question: %s", string(question.AnswerOptions))
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	ape.Render(w, NewDailyQuestion(question, nowTime, options))
+
+	ape.Render(w, newDailyQuestions(question, options))
 }
 
-func ConvertJsonbToDailyQuestionOptions(answerOptions []byte) ([]resources.DailyQuestionOptions, error) {
-	var options []resources.DailyQuestionOptions
-	err := json.Unmarshal(answerOptions, &options)
-	if err != nil {
-		return nil, err
-	}
-	return options, nil
-}
+func newDailyQuestions(question *data.DailyQuestion, options []resources.DailyQuestionOptions) resources.DailyQuestionsResponse {
 
-func NewDailyQuestion(question *data.DailyQuestion, receiptTime time.Time, options []resources.DailyQuestionOptions) resources.DailyQuestions {
-	var q map[string]interface{}
-	_ = json.Unmarshal(question.AnswerOptions, &q)
-
-	return resources.DailyQuestions{
-		Key: resources.Key{
-			ID:   strconv.Itoa(int(question.ID)),
-			Type: resources.DAILY_QUESTIONS,
-		},
-		Attributes: resources.DailyQuestionsAttributes{
-			Deadline: question.TimeForAnswer + receiptTime.Unix(),
-			Options:  options,
-			Title:    question.Title,
+	return resources.DailyQuestionsResponse{
+		Data: resources.DailyQuestions{
+			Key: resources.Key{
+				ID:   strconv.Itoa(int(question.ID)),
+				Type: resources.DAILY_QUESTIONS,
+			},
+			Attributes: resources.DailyQuestionsAttributes{
+				Options: options,
+				Title:   question.Title,
+			},
 		},
 	}
 }

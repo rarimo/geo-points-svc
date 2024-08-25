@@ -46,6 +46,7 @@ func Run(ctx context.Context, cfg config.Config) {
 				})
 			})
 			r.Route("/daily_questions/{nullifier}", func(r chi.Router) {
+				r.Use(authMW)
 				r.Get("/status", handlers.GetDailyQuestionsStatus)
 				r.Get("/", handlers.GetDailyQuestion)
 				r.Post("/", handlers.CheckDailyQuestion)

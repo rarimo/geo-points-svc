@@ -12,7 +12,7 @@ import (
 )
 
 // how many services should call Start to do the actual start
-const countOfServices = 2
+const countOfServices = 3
 
 var sin = struct {
 	scheduler gocron.Scheduler

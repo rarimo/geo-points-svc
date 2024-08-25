@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -16,93 +14,62 @@ import (
 )
 
 func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
-	var timeToNext int64
-	cfg := DailyQuestions(r)
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
-	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
+	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}
 
+	log := Log(r).WithField("nullifier", nullifier)
+
 	balance, err := BalancesQ(r).FilterByNullifier(nullifier).Get()
 	if err != nil {
-		Log(r).WithError(err).Errorf("Failed to get balance by nullifier %v", nullifier)
+		log.WithError(err).Error("Failed to get balance by nullifier")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if balance == nil {
-		Log(r).Errorf("Error getting balance by nullifier %v", nullifier)
+		log.Debug("Balance absent")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	timeToNext, err = TimeToNextQuestion(r)
-	if err != nil {
-		Log(r).WithError(err).Error("Error getting time to next question")
-		timeToNext = -1
+	deadline := DailyQuestions(r).GetDeadline(nullifier)
+	query := DailyQuestionsQ(r).FilterByStartsAtAfter(atDayStart(DailyQuestions(r).LocalTime(time.Now().UTC())))
+	if deadline != nil {
+		query = DailyQuestionsQ(r).FilterByStartsAtAfter(atDayStart(DailyQuestions(r).LocalTime(time.Now().UTC())).Add(time.Hour * 24))
 	}
 
-	question, err := DailyQuestionsQ(r).
-		FilterTodayQuestions(cfg.Timezone).
-		Get()
+	question, err := query.Get()
 	if err != nil {
-		Log(r).WithError(err).Error("Error getting daily question")
+		log.WithError(err).Error("Failed to get question")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if question == nil {
-		Log(r).Infof("Not found question today %v", question)
+		log.Debug("Next question absent")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionsStatus(timeToNext, question))
+	ape.Render(w, newDailyQuestionsStatus(question))
 }
 
-func TimeToNextQuestion(r *http.Request) (int64, error) {
-	questions, err := DailyQuestionsQ(r).
-		FilterTodayQuestions(DailyQuestions(r).Timezone).
-		Select()
-
-	if err != nil {
-		return -1, err
+func newDailyQuestionsStatus(question *data.DailyQuestion) resources.DailyQuestionsStatusResponse {
+	return resources.DailyQuestionsStatusResponse{
+		Data: resources.DailyQuestionsStatus{
+			Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS_STATUS),
+			Attributes: resources.DailyQuestionsStatusAttributes{
+				NextQuestionDate: question.StartsAt.Unix(),
+				Reward:           int64(question.Reward),
+				TimeForAnswer:    question.TimeForAnswer,
+			},
+		},
 	}
-
-	if len(questions) == 0 {
-		return -1, nil
-	}
-
-	times := make([]time.Time, len(questions))
-	for i, q := range questions {
-		times[i] = q.StartsAt
-	}
-
-	sort.Slice(times, func(i, j int) bool {
-		return times[i].Before(times[j])
-	})
-
-	now := time.Now().UTC()
-
-	for _, t := range times {
-		if t.After(now) {
-			return t.Unix(), nil
-		}
-	}
-
-	return -1, nil
 }
 
-func NewDailyQuestionsStatus(timeToNextStr int64, question *data.DailyQuestion) resources.DailyQuestionsStatus {
-	return resources.DailyQuestionsStatus{
-		Key: resources.Key{
-			ID:   strconv.Itoa(int(question.ID)),
-			Type: resources.DAILY_QUESTIONS,
-		},
-		Attributes: resources.DailyQuestionsStatusAttributes{
-			NextQuestionDate: timeToNextStr,
-			Reward:           int64(question.Reward),
-			TimeForAnswer:    question.TimeForAnswer,
-		},
-	}
+func atDayStart(date time.Time) time.Time {
+	year, month, day := date.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, date.Location())
 }

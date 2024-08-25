@@ -52,6 +52,7 @@ func runServices(ctx context.Context, cfg config.Config, wg *sync.WaitGroup) {
 
 	//service for cleaning daily question deadlines after day
 	run(func() { cleanquestiondeadlines.Run(ctx, cfg, cleanDQuestionDeadlines) })
+	<-cleanDQuestionDeadlines
 
 	// service depends on all the workers for good UX
 	<-expiryWatchSig

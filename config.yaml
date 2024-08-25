@@ -101,7 +101,7 @@ event_types:
       no_auto_open: true
     - name: daily_question
       title: Get daily question
-      reward: 0
+      reward: 5
       frequency: unlimited
       description: This event is used when a user get daily question
       short_description: event for get daily question
@@ -109,7 +109,7 @@ event_types:
       no_auto_open: true
 
 daily_questions:
-  timezone: +4
+  timezone: 4
 
 levels:
   downgradeable: false

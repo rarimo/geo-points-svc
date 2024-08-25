@@ -8,7 +8,6 @@ allOf:
         type: object
         required:
           - title
-          - deadline
           - options
         properties:
           title:
