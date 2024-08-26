@@ -1,0 +1,15 @@
+allOf:
+  - $ref: "#/components/schemas/DailyQuestionDelKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - title
+        properties:
+          title:
+            type: string
+            description: Question title
+            example: Georgian capital

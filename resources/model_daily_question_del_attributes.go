@@ -4,9 +4,7 @@
 
 package resources
 
-type DailyQuestionsAttributes struct {
-	// Answer options. Minimum 2, maximum 6
-	Options []DailyQuestionOptions `json:"options"`
+type DailyQuestionDelAttributes struct {
 	// Question title
 	Title string `json:"title"`
 }

@@ -10,6 +10,12 @@ import (
 )
 
 const (
+	ColDailyQuestionTitle  = "title"
+	ColTimeForAnswer       = "time_for_answer"
+	ColDailyQuestionReward = "reward"
+	ColAnswerOption        = "answer_options"
+	ColCorrectAnswerId     = "correct_answer"
+
 	ColCorrectAnswers   = "num_correct_answers"
 	ColIncorrectAnswers = "num_incorrect_answers"
 	ColAllParticipants  = "num_all_participants"
@@ -33,7 +39,7 @@ type DailyQuestionsQ interface {
 	New() DailyQuestionsQ
 	Insert(DailyQuestion) error
 	Update(map[string]any) error
-
+	Delete() (int64, error)
 	Count() (int64, error)
 	Select() ([]DailyQuestion, error)
 	Get() (*DailyQuestion, error)
@@ -42,6 +48,7 @@ type DailyQuestionsQ interface {
 	FilterByCreatedAtAfter(date time.Time) DailyQuestionsQ
 	FilterByStartsAtAfter(date time.Time) DailyQuestionsQ
 	FilterByID(ID int64) DailyQuestionsQ
+	FilterDayQuestions(location *time.Location, day time.Time) DailyQuestionsQ
 
 	IncrementCorrectAnswer() error
 	IncrementIncorrectAnswer() error
