@@ -49,7 +49,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deadline := dq.GetDeadline(nullifier)
-	if deadline == nil || deadline.At.After(time.Now()) {
+	if deadline == nil || time.Now().After(deadline.At) {
 		log.Debugf("Question already recieved with deadline %s", deadline.At)
 		ape.RenderErr(w, problems.Conflict())
 		return
