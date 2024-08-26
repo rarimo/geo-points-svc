@@ -33,7 +33,7 @@ func NewEvents(db *pgdb.DB) data.EventsQ {
 		deleter:    squirrel.Delete(eventsTable),
 		counter:    squirrel.Select("COUNT(*) AS count").From(eventsTable),
 		reopenable: squirrel.Select("nullifier", "type").Distinct().From(eventsTable + " e1"),
-		last:       squirrel.Select("*").From(eventTypesTable).OrderBy("created_at DESC"),
+		last:       squirrel.Select("*").From(eventsTable).OrderBy("created_at DESC"),
 	}
 }
 
