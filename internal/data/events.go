@@ -47,6 +47,8 @@ type EventsQ interface {
 	Page(*pgdb.OffsetPageParams) EventsQ
 	Select() ([]Event, error)
 	Get() (*Event, error)
+	// GetLast order events by created_at field in descending order
+	GetLast() (*Event, error)
 	// Count returns the total number of events that match filters. Page is not
 	// applied to this method.
 	Count() (int, error)

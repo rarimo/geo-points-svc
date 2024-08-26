@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -45,6 +46,21 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	localDayStart := atDayStart(dq.LocalTime(time.Now().UTC()))
+
+	ev, err := EventsQ(r).FilterByNullifier(nullifier).FilterByType(models.TypeDailyQuestion).GetLast()
+	if err != nil {
+		log.WithError(err).Error("Failed to get last daily_question event")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if ev != nil &&
+		ev.CreatedAt > int32(localDayStart.Unix()) &&
+		ev.CreatedAt < int32(localDayStart.Add(24*time.Hour).Unix()) {
+		log.Debug("Points already accruing for daily question")
+		ape.RenderErr(w, problems.Conflict())
+		return
+	}
+
 	question, err := DailyQuestionsQ(r).FilterByStartsAtAfter(localDayStart).Get()
 	if err != nil {
 		log.WithError(err).Error("Failed to get question")
