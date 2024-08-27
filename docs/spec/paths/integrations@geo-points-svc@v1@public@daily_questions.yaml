@@ -37,3 +37,29 @@ post:
             $ref: '#/components/schemas/Errors'
     500:
       $ref: '#/components/responses/internalError'
+
+get:
+  tags:
+    - Daily Questions
+  summary: Filter Daily Question by start
+  description: |
+    Filtering of daily questions by their activation time
+  operationId: filterStartAtDailyQuestion
+  security:
+    - BearerAuth: []
+  responses:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailyQuestionDetails'
+    500:
+      $ref: '#/components/responses/internalError'

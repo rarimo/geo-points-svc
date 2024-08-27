@@ -24,8 +24,8 @@ allOf:
             example: Georgian capital
           reward:
             type: integer
-            format: int
-            description: reward for a correct answer
+            format: int64
+            description: Reward for a correct answer
           options:
             type: array
             description: Answer options. Minimum 2, maximum 6
@@ -48,31 +48,30 @@ allOf:
           correct_answer:
             type: integer
             format: int64
-            description: right answer index
+            description: Correct answer ID
           time_for_answer:
             type: integer
             format: int64
-            description: time for answer
+            description: Time for answer
           starts_at:
-            type: integer
-            format: time.Time
-            description: start date when this question is available, hours and minutes are always 0
+            type: string
+            description: Start date when this question is available, hours and minutes are always 0
             example: "2024-08-26T00:00:00Z"
           created_at:
-            type: integer
-            format: time.Time
-            description: start date when this question was create
+            type: string
+            description: Start date when this question was create
+            example: "2024-08-26T00:00:00Z"
           num_correct_answers:
             type: integer
             format: int64
-            description: number of correct answers
+            description: Number of correct answers
           num_incorrect_answers:
             type: integer
             format: int64
-            description: number of incorrect answers
+            description: Number of incorrect answers
           num_all_participants:
             type: integer
             format: int64
             description: |
-              users who received the question, those who answered and
+              Users who received the question, those who answered and
               those who did not answer in the time given to them
