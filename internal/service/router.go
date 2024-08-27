@@ -47,8 +47,8 @@ func Run(ctx context.Context, cfg config.Config) {
 			})
 
 			r.Route("/daily_questions", func(r chi.Router) {
+				r.Use(authMW)
 				r.Route("/admin", func(r chi.Router) {
-					r.Use(authMW)
 					r.Delete("/{question_id}", handlers.DeleteDailyQuestion)
 					r.Patch("/{question_id}", handlers.EditDailyQuestion)
 					r.Post("/", handlers.CreateDailyQuestion)
