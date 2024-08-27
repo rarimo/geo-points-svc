@@ -386,6 +386,71 @@ paths:
                 $ref: '#/components/schemas/Errors'
         '500':
           $ref: '#/components/responses/internalError'
+  /integrations/geo-points-svc/v1/public/daily_questions:
+    post:
+      tags:
+        - Daily Questions
+      summary: Create daily question
+      description: |
+        Create Daily Question user must be superuser
+      operationId: createDailyQuestion
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyQuestionDetails'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '403':
+          description: Correct answer option outside the range of answer options
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '409':
+          description: 'On this day, the daily question already exists'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
+    get:
+      tags:
+        - Daily Questions
+      summary: Filter Daily Question by start
+      description: |
+        Filtering of daily questions by their activation time
+      operationId: filterStartAtDailyQuestion
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DailyQuestionDetails'
+        '500':
+          $ref: '#/components/responses/internalError'
   '/integrations/geo-points-svc/v1/public/daily_questions/{nullifier}':
     get:
       tags:
@@ -508,6 +573,75 @@ paths:
           $ref: '#/components/responses/invalidAuth'
         '404':
           description: Next question not exist.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
+  '/integrations/geo-points-svc/v1/public/daily_questions/{question_id}':
+    delete:
+      tags:
+        - Daily Questions
+      summary: Delete daily question
+      description: |
+        Delete Daily Question user must be superuser
+      operationId: deleteDailyQuestion
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyQuestionDetails'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '404':
+          description: Question with ID not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      tags:
+        - Daily Questions
+      summary: Edit daily question
+      description: |
+        Edit Daily Question user must be superuser
+      operationId: editDailyQuestion
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailyQuestionDetails'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '403':
+          description: Correct answer option outside the range of answer options
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '409':
+          description: 'On this day, the daily question already exists'
           content:
             application/vnd.api+json:
               schema:
@@ -1256,6 +1390,181 @@ components:
                   type: integer
                   format: int64
                   description: Selected/correct answer option
+    DailyQuestionDel:
+      allOf:
+        - $ref: '#/components/schemas/DailyQuestionDelKey'
+        - type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  description: Question title
+                  example: Georgian capital
+    DailyQuestionDelKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: Question id
+        type:
+          type: string
+          enum:
+            - daily_question_del
+    DailyQuestionDetails:
+      allOf:
+        - $ref: '#/components/schemas/DailyQuestionDetailsKey'
+        - type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - title
+                - reward
+                - options
+                - correct_answer
+                - time_for_answer
+                - starts_at
+                - created_at
+                - num_correct_answers
+                - num_incorrect_answers
+                - num_all_participants
+              properties:
+                title:
+                  type: string
+                  description: Question title
+                  example: Georgian capital
+                reward:
+                  type: integer
+                  format: int64
+                  description: Reward for a correct answer
+                options:
+                  type: array
+                  description: 'Answer options. Minimum 2, maximum 6'
+                  items:
+                    $ref: '#/components/schemas/DailyQuestionOptions'
+                  example:
+                    - id: 0
+                      title: ''
+                    - id: 1
+                      title: ''
+                    - id: 2
+                      title: ''
+                correct_answer:
+                  type: integer
+                  format: int64
+                  description: Correct answer ID
+                time_for_answer:
+                  type: integer
+                  format: int64
+                  description: Time for answer
+                starts_at:
+                  type: string
+                  description: 'Start date when this question is available, hours and minutes are always 0'
+                  example: '2024-08-26T00:00:00Z'
+                created_at:
+                  type: string
+                  description: Start date when this question was create
+                  example: '2024-08-26T00:00:00Z'
+                num_correct_answers:
+                  type: integer
+                  format: int64
+                  description: Number of correct answers
+                num_incorrect_answers:
+                  type: integer
+                  format: int64
+                  description: Number of incorrect answers
+                num_all_participants:
+                  type: integer
+                  format: int64
+                  description: |
+                    Users who received the question, those who answered and
+                    those who did not answer in the time given to them
+    DailyQuestionDetailsKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: Question id
+        type:
+          type: string
+          enum:
+            - daily_question_details
+    DailyQuestionEdit:
+      allOf:
+        - $ref: '#/components/schemas/DailyQuestionEditKey'
+        - type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - title
+                - reward
+                - options
+                - correct_answer
+                - time_for_answer
+                - starts_at
+              properties:
+                title:
+                  type: string
+                  description: Question title
+                  example: Georgian capital
+                reward:
+                  type: integer
+                  format: int64
+                  description: Reward for a correct answer
+                options:
+                  type: array
+                  description: 'Answer options. Minimum 2, maximum 6'
+                  items:
+                    $ref: '#/components/schemas/DailyQuestionOptions'
+                  example:
+                    - id: 0
+                      title: ''
+                    - id: 1
+                      title: ''
+                    - id: 2
+                      title: ''
+                correct_answer:
+                  type: integer
+                  format: int64
+                  description: Correct answer ID
+                time_for_answer:
+                  type: integer
+                  format: int64
+                  description: Time for answer
+                starts_at:
+                  type: string
+                  description: 'Start date when this question is available, hours and minutes are always 0'
+                  example: '2024-08-23'
+    DailyQuestionEditKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: Question id
+        type:
+          type: string
+          enum:
+            - daily_question_edit
     DailyQuestionOptions:
       type: object
       required:
