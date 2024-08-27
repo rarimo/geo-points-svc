@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -15,10 +16,10 @@ import (
 )
 
 func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
 
 	req, err := requests.NewDailyQuestion(r)
 	if err != nil {
