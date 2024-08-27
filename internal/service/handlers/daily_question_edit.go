@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -17,10 +18,10 @@ import (
 )
 
 func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
 
 	IDStr := strings.ToLower(chi.URLParam(r, "question_id"))
 	ID, err := strconv.ParseInt(IDStr, 10, 64)
@@ -148,7 +149,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	Log(r).Infof("sdkovsaofosa")
+
 	questionNew, _ := DailyQuestionsQ(r).FilterByID(ID).Get()
 	resp, err := NewDailyQuestionEdite(ID, questionNew)
 	if err != nil {
@@ -156,7 +157,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	Log(r).Infof("sdkovsaofosa")
+
 	ape.Render(w, resp)
 }
 

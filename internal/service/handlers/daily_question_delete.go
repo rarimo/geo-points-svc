@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -16,10 +17,10 @@ import (
 )
 
 func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
 
 	IDStr := strings.ToLower(chi.URLParam(r, "question_id"))
 	ID, err := strconv.ParseInt(IDStr, 10, 64)

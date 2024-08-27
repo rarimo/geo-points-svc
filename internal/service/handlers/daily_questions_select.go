@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -13,10 +14,10 @@ import (
 )
 
 func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
-	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
-	//	ape.RenderErr(w, problems.Unauthorized())
-	//	return
-	//}
+	if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
 
 	req, err := requests.NewFilterStartAtDailyQuestions(r)
 	if err != nil {
