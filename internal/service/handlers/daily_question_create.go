@@ -33,7 +33,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, time.UTC)) {
+	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.UTC)) {
 		Log(r).Warnf("Arg start_at must be more or equal tommorow midnoght noe: %s", timeReq.String())
 		ape.RenderErr(w, problems.Forbidden())
 		return

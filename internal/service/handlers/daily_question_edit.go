@@ -22,7 +22,6 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 
-	Log(r).Infof("Edit Daily Question")
 	IDStr := strings.ToLower(chi.URLParam(r, "question_id"))
 	ID, err := strconv.ParseInt(IDStr, 10, 64)
 	if err != nil {
@@ -50,6 +49,13 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nowTime := time.Now().UTC()
+	if !question.StartsAt.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.UTC)) {
+		Log(r).Warnf("Cannot change a question id: %v that is available today or in the past", ID)
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
+
 	requestBody := map[string]any{}
 
 	if req.Title != nil {
@@ -64,8 +70,8 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		nowTime := time.Now().UTC()
-		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, time.UTC)) {
-			Log(r).Warnf("Argument start_at must be more or equal tommorow midnoght noe: %s", timeReq.String())
+		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.UTC)) {
+			Log(r).Warnf("Argument start_at must be more or equal tommorow midnoght now its: %s", timeReq.String())
 			ape.RenderErr(w, problems.Forbidden())
 			return
 		}
@@ -133,7 +139,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.Forbidden())
 			return
 		}
-		requestBody[data.ColTimeForAnswer] = *req.CorrectAnswer
+		requestBody[data.ColTimeForAnswer] = *req.TimeForAnswer
 	}
 
 	err = DailyQuestionsQ(r).FilterByID(ID).Update(requestBody)
@@ -142,7 +148,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
+	Log(r).Infof("sdkovsaofosa")
 	questionNew, _ := DailyQuestionsQ(r).FilterByID(ID).Get()
 	resp, err := NewDailyQuestionEdite(ID, questionNew)
 	if err != nil {
@@ -150,7 +156,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
+	Log(r).Infof("sdkovsaofosa")
 	ape.Render(w, resp)
 }
 
