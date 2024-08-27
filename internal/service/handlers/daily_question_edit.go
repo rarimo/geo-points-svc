@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
-	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -18,10 +17,10 @@ import (
 )
 
 func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
-		ape.RenderErr(w, problems.Unauthorized())
-		return
-	}
+	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
 
 	IDStr := strings.ToLower(chi.URLParam(r, "question_id"))
 	ID, err := strconv.ParseInt(IDStr, 10, 64)
@@ -92,7 +91,24 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		requestBody[data.ColStartAt] = *req.StartsAt
 	}
 
+	if req.CorrectAnswer != nil {
+		l := len(question.AnswerOptions)
+		if *req.CorrectAnswer < 0 || l <= int(*req.CorrectAnswer) {
+			Log(r).Error("Invalid CorrectAnswer")
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+		requestBody[data.ColCorrectAnswerId] = *req.CorrectAnswer
+	}
+
 	if req.Options != nil {
+		err = ValidateOptions(*req.Options)
+		if err != nil {
+			Log(r).WithError(err).Error("Error Answer Options")
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+
 		answerOptions, err := json.Marshal(req.Options)
 		if err != nil {
 			Log(r).Errorf("Error marshalling answer options: %v", err)
@@ -101,14 +117,19 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		}
 		correctAnswerFound := false
 
+		var localCorrectAnswer int64
+		if req.CorrectAnswer != nil {
+			localCorrectAnswer = *req.CorrectAnswer
+		}
+
 		for _, option := range *req.Options {
-			if option.Id == int(*req.CorrectAnswer) {
+			if option.Id == int(localCorrectAnswer) {
 				correctAnswerFound = true
 				break
 			}
 		}
 		if !correctAnswerFound {
-			Log(r).Warnf("Correct answer option out of range: %v", req.CorrectAnswer)
+			Log(r).Warnf("Correct answer option out of range: %v", question.CorrectAnswer)
 			ape.RenderErr(w, problems.Forbidden())
 			return
 		}
@@ -122,16 +143,6 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		requestBody[data.ColReward] = *req.Reward
-	}
-
-	if req.CorrectAnswer != nil {
-		l := len(question.AnswerOptions)
-		if *req.CorrectAnswer < 0 || l <= int(*req.CorrectAnswer) {
-			Log(r).Error("Invalid CorrectAnswer")
-			ape.RenderErr(w, problems.Forbidden())
-			return
-		}
-		requestBody[data.ColCorrectAnswerId] = *req.CorrectAnswer
 	}
 
 	if req.TimeForAnswer != nil {

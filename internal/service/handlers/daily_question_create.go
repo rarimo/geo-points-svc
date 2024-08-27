@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/rarimo/geo-points-svc/internal/data"
@@ -22,6 +24,13 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Error("Error get request NewDailyQuestion: %v")
 		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
+
+	err = ValidateOptions(req.Options)
+	if err != nil {
+		Log(r).WithError(err).Error("Error Answer Options")
+		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
@@ -90,6 +99,36 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	question, _ = DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
 
 	ape.Render(w, NewDailyQuestionCrate(&stmt, req.Options, question.ID))
+}
+
+func ValidateOptions(options []resources.DailyQuestionOptions) error {
+	if len(options) < 2 || len(options) > 6 {
+		return fmt.Errorf("the number of options must be between 2 and 6")
+	}
+
+	uniqueTitles := make(map[string]bool)
+
+	for _, option := range options {
+		if option.Title == "" {
+			return fmt.Errorf("option titles must not be empty")
+		}
+		if _, exists := uniqueTitles[option.Title]; exists {
+			return fmt.Errorf("option titles must be unique, found duplicate: %s", option.Title)
+		}
+		uniqueTitles[option.Title] = true
+	}
+
+	ids := make([]int, len(options))
+	for i, option := range options {
+		ids[i] = option.Id
+	}
+	sort.Ints(ids)
+	for i := 0; i < len(ids); i++ {
+		if ids[i] != i {
+			return fmt.Errorf("option IDs must be sequential and start from 0")
+		}
+	}
+	return nil
 }
 
 func NewDailyQuestionCrate(q *data.DailyQuestion, options []resources.DailyQuestionOptions, ID int64) resources.DailyQuestionDetailsResponse {
