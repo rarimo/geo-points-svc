@@ -396,6 +396,16 @@ paths:
       operationId: createDailyQuestion
       security:
         - BearerAuth: []
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/DailyQuestionEdit'
       responses:
         '200':
           description: Success
@@ -620,6 +630,16 @@ paths:
       operationId: editDailyQuestion
       security:
         - BearerAuth: []
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/DailyQuestionEdit'
       responses:
         '200':
           description: Success
