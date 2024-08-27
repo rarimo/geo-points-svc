@@ -8,4 +8,4 @@ properties:
     description: Question id
   type:
     type: string
-    enum: [ daily_question ]
+    enum: [ daily_questions ]
