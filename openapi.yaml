@@ -1442,7 +1442,7 @@ components:
         type:
           type: string
           enum:
-            - daily_question
+            - daily_questions
     DailyQuestionDetails:
       allOf:
         - $ref: '#/components/schemas/DailyQuestionDetailsKey'
@@ -1526,7 +1526,7 @@ components:
         type:
           type: string
           enum:
-            - daily_question
+            - daily_questions
     DailyQuestionEdit:
       allOf:
         - $ref: '#/components/schemas/DailyQuestionEditKey'
@@ -1588,7 +1588,7 @@ components:
         type:
           type: string
           enum:
-            - daily_question_edit
+            - daily_questions
     DailyQuestionOptions:
       type: object
       required:

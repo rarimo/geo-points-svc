@@ -2166,7 +2166,7 @@
           "type": {
             "type": "string",
             "enum": [
-              "daily_question"
+              "daily_questions"
             ]
           }
         }
@@ -2283,7 +2283,7 @@
           "type": {
             "type": "string",
             "enum": [
-              "daily_question"
+              "daily_questions"
             ]
           }
         }
@@ -2376,7 +2376,7 @@
           "type": {
             "type": "string",
             "enum": [
-              "daily_question_edit"
+              "daily_questions"
             ]
           }
         }
