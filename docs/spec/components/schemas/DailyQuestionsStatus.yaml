@@ -1,0 +1,34 @@
+allOf:
+  - $ref: "#/components/schemas/DailyQuestionsStatusKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - next_question_date
+          - time_for_answer
+          - reward
+        properties:
+          next_question_date:
+            type: timestamp
+            format: int64
+            description: |
+              Time when the next question will be available. 
+              If the time is in the past, then there is a question 
+              on this day and the user has not yet answered it. 
+              If the time is in the future, then the user has either 
+              already answered the question on the current day or 
+              there was no question on the current day.
+            example: 1725018539
+          time_for_answer:
+            type: integer
+            format: int64
+            description: The time within which the user has to answer this question after receiving it.
+            example: 30
+          reward:
+            type: integer
+            format: int64
+            description: The number of points the user will receive if they answer the question correctly.
+            example: 5

@@ -23,6 +23,7 @@ type Config interface {
 
 	Levels() *Levels
 	Verifiers() Verifiers
+	DailyQuestions() *DailyQuestions
 }
 
 type config struct {
@@ -37,9 +38,10 @@ type config struct {
 
 	passport root.VerifierProvider
 
-	levels   comfig.Once
-	verifier comfig.Once
-	getter   kv.Getter
+	DailyQuestion comfig.Once
+	levels        comfig.Once
+	verifier      comfig.Once
+	getter        kv.Getter
 }
 
 func New(getter kv.Getter) Config {

@@ -1,0 +1,12 @@
+type: object
+required:
+  - id
+  - title
+properties:
+  id:
+    type: integer
+    format: int
+    description: Answer number for the question
+  title:
+    type: string
+    description: Answer text

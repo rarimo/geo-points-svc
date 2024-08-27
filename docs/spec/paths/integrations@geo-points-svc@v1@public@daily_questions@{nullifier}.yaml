@@ -1,0 +1,93 @@
+get:
+  tags:
+    - Daily Questions
+  summary: Get daily question
+  description: |
+    Get a daily question. The user must be 
+    authorized and verified (passport scanned, 
+    verified field is true).
+  operationId: getDailyQuestion
+  security:
+    - BearerAuth: []
+  responses:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/DailyQuestions'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    403:
+      description: Questions unavailable, try later
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    404:
+      description: There is no question in current day.
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    409:
+      description: User already answer current day question.
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    500:
+      $ref: '#/components/responses/internalError'
+
+post:
+  tags:
+    - Daily Questions
+  summary: Answer question
+  description: |
+    Answer question. The user must be 
+    authorized and verified (passport scanned, 
+    verified field is true).
+  operationId: answerDailyQuestion
+  security:
+    - BearerAuth: []
+  requestBody:
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/DailyQuestionAnswers'
+  responses:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/DailyQuestionAnswers'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    404:
+      description: User haven't active question or deadline already passed.
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
+    500:
+      $ref: '#/components/responses/internalError'

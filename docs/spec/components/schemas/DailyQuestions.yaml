@@ -1,0 +1,35 @@
+allOf:
+  - $ref: "#/components/schemas/DailyQuestionsKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - title
+          - options
+        properties:
+          title:
+            type: string
+            description: Question title
+            example: Georgian capital
+          options:
+            type: array
+            description: Answer options. Minimum 2, maximum 6
+            items:
+              $ref: "#/components/schemas/DailyQuestionOptions"
+            example: [
+              {
+                "id": 0,
+                "title": ""
+              },
+              {
+                "id": 1,
+                "title": ""
+              },
+              {
+                "id": 2,
+                "title": ""
+              }
+            ]

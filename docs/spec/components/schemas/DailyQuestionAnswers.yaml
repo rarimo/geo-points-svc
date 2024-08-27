@@ -1,0 +1,15 @@
+allOf:
+  - $ref: '#/components/schemas/DailyQuestionsKey'
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - answer
+        properties:
+          answer:
+            type: integer
+            format: int64
+            description: Selected/correct answer option

@@ -24,6 +24,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxVerifiers(cfg.Verifiers()),
 			handlers.CtxSigCalculator(cfg.SigCalculator()),
 			handlers.CtxPollVerifier(cfg.PollVerifier()),
+			handlers.CtxDailyQuestion(cfg.DailyQuestions()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)
@@ -43,7 +44,12 @@ func Run(ctx context.Context, cfg config.Config) {
 						r.Post("/external", handlers.VerifyExternalPassport)
 					})
 				})
-
+			})
+			r.Route("/daily_questions/{nullifier}", func(r chi.Router) {
+				r.Use(authMW)
+				r.Get("/status", handlers.GetDailyQuestionsStatus)
+				r.Get("/", handlers.GetDailyQuestion)
+				r.Post("/", handlers.CheckDailyQuestion)
 			})
 			r.Route("/events", func(r chi.Router) {
 				r.Use(authMW)

@@ -26,6 +26,8 @@ const (
 	verifiersCtxKey
 	sigCalculatorCtxKey
 	voteVerifierCtxKey
+	dailyQuestionsCtxKey
+	dailyQuestionsCfgCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -54,8 +56,18 @@ func CtxBalancesQ(q data.BalancesQ) func(context.Context) context.Context {
 	}
 }
 
+func CtxDailyQuestionsQ(q data.DailyQuestionsQ) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, dailyQuestionsCtxKey, q)
+	}
+}
+
 func BalancesQ(r *http.Request) data.BalancesQ {
 	return r.Context().Value(balancesQCtxKey).(data.BalancesQ).New()
+}
+
+func DailyQuestionsQ(r *http.Request) data.DailyQuestionsQ {
+	return r.Context().Value(dailyQuestionsCtxKey).(data.DailyQuestionsQ).New()
 }
 
 func CtxReferralsQ(q data.ReferralsQ) func(context.Context) context.Context {
@@ -106,6 +118,16 @@ func CtxVerifiers(v config.Verifiers) func(context.Context) context.Context {
 
 func Verifiers(r *http.Request) config.Verifiers {
 	return r.Context().Value(verifiersCtxKey).(config.Verifiers)
+}
+
+func CtxDailyQuestion(v *config.DailyQuestions) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, dailyQuestionsCfgCtxKey, v)
+	}
+}
+
+func DailyQuestions(r *http.Request) *config.DailyQuestions {
+	return r.Context().Value(dailyQuestionsCfgCtxKey).(*config.DailyQuestions)
 }
 
 func CtxPollVerifier(v *config.PollVerifier) func(context.Context) context.Context {

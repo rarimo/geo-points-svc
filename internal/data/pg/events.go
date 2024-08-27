@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/rarimo/geo-points-svc/internal/data"
@@ -21,6 +22,7 @@ type events struct {
 	deleter    squirrel.DeleteBuilder
 	counter    squirrel.SelectBuilder
 	reopenable squirrel.SelectBuilder
+	last       squirrel.SelectBuilder
 }
 
 func NewEvents(db *pgdb.DB) data.EventsQ {
@@ -31,6 +33,7 @@ func NewEvents(db *pgdb.DB) data.EventsQ {
 		deleter:    squirrel.Delete(eventsTable),
 		counter:    squirrel.Select("COUNT(*) AS count").From(eventsTable),
 		reopenable: squirrel.Select("nullifier", "type").Distinct().From(eventsTable + " e1"),
+		last:       squirrel.Select("*").From(eventsTable).OrderBy("created_at DESC"),
 	}
 }
 
@@ -123,6 +126,19 @@ func (q *events) Get() (*data.Event, error) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("get event: %w", err)
+	}
+
+	return &res, nil
+}
+
+func (q *events) GetLast() (*data.Event, error) {
+	var res data.Event
+
+	if err := q.db.Get(&res, q.last); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get last event: %w", err)
 	}
 
 	return &res, nil
@@ -226,6 +242,28 @@ func (q *events) FilterByUpdatedAtBefore(unix int64) data.EventsQ {
 	return q.applyCondition(squirrel.Lt{"updated_at": unix})
 }
 
+func (q *events) FilterTodayEvents(offset int) data.EventsQ {
+	location := time.FixedZone(fmt.Sprintf("GMT%+d", offset), offset*3600)
+	now := time.Now().In(location)
+
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
+	todayEnd := todayStart.Add(24 * time.Hour).Add(-time.Nanosecond)
+
+	utcStart := todayStart.UTC().Unix()
+	utcEnd := todayEnd.UTC().Unix()
+
+	res := q.applyCondition(squirrel.And{
+		squirrel.GtOrEq{"created_at": utcStart},
+		squirrel.LtOrEq{"created_at": utcEnd},
+	})
+
+	return res
+}
+
+func (q *events) FilterByQuestionID(id int) data.EventsQ {
+	return q.applyCondition(squirrel.Eq{"meta->>'question_id'": id})
+}
+
 func (q *events) FilterInactiveNotClaimed(types ...string) data.EventsQ {
 	if len(types) == 0 {
 		return q
@@ -242,5 +280,6 @@ func (q *events) applyCondition(cond squirrel.Sqlizer) data.EventsQ {
 	q.deleter = q.deleter.Where(cond)
 	q.counter = q.counter.Where(cond)
 	q.reopenable = q.reopenable.Where(cond)
+	q.last = q.last.Where(cond)
 	return q
 }
