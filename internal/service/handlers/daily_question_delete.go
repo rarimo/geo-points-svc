@@ -1,23 +1,32 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
 func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	IDStr := strings.ToLower(chi.URLParam(r, "ID"))
+	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
+
+	IDStr := strings.ToLower(chi.URLParam(r, "question_id"))
 	ID, err := strconv.ParseInt(IDStr, 10, 64)
 	Log(r).Infof("ID: %v", ID)
 	if err != nil {
 		Log(r).WithError(err).Error("failed to parse ID")
-		ape.RenderErr(w, problems.InternalError())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
@@ -32,7 +41,15 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
-	title := question.Title
+	deletedQuestion := *question
+
+	timeReq := question.StartsAt
+	nowTime := time.Now().UTC()
+	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, time.UTC)) {
+		Log(r).Warnf("Only questions that start tomorrow or later can be delete: %s", timeReq.String())
+		ape.RenderErr(w, problems.Forbidden())
+		return
+	}
 
 	_, err = DailyQuestionsQ(r).New().FilterByID(ID).Delete()
 	if err != nil {
@@ -41,19 +58,34 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionDelete(ID, title))
+	response, err := NewDailyQuestionDelete(ID, deletedQuestion)
+	if err != nil {
+		Log(r).WithError(err).Error("Error deleting daily question")
+		ape.RenderErr(w, problems.InternalError())
+	}
+	ape.Render(w, response)
 }
 
-func NewDailyQuestionDelete(ID int64, title string) resources.DailyQuestionDelResponse {
-	return resources.DailyQuestionDelResponse{
-		Data: resources.DailyQuestionDel{
-			Key: resources.Key{
-				ID:   strconv.Itoa(int(ID)),
-				Type: resources.DAILY_QUESTION_DEL,
-			},
-			Attributes: resources.DailyQuestionDelAttributes{
-				Title: title,
+func NewDailyQuestionDelete(ID int64, q data.DailyQuestion) (resources.DailyQuestionDetailsResponse, error) {
+	var options []resources.DailyQuestionOptions
+	err := json.Unmarshal(q.AnswerOptions, &options)
+	if err != nil {
+		err = fmt.Errorf("failed to unmarshal AnswerOptions: %v", err)
+		return resources.DailyQuestionDetailsResponse{}, err
+	}
+
+	return resources.DailyQuestionDetailsResponse{
+		Data: resources.DailyQuestionDetails{
+			Key: resources.NewKeyInt64(ID, resources.DAILY_QUESTIONS),
+			Attributes: resources.DailyQuestionDetailsAttributes{
+				Title:         q.Title,
+				Options:       options,
+				CorrectAnswer: q.CorrectAnswer,
+				Reward:        q.Reward,
+				TimeForAnswer: q.TimeForAnswer,
+				StartsAt:      q.StartsAt.String(),
+				CreatedAt:     q.CreatedAt.String(),
 			},
 		},
-	}
+	}, nil
 }

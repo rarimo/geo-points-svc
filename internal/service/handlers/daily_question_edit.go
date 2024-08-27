@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-points-svc/internal/data"
@@ -15,11 +17,17 @@ import (
 )
 
 func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
-	IDStr := strings.ToLower(chi.URLParam(r, "ID"))
+	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
+
+	Log(r).Infof("Edit Daily Question")
+	IDStr := strings.ToLower(chi.URLParam(r, "question_id"))
 	ID, err := strconv.ParseInt(IDStr, 10, 64)
 	if err != nil {
-		Log(r).WithError(err).Error("failed to parse ID")
-		ape.RenderErr(w, problems.InternalError())
+		Log(r).WithError(err).Error("Failed to parse ID")
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
@@ -30,72 +38,141 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	location := DailyQuestions(r).Location
-	question, err := DailyQuestionsQ(r).FilterDayQuestions(location, req.StartsAt).Get()
-	if question != nil && ID != question.ID {
-		Log(r).Errorf("Error on this day %v, the daily question already has %v", question.StartsAt, question)
-		ape.RenderErr(w, problems.Conflict())
-		return
-	}
+	question, err := DailyQuestionsQ(r).FilterByID(ID).Get()
 	if err != nil {
-		Log(r).Errorf("Error on this day %v", err)
+		Log(r).WithError(err).Error("Error getting question")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
-	answerOptions, err := json.Marshal(req.Options)
-	if err != nil {
-		Log(r).Errorf("Error marshalling answer options: %v", err)
-		ape.RenderErr(w, problems.InternalError())
+	if question == nil {
+		Log(r).Warnf("Question with ID %d not found", ID)
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	correctAnswerFound := false
-	for _, option := range req.Options {
-		if option.Id == int(req.CorrectAnswer) {
-			correctAnswerFound = true
-			break
+	requestBody := map[string]any{}
+
+	if req.Title != nil {
+		requestBody[data.ColDailyQuestionTitle] = *req.Title
+	}
+
+	if req.StartsAt != nil {
+		timeReq, err := time.Parse("2006-01-02", *req.StartsAt)
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to parse start time")
+			ape.RenderErr(w, problems.BadRequest(err)...)
+			return
 		}
-	}
-	if !correctAnswerFound {
-		Log(r).Warnf("Correct answer option out of range: %v", req.CorrectAnswer)
-		ape.RenderErr(w, problems.Forbidden())
-		return
+		nowTime := time.Now().UTC()
+		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, time.UTC)) {
+			Log(r).Warnf("Argument start_at must be more or equal tommorow midnoght noe: %s", timeReq.String())
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+
+		location := DailyQuestions(r).Location
+		question, err := DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
+		if err != nil {
+			Log(r).Errorf("Error on this day %v", err)
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		if question != nil && ID != question.ID {
+			Log(r).Errorf("Error on this day %v, the daily question already has %v", question.StartsAt, question)
+			ape.RenderErr(w, problems.Conflict())
+			return
+		}
+		requestBody[data.ColStartAt] = *req.StartsAt
 	}
 
-	err = DailyQuestionsQ(r).FilterByID(ID).Update(map[string]any{
-		data.ColDailyQuestionTitle:  req.Title,
-		data.ColTimeForAnswer:       req.TimeForAnswer,
-		data.ColDailyQuestionReward: req.Reward,
-		data.ColAnswerOption:        answerOptions,
-		data.ColCorrectAnswerId:     req.CorrectAnswer,
-	})
+	if req.Options != nil {
+		answerOptions, err := json.Marshal(req.Options)
+		if err != nil {
+			Log(r).Errorf("Error marshalling answer options: %v", err)
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
+		correctAnswerFound := false
 
+		for _, option := range *req.Options {
+			if option.Id == int(*req.CorrectAnswer) {
+				correctAnswerFound = true
+				break
+			}
+		}
+		if !correctAnswerFound {
+			Log(r).Warnf("Correct answer option out of range: %v", req.CorrectAnswer)
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+		requestBody[data.ColAnswerOption] = answerOptions
+	}
+
+	if req.Reward != nil {
+		if *req.Reward <= 0 {
+			Log(r).Error("Invalid Reward")
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+		requestBody[data.ColReward] = *req.Reward
+	}
+
+	if req.CorrectAnswer != nil {
+		l := len(question.AnswerOptions)
+		if *req.CorrectAnswer < 0 || l <= int(*req.CorrectAnswer) {
+			Log(r).Error("Invalid CorrectAnswer")
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+		requestBody[data.ColCorrectAnswerId] = *req.CorrectAnswer
+	}
+
+	if req.TimeForAnswer != nil {
+		if *req.TimeForAnswer < 0 {
+			Log(r).Error("Invalid Time for answer")
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+		requestBody[data.ColTimeForAnswer] = *req.CorrectAnswer
+	}
+
+	err = DailyQuestionsQ(r).FilterByID(ID).Update(requestBody)
 	if err != nil {
 		Log(r).WithError(err).Error("Error editing daily question")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionEdite(ID, req))
-}
-
-func NewDailyQuestionEdite(ID int64, req resources.DailyQuestionEditAttributes) resources.DailyQuestionEditResponse {
-	return resources.DailyQuestionEditResponse{
-		Data: resources.DailyQuestionEdit{
-			Key: resources.Key{
-				ID:   strconv.Itoa(int(ID)),
-				Type: resources.DAILY_QUESTION_EDIT,
-			},
-			Attributes: resources.DailyQuestionEditAttributes{
-				CorrectAnswer: req.CorrectAnswer,
-				Options:       req.Options,
-				Reward:        req.Reward,
-				StartsAt:      req.StartsAt,
-				TimeForAnswer: req.TimeForAnswer,
-				Title:         req.Title,
-			},
-		},
+	questionNew, _ := DailyQuestionsQ(r).FilterByID(ID).Get()
+	resp, err := NewDailyQuestionEdite(ID, questionNew)
+	if err != nil {
+		Log(r).WithError(err).Error("Error editing daily question")
+		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 
+	ape.Render(w, resp)
+}
+
+func NewDailyQuestionEdite(ID int64, q *data.DailyQuestion) (resources.DailyQuestionDetailsResponse, error) {
+	var options []resources.DailyQuestionOptions
+	err := json.Unmarshal(q.AnswerOptions, &options)
+	if err != nil {
+		err = fmt.Errorf("failed to unmarshal AnswerOptions: %v", err)
+		return resources.DailyQuestionDetailsResponse{}, err
+	}
+
+	return resources.DailyQuestionDetailsResponse{
+		Data: resources.DailyQuestionDetails{
+			Key: resources.NewKeyInt64(ID, resources.DAILY_QUESTIONS),
+			Attributes: resources.DailyQuestionDetailsAttributes{
+				CorrectAnswer: q.CorrectAnswer,
+				Options:       options,
+				Reward:        q.Reward,
+				StartsAt:      q.StartsAt.String(),
+				TimeForAnswer: q.TimeForAnswer,
+				Title:         q.Title,
+			},
+		},
+	}, nil
 }

@@ -14,20 +14,22 @@ import (
 const dailyQuestionsTable = "daily_questions"
 
 type dailyQuestionsQ struct {
-	db       *pgdb.DB
-	selector squirrel.SelectBuilder
-	updater  squirrel.UpdateBuilder
-	counter  squirrel.SelectBuilder
-	deleter  squirrel.DeleteBuilder
+	db           *pgdb.DB
+	selector     squirrel.SelectBuilder
+	updater      squirrel.UpdateBuilder
+	counter      squirrel.SelectBuilder
+	deleter      squirrel.DeleteBuilder
+	timeSelector squirrel.SelectBuilder
 }
 
 func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionsQ {
 	return &dailyQuestionsQ{
-		db:       db,
-		selector: squirrel.Select("*").From(dailyQuestionsTable),
-		updater:  squirrel.Update(dailyQuestionsTable),
-		deleter:  squirrel.Delete(dailyQuestionsTable),
-		counter:  squirrel.Select("COUNT(*) as count").From(dailyQuestionsTable),
+		db:           db,
+		selector:     squirrel.Select("*").From(dailyQuestionsTable),
+		updater:      squirrel.Update(dailyQuestionsTable),
+		deleter:      squirrel.Delete(dailyQuestionsTable),
+		counter:      squirrel.Select("COUNT(*) as count").From(dailyQuestionsTable),
+		timeSelector: squirrel.Select("*").From(dailyQuestionsTable).OrderBy("starts_at ASC"),
 	}
 }
 
@@ -94,6 +96,14 @@ func (q *dailyQuestionsQ) Select() ([]data.DailyQuestion, error) {
 	return res, nil
 }
 
+func (q *dailyQuestionsQ) SelectByTime() ([]data.DailyQuestion, error) {
+	var res []data.DailyQuestion
+	if err := q.db.Select(&res, q.timeSelector); err != nil {
+		return res, fmt.Errorf("select daily questions: %w", err)
+	}
+	return res, nil
+}
+
 func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	var res data.DailyQuestion
 
@@ -105,6 +115,26 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	}
 
 	return &res, nil
+}
+
+func applyDailyQuestionPage(page *pgdb.OffsetPageParams, sql squirrel.SelectBuilder) squirrel.SelectBuilder {
+	if page.Limit == 0 {
+		page.Limit = 15
+	}
+	if page.Order == "" {
+		page.Order = pgdb.OrderTypeDesc
+	}
+
+	offset := page.Limit * page.PageNumber
+
+	sql = sql.Limit(page.Limit).Offset(offset)
+
+	return sql
+}
+
+func (q *dailyQuestionsQ) Page(page *pgdb.OffsetPageParams) data.DailyQuestionsQ {
+	q.selector = applyDailyQuestionPage(page, q.selector)
+	return q
 }
 
 func (q *dailyQuestionsQ) FilterByCreatedAtAfter(date time.Time) data.DailyQuestionsQ {
@@ -130,12 +160,12 @@ func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ 
 
 func (q *dailyQuestionsQ) FilterDayQuestions(location *time.Location, day time.Time) data.DailyQuestionsQ {
 	dayInLocation := day.In(location)
-	dayStart := time.Date(dayInLocation.Year(), dayInLocation.Month(), dayInLocation.Day(), 0, 0, 0, 0, location).UTC()
-	dayEnd := dayStart.Add(24 * time.Hour).Add(-time.Nanosecond).UTC()
+	dayStart := time.Date(dayInLocation.Year(), dayInLocation.Month(), dayInLocation.Day(), 0, 0, 0, 0, location)
+	dayEnd := dayStart.Add(24 * time.Hour)
 
 	return q.applyCondition(squirrel.And{
 		squirrel.GtOrEq{"starts_at": dayStart},
-		squirrel.LtOrEq{"starts_at": dayEnd},
+		squirrel.Lt{"starts_at": dayEnd},
 	})
 }
 
@@ -174,5 +204,6 @@ func (q *dailyQuestionsQ) applyCondition(cond squirrel.Sqlizer) data.DailyQuesti
 	q.updater = q.updater.Where(cond)
 	q.deleter = q.deleter.Where(cond)
 	q.counter = q.counter.Where(cond)
+	q.timeSelector = q.timeSelector.Where(cond)
 	return q
 }

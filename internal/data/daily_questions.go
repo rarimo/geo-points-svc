@@ -7,18 +7,19 @@ import (
 	"time"
 
 	"github.com/rarimo/geo-points-svc/resources"
+	"gitlab.com/distributed_lab/kit/pgdb"
 )
 
 const (
-	ColDailyQuestionTitle  = "title"
-	ColTimeForAnswer       = "time_for_answer"
-	ColDailyQuestionReward = "reward"
-	ColAnswerOption        = "answer_options"
-	ColCorrectAnswerId     = "correct_answer"
-
-	ColCorrectAnswers   = "num_correct_answers"
-	ColIncorrectAnswers = "num_incorrect_answers"
-	ColAllParticipants  = "num_all_participants"
+	ColDailyQuestionTitle = "title"
+	ColTimeForAnswer      = "time_for_answer"
+	ColAnswerOption       = "answer_options"
+	ColCorrectAnswerId    = "correct_answer"
+	ColReward             = "reward"
+	ColStartAt            = "start_at"
+	ColCorrectAnswers     = "num_correct_answers"
+	ColIncorrectAnswers   = "num_incorrect_answers"
+	ColAllParticipants    = "num_all_participants"
 )
 
 type DailyQuestion struct {
@@ -42,8 +43,10 @@ type DailyQuestionsQ interface {
 	Delete() (int64, error)
 	Count() (int64, error)
 	Select() ([]DailyQuestion, error)
-	Get() (*DailyQuestion, error)
+	SelectByTime() ([]DailyQuestion, error)
 
+	Get() (*DailyQuestion, error)
+	Page(*pgdb.OffsetPageParams) DailyQuestionsQ
 	FilterTodayQuestions(offset int) DailyQuestionsQ
 	FilterByCreatedAtAfter(date time.Time) DailyQuestionsQ
 	FilterByStartsAtAfter(date time.Time) DailyQuestionsQ

@@ -16,7 +16,7 @@ post:
             - data
           properties:
             data:
-              $ref: '#/components/schemas/DailyQuestionEdit'
+              $ref: '#/components/schemas/DailyQuestionCreate'
   responses:
     200:
       description: Success

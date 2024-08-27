@@ -4,17 +4,9 @@
 
 package resources
 
-type DailyQuestionDetailsAttributes struct {
+type DailyQuestionCreateAttributes struct {
 	// Correct answer ID
 	CorrectAnswer int64 `json:"correct_answer"`
-	// Start date when this question was create
-	CreatedAt string `json:"created_at"`
-	// Users who received the question, those who answered and those who did not answer in the time given to them
-	NumAllParticipants int64 `json:"num_all_participants"`
-	// Number of correct answers
-	NumCorrectAnswers int64 `json:"num_correct_answers"`
-	// Number of incorrect answers
-	NumIncorrectAnswers int64 `json:"num_incorrect_answers"`
 	// Answer options. Minimum 2, maximum 6
 	Options []DailyQuestionOptions `json:"options"`
 	// Reward for a correct answer

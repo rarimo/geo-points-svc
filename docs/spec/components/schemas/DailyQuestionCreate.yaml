@@ -6,6 +6,13 @@ allOf:
     properties:
       attributes:
         type: object
+        required:
+          - title
+          - reward
+          - options
+          - correct_answer
+          - time_for_answer
+          - starts_at
         properties:
           title:
             type: string

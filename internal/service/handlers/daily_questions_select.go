@@ -4,11 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
-	"time"
 
-	"github.com/go-chi/chi"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -17,21 +13,18 @@ import (
 )
 
 func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
-	dateStr := strings.ToLower(chi.URLParam(r, "date"))
+	//if !auth.Authenticates(UserClaims(r), auth.AdminGrant) {
+	//	ape.RenderErr(w, problems.Unauthorized())
+	//	return
+	//}
+
 	req, err := requests.NewFilterStartAtDailyQuestions(r)
 	if err != nil {
 		Log(r).WithError(err).Error("error creating filter start at daily questions request")
-		ape.RenderErr(w, problems.InternalError())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 	}
 
-	date, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		Log(r).WithError(err).Error("Invalid date format, expected YYYY-MM-DD")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	res, err := DailyQuestionsQ(r).FilterByStartsAtAfter(date).Select()
+	res, err := DailyQuestionsQ(r).Page(&req.OffsetPageParams).SelectByTime()
 	if err != nil {
 		Log(r).WithError(err).Error("Error filtering questions")
 		ape.RenderErr(w, problems.InternalError())
@@ -47,7 +40,7 @@ func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
 
 	resp.Links = req.GetLinks(r)
 	if req.Count {
-		QuestionListCount, err := DailyQuestionsQ(r).FilterByStartsAtAfter(date).Count()
+		questionListCount, err := DailyQuestionsQ(r).Count()
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to count balances")
 			ape.RenderErr(w, problems.InternalError())
@@ -56,7 +49,7 @@ func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
 
 		_ = resp.PutMeta(struct {
 			QuestionCount int64 `json:"question_count"`
-		}{QuestionListCount})
+		}{questionListCount})
 	}
 	ape.Render(w, resp)
 }
@@ -66,24 +59,21 @@ func NewDailyQuestionModel(question data.DailyQuestion) (resources.DailyQuestion
 
 	err := json.Unmarshal(question.AnswerOptions, &options)
 	if err != nil {
-		err := fmt.Errorf("failed to unmarshal AnswerOptions: %v", err)
+		err = fmt.Errorf("failed to unmarshal AnswerOptions: %v", err)
 		return resources.DailyQuestionDetails{}, err
 	}
 
 	return resources.DailyQuestionDetails{
-		Key: resources.Key{
-			ID:   strconv.Itoa(int(question.ID)),
-			Type: resources.DAILY_QUESTION_DETAILS,
-		},
+		Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS),
 		Attributes: resources.DailyQuestionDetailsAttributes{
 			CorrectAnswer:       question.CorrectAnswer,
-			CreatedAt:           question.CreatedAt,
+			CreatedAt:           question.CreatedAt.String(),
 			NumAllParticipants:  question.NumAllParticipants,
 			NumCorrectAnswers:   question.NumCorrectAnswers,
 			NumIncorrectAnswers: question.NumIncorrectAnswers,
 			Options:             options,
-			Reward:              int(question.Reward),
-			StartsAt:            question.StartsAt,
+			Reward:              question.Reward,
+			StartsAt:            question.StartsAt.String(),
 			TimeForAnswer:       question.TimeForAnswer,
 			Title:               question.Title,
 		},
