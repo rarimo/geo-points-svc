@@ -80,7 +80,7 @@ func (q *dailyQuestionsQ) Select() ([]data.DailyQuestion, error) {
 
 func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	var res data.DailyQuestion
-	if err := q.db.Get(&res, q.selector); err != nil {
+	if err := q.db.Get(&res, q.selector.OrderBy("starts_at ASC")); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
