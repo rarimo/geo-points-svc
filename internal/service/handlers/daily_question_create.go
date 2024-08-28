@@ -23,7 +23,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.NewDailyQuestion(r)
 	if err != nil {
-		Log(r).WithError(err).Error("Error get request NewDailyQuestion: %v")
+		Log(r).WithError(err).Error("Error get request NewDailyQuestion")
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
@@ -44,7 +44,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 	nowTime := time.Now().UTC()
 	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
-		Log(r).Errorf("Arg start_at must be more or equal tommorow midnoght noe: %s", timeReq.String())
+		Log(r).Errorf("Arg start_at must be more or equal tomorow midnoght noe: %s", timeReq.String())
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}

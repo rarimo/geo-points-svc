@@ -45,7 +45,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if question == nil {
-		Log(r).Error("Question with ID %d not found", ID)
+		Log(r).Errorf("Question with ID %d not found", ID)
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
@@ -72,7 +72,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		}
 		nowTime := time.Now().UTC()
 		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
-			Log(r).Errorf("Argument start_at must be more or equal tommorow midnoght now its: %s", timeReq.String())
+			Log(r).Errorf("Argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String())
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
@@ -99,7 +99,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
-		requestBody[data.ColCorrectAnswerId] = *req.CorrectAnswer
+		requestBody[data.ColCorrectAnswerID] = *req.CorrectAnswer
 	}
 
 	if req.Options != nil {

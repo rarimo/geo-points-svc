@@ -106,21 +106,6 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	return &res, nil
 }
 
-func applyDailyQuestionPage(page *pgdb.OffsetPageParams, sql squirrel.SelectBuilder) squirrel.SelectBuilder {
-	if page.Limit == 0 {
-		page.Limit = 15
-	}
-	if page.Order == "" {
-		page.Order = pgdb.OrderTypeDesc
-	}
-
-	offset := page.Limit * page.PageNumber
-
-	sql = sql.Limit(page.Limit).Offset(offset)
-
-	return sql
-}
-
 func (q *dailyQuestionsQ) Page(page *pgdb.OffsetPageParams) data.DailyQuestionsQ {
 	q.selector = page.ApplyTo(q.selector, "starts_at")
 	return q

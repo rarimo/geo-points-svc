@@ -14,7 +14,7 @@ const (
 	ColDailyQuestionTitle = "title"
 	ColTimeForAnswer      = "time_for_answer"
 	ColAnswerOption       = "answer_options"
-	ColCorrectAnswerId    = "correct_answer"
+	ColCorrectAnswerID    = "correct_answer"
 	ColReward             = "reward"
 	ColStartAt            = "starts_at"
 	ColCorrectAnswers     = "num_correct_answers"
