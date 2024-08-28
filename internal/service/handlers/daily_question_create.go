@@ -31,7 +31,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	err = ValidateOptions(req.Options)
 	if err != nil {
 		Log(r).WithError(err).Error("Error Answer Options")
-		ape.RenderErr(w, problems.Forbidden())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
@@ -45,7 +45,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nowTime := time.Now().UTC()
 	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
 		Log(r).Errorf("Arg start_at must be more or equal tommorow midnoght noe: %s", timeReq.String())
-		ape.RenderErr(w, problems.Forbidden())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
@@ -77,7 +77,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 	if !correctAnswerFound {
 		Log(r).Errorf("Correct answer option out of range: %v", req.CorrectAnswer)
-		ape.RenderErr(w, problems.Forbidden())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 

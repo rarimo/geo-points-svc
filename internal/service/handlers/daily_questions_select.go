@@ -39,16 +39,14 @@ func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
-	resp.Links = req.GetLinks(r)
+	questionListCount, err := DailyQuestionsQ(r).Count()
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to count balances")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	resp.Links = req.GetLinks(r, uint64(questionListCount))
 	if req.Count {
-		questionListCount, err := DailyQuestionsQ(r).Count()
-		if err != nil {
-			Log(r).WithError(err).Error("Failed to count balances")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-
 		_ = resp.PutMeta(struct {
 			QuestionCount int64 `json:"question_count"`
 		}{questionListCount})

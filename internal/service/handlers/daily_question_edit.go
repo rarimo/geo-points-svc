@@ -53,7 +53,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nowTime := time.Now().UTC()
 	if !question.StartsAt.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
 		Log(r).Errorf("Cannot change a question id: %v that is available today or in the past", ID)
-		ape.RenderErr(w, problems.Forbidden())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
@@ -73,7 +73,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		nowTime := time.Now().UTC()
 		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
 			Log(r).Errorf("Argument start_at must be more or equal tommorow midnoght now its: %s", timeReq.String())
-			ape.RenderErr(w, problems.Forbidden())
+			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 
@@ -96,7 +96,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		l := len(question.AnswerOptions)
 		if *req.CorrectAnswer < 0 || l <= int(*req.CorrectAnswer) {
 			Log(r).Error("Invalid CorrectAnswer")
-			ape.RenderErr(w, problems.Forbidden())
+			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 		requestBody[data.ColCorrectAnswerId] = *req.CorrectAnswer
@@ -106,7 +106,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		err = ValidateOptions(*req.Options)
 		if err != nil {
 			Log(r).WithError(err).Error("Error Answer Options")
-			ape.RenderErr(w, problems.Forbidden())
+			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 
@@ -131,7 +131,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		}
 		if !correctAnswerFound {
 			Log(r).Warnf("Correct answer option out of range: %v", question.CorrectAnswer)
-			ape.RenderErr(w, problems.Forbidden())
+			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 		requestBody[data.ColAnswerOption] = answerOptions
@@ -140,7 +140,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if req.Reward != nil {
 		if *req.Reward <= 0 {
 			Log(r).Error("Invalid Reward")
-			ape.RenderErr(w, problems.Forbidden())
+			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 		requestBody[data.ColReward] = *req.Reward
@@ -149,7 +149,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if req.TimeForAnswer != nil {
 		if *req.TimeForAnswer < 0 {
 			Log(r).Error("Invalid Time for answer")
-			ape.RenderErr(w, problems.Forbidden())
+			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 		requestBody[data.ColTimeForAnswer] = *req.TimeForAnswer

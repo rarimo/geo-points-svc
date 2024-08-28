@@ -48,7 +48,7 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nowTime := time.Now().UTC()
 	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
 		Log(r).Errorf("Only questions that start tomorrow or later can be delete: %s", timeReq.String())
-		ape.RenderErr(w, problems.Forbidden())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
