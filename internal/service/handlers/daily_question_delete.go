@@ -63,6 +63,7 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Error("Error deleting daily question")
 		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 	ape.Render(w, response)
 }
