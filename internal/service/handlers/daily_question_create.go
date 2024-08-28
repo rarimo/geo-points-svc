@@ -27,8 +27,9 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
+	attributes := req.Data.Attributes
 
-	err = ValidateOptions(req.Options)
+	err = ValidateOptions(attributes.Options)
 	if err != nil {
 		Log(r).WithError(err).Error("Error Answer Options")
 		ape.RenderErr(w, problems.BadRequest(err)...)
@@ -36,7 +37,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	location := DailyQuestions(r).Location
-	timeReq, err := time.Parse("2006-01-02", req.StartsAt)
+	timeReq, err := time.Parse("2006-01-02", attributes.StartsAt)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to parse start time")
 		ape.RenderErr(w, problems.BadRequest(err)...)
@@ -61,7 +62,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	answerOptions, err := json.Marshal(req.Options)
+	answerOptions, err := json.Marshal(attributes.Options)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to get questions")
 		ape.RenderErr(w, problems.InternalError())
@@ -69,24 +70,24 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	correctAnswerFound := false
-	for _, option := range req.Options {
-		if option.Id == int(req.CorrectAnswer) {
+	for _, option := range attributes.Options {
+		if option.Id == int(attributes.CorrectAnswer) {
 			correctAnswerFound = true
 			break
 		}
 	}
 	if !correctAnswerFound {
-		Log(r).Errorf("Correct answer option out of range: %v", req.CorrectAnswer)
+		Log(r).Errorf("Correct answer option out of range: %v", attributes.CorrectAnswer)
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
 	stmt := data.DailyQuestion{
-		Title:         req.Title,
-		TimeForAnswer: req.TimeForAnswer,
-		Reward:        req.Reward,
+		Title:         attributes.Title,
+		TimeForAnswer: attributes.TimeForAnswer,
+		Reward:        attributes.Reward,
 		AnswerOptions: answerOptions,
-		CorrectAnswer: req.CorrectAnswer,
+		CorrectAnswer: attributes.CorrectAnswer,
 		StartsAt:      timeReq,
 	}
 
@@ -109,7 +110,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionCreate(&stmt, req.Options, question.ID))
+	ape.Render(w, NewDailyQuestionCreate(&stmt, attributes.Options, question.ID))
 }
 
 func ValidateOptions(options []resources.DailyQuestionOptions) error {

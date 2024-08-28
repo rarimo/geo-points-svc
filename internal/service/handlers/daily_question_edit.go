@@ -33,10 +33,12 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.NewDailyQuestionEdit(r)
 	if err != nil {
+
 		Log(r).WithError(err).Error("Error creating daily question edit request")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
+	attributes := req.Data.Attributes
 
 	question, err := DailyQuestionsQ(r).FilterByID(ID).Get()
 	if err != nil {
@@ -59,12 +61,12 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	requestBody := map[string]any{}
 
-	if req.Title != nil {
-		requestBody[data.ColDailyQuestionTitle] = *req.Title
+	if attributes.Title != nil {
+		requestBody[data.ColDailyQuestionTitle] = *attributes.Title
 	}
 
-	if req.StartsAt != nil {
-		timeReq, err := time.Parse("2006-01-02", *req.StartsAt)
+	if attributes.StartsAt != nil {
+		timeReq, err := time.Parse("2006-01-02", *attributes.StartsAt)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to parse start time")
 			ape.RenderErr(w, problems.BadRequest(err)...)
@@ -89,28 +91,28 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
-		requestBody[data.ColStartAt] = req.StartsAt
+		requestBody[data.ColStartAt] = attributes.StartsAt
 	}
 
-	if req.CorrectAnswer != nil {
+	if attributes.CorrectAnswer != nil {
 		l := len(question.AnswerOptions)
-		if *req.CorrectAnswer < 0 || l <= int(*req.CorrectAnswer) {
+		if *attributes.CorrectAnswer < 0 || l <= int(*attributes.CorrectAnswer) {
 			Log(r).Error("Invalid CorrectAnswer")
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
-		requestBody[data.ColCorrectAnswerID] = *req.CorrectAnswer
+		requestBody[data.ColCorrectAnswerID] = *attributes.CorrectAnswer
 	}
 
-	if req.Options != nil {
-		err = ValidateOptions(*req.Options)
+	if attributes.Options != nil {
+		err = ValidateOptions(*attributes.Options)
 		if err != nil {
 			Log(r).WithError(err).Error("Error Answer Options")
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 
-		answerOptions, err := json.Marshal(req.Options)
+		answerOptions, err := json.Marshal(attributes.Options)
 		if err != nil {
 			Log(r).Errorf("Error marshalling answer options: %v", err)
 			ape.RenderErr(w, problems.InternalError())
@@ -119,11 +121,11 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		correctAnswerFound := false
 
 		var localCorrectAnswer int64
-		if req.CorrectAnswer != nil {
-			localCorrectAnswer = *req.CorrectAnswer
+		if attributes.CorrectAnswer != nil {
+			localCorrectAnswer = *attributes.CorrectAnswer
 		}
 
-		for _, option := range *req.Options {
+		for _, option := range *attributes.Options {
 			if option.Id == int(localCorrectAnswer) {
 				correctAnswerFound = true
 				break
@@ -137,22 +139,22 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		requestBody[data.ColAnswerOption] = answerOptions
 	}
 
-	if req.Reward != nil {
-		if *req.Reward <= 0 {
+	if attributes.Reward != nil {
+		if *attributes.Reward <= 0 {
 			Log(r).Error("Invalid Reward")
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
-		requestBody[data.ColReward] = *req.Reward
+		requestBody[data.ColReward] = *attributes.Reward
 	}
 
-	if req.TimeForAnswer != nil {
-		if *req.TimeForAnswer < 0 {
+	if attributes.TimeForAnswer != nil {
+		if *attributes.TimeForAnswer < 0 {
 			Log(r).Error("Invalid Time for answer")
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
-		requestBody[data.ColTimeForAnswer] = *req.TimeForAnswer
+		requestBody[data.ColTimeForAnswer] = *attributes.TimeForAnswer
 	}
 
 	err = DailyQuestionsQ(r).FilterByID(ID).Update(requestBody)

@@ -85,7 +85,7 @@ func NewDailyQuestionsFilterDate(questions []data.DailyQuestion) (resources.Dail
 	for i, q := range questions {
 		qModel, err := NewDailyQuestionModel(q)
 		if err != nil {
-			return resources.DailyQuestionDetailsListResponse{}, fmt.Errorf("error make daily question model, %s", err)
+			return resources.DailyQuestionDetailsListResponse{}, fmt.Errorf("error make %s daily question model, %s", q, err)
 		}
 		list[i] = qModel
 	}
