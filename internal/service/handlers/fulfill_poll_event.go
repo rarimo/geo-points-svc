@@ -99,7 +99,7 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 
 	err = PollVerifier(r).VerifyProof(proof, proposalID, proposalEventID)
 	if err != nil {
-		log.WithError(err).Debug("Failed to verify passport")
+		log.WithError(err).Debug("Failed to verify poll participation proof")
 		if errors.Is(err, config.ErrInvalidProposalEventID) ||
 			errors.Is(err, config.ErrInvalidRoot) ||
 			errors.Is(err, config.ErrInvalidChallengedEventID) {

@@ -1,8 +1,10 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 	"os"
 
@@ -98,18 +100,29 @@ func (v *PollVerifier) VerifyProof(proof zkptypes.ZKProof, proposalID, proposalE
 		return ErrInvalidProposalEventID
 	}
 
-	proposalSMTAddress := proposalInfo.ProposalSMT
-	proposalSMTCaller, err := proposalsmt.NewProposalSMTCaller(proposalSMTAddress, v.RPC)
+	root := decimalTo32Bytes(proof.PubSignals[PollNullifierTreeRoot])
+	if root == [32]byte{} {
+		return ErrInvalidRoot
+	}
+
+	proposalSMTCaller, err := proposalsmt.NewProposalSMTFilterer(proposalInfo.ProposalSMT, v.RPC)
 	if err != nil {
 		return fmt.Errorf("failed to create proposal smt caller: %w", err)
 	}
 
-	root, err := proposalSMTCaller.GetRoot(nil)
+	latestBlock, err := v.RPC.BlockNumber(context.TODO())
+	if err != nil {
+		return fmt.Errorf("failed to get latest block: %w", err)
+	}
+
+	it, err := proposalSMTCaller.FilterRootUpdated(&bind.FilterOpts{
+		Start: max(0, latestBlock-5000),
+	}, [][32]byte{root})
 	if err != nil {
 		return fmt.Errorf("failed to get root: %w", err)
 	}
 
-	if new(big.Int).SetBytes(root[:]).String() != proof.PubSignals[PollNullifierTreeRoot] {
+	if ok := it.Next(); !ok {
 		return ErrInvalidRoot
 	}
 
@@ -122,4 +135,16 @@ func (v *PollVerifier) VerifyProof(proof zkptypes.ZKProof, proposalID, proposalE
 	}
 
 	return nil
+}
+
+func decimalTo32Bytes(root string) [32]byte {
+	b, ok := new(big.Int).SetString(root, 10)
+	if !ok {
+		return [32]byte{}
+	}
+
+	var bytes [32]byte
+	b.FillBytes(bytes[:])
+
+	return bytes
 }

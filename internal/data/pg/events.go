@@ -22,6 +22,7 @@ type events struct {
 	deleter    squirrel.DeleteBuilder
 	counter    squirrel.SelectBuilder
 	reopenable squirrel.SelectBuilder
+	last       squirrel.SelectBuilder
 }
 
 func NewEvents(db *pgdb.DB) data.EventsQ {
@@ -32,6 +33,7 @@ func NewEvents(db *pgdb.DB) data.EventsQ {
 		deleter:    squirrel.Delete(eventsTable),
 		counter:    squirrel.Select("COUNT(*) AS count").From(eventsTable),
 		reopenable: squirrel.Select("nullifier", "type").Distinct().From(eventsTable + " e1"),
+		last:       squirrel.Select("*").From(eventsTable).OrderBy("created_at DESC"),
 	}
 }
 
@@ -124,6 +126,19 @@ func (q *events) Get() (*data.Event, error) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("get event: %w", err)
+	}
+
+	return &res, nil
+}
+
+func (q *events) GetLast() (*data.Event, error) {
+	var res data.Event
+
+	if err := q.db.Get(&res, q.last); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get last event: %w", err)
 	}
 
 	return &res, nil
@@ -265,5 +280,6 @@ func (q *events) applyCondition(cond squirrel.Sqlizer) data.EventsQ {
 	q.deleter = q.deleter.Where(cond)
 	q.counter = q.counter.Where(cond)
 	q.reopenable = q.reopenable.Where(cond)
+	q.last = q.last.Where(cond)
 	return q
 }

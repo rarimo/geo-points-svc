@@ -96,8 +96,7 @@ func (q *dailyQuestionsQ) Select() ([]data.DailyQuestion, error) {
 
 func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	var res data.DailyQuestion
-
-	if err := q.db.Get(&res, q.selector); err != nil {
+	if err := q.db.Get(&res, q.selector.OrderBy("starts_at ASC")); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -128,11 +127,19 @@ func (q *dailyQuestionsQ) Page(page *pgdb.OffsetPageParams) data.DailyQuestionsQ
 }
 
 func (q *dailyQuestionsQ) FilterByCreatedAtAfter(date time.Time) data.DailyQuestionsQ {
-	return q.applyCondition(squirrel.GtOrEq{"created_at": date})
+	where := fmt.Sprintf("created_at >= '%s'::timestamp with time zone", date.Format("2006-01-02 15:04:05 -0700"))
+	q.selector = q.selector.Where(where)
+	q.updater = q.updater.Where(where)
+	q.counter = q.counter.Where(where)
+	return q
 }
 
 func (q *dailyQuestionsQ) FilterByStartsAtAfter(date time.Time) data.DailyQuestionsQ {
-	return q.applyCondition(squirrel.GtOrEq{"starts_at": date})
+	where := fmt.Sprintf("starts_at >= '%s'::timestamp with time zone", date.Format("2006-01-02 15:04:05 -0700"))
+	q.selector = q.selector.Where(where)
+	q.updater = q.updater.Where(where)
+	q.counter = q.counter.Where(where)
+	return q
 }
 
 func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ {
