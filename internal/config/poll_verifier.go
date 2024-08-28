@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -109,7 +110,7 @@ func (v *PollVerifier) VerifyProof(proof zkptypes.ZKProof, proposalID, proposalE
 		return fmt.Errorf("failed to create proposal smt caller: %w", err)
 	}
 
-	latestBlock, err := v.RPC.BlockNumber(nil)
+	latestBlock, err := v.RPC.BlockNumber(context.TODO())
 	if err != nil {
 		return fmt.Errorf("failed to get latest block: %w", err)
 	}
