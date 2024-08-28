@@ -1996,6 +1996,8 @@ github.com/nats-io/nkeys v0.4.5/go.mod h1:XUkxdLPTufzlihbamfzQ7mw/VGx6ObUs+0bN5s
 github.com/nats-io/nkeys v0.4.6/go.mod h1:4DxZNzenSVd1cYQoAa8948QY3QDjrHfcfVADymtkpts=
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
+github.com/nullstyle/go-xdr v0.0.0-20180726165426-f4c839f75077 h1:A804awGqaW7i61y8KnbtHmh3scqbNuTJqcycq3u5ZAU=
+github.com/nullstyle/go-xdr v0.0.0-20180726165426-f4c839f75077/go.mod h1:sZZi9x5aHXGZ/RRp7Ne5rkvtDxZb7pd7vgVA+gmE35A=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
@@ -2338,6 +2340,8 @@ gitlab.com/distributed_lab/running v1.6.0 h1:O2GQHgYkpNRDbobR11atOCH2rhS1okNKyad
 gitlab.com/distributed_lab/running v1.6.0/go.mod h1:4TnADX84dQjQMRHKIMPCVL0L97rD/Jxv0xDbrN6aKzk=
 gitlab.com/distributed_lab/urlval/v4 v4.0.3 h1:ZgdSBcvaoHBYmgze/u0bYfvq5Xx47pGTdfFmMYxn27s=
 gitlab.com/distributed_lab/urlval/v4 v4.0.3/go.mod h1:IdRM8gOyzpXNoAkIKWVwN+dChh6+1TioS/SVhTGvRFA=
+gitlab.com/tokend/go v3.16.0+incompatible h1:WKpbEsqOxf7L7fc0GGx9hoPy2dCph+AtPBd1JCbGWKk=
+gitlab.com/tokend/go v3.16.0+incompatible/go.mod h1:qz38YBc7VL29H2gnXbpRzcEVw2d1NUZ5SVDzIehqDCA=
 go.etcd.io/bbolt v1.3.7 h1:j+zJOnnEjF/kyHlDDgGnVL/AIqIJPq8UoB2GSNfkUfQ=
 go.etcd.io/bbolt v1.3.7/go.mod h1:N9Mkw9X8x5fupy0IKsmuqVtoGDyxsaDlbk4Rd05IAQw=
 go.etcd.io/etcd/api/v3 v3.5.10/go.mod h1:TidfmT4Uycad3NM/o25fG3J07odo4GBB9hoxaodFCtI=
