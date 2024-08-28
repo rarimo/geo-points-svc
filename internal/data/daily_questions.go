@@ -58,13 +58,11 @@ type DailyQuestionsQ interface {
 }
 
 func (q *DailyQuestion) ExtractOptions() ([]resources.DailyQuestionOptions, error) {
-	var options struct {
-		Options []resources.DailyQuestionOptions `json:"options"`
-	}
+	var options []resources.DailyQuestionOptions
 	err := json.NewDecoder(bytes.NewReader(q.AnswerOptions)).Decode(&options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal question options: %w", err)
 	}
 
-	return options.Options, nil
+	return options, nil
 }
