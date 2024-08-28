@@ -38,7 +38,7 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if question == nil {
-		Log(r).Warnf("Question with ID %d not found", ID)
+		Log(r).Errorf("Question with ID %d not found", ID)
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
@@ -46,8 +46,8 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	timeReq := question.StartsAt
 	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.UTC)) {
-		Log(r).Warnf("Only questions that start tomorrow or later can be delete: %s", timeReq.String())
+	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+		Log(r).Errorf("Only questions that start tomorrow or later can be delete: %s", timeReq.String())
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}

@@ -16,7 +16,7 @@ const (
 	ColAnswerOption       = "answer_options"
 	ColCorrectAnswerId    = "correct_answer"
 	ColReward             = "reward"
-	ColStartAt            = "start_at"
+	ColStartAt            = "starts_at"
 	ColCorrectAnswers     = "num_correct_answers"
 	ColIncorrectAnswers   = "num_incorrect_answers"
 	ColAllParticipants    = "num_all_participants"
@@ -43,7 +43,6 @@ type DailyQuestionsQ interface {
 	Delete() (int64, error)
 	Count() (int64, error)
 	Select() ([]DailyQuestion, error)
-	SelectByTime() ([]DailyQuestion, error)
 
 	Get() (*DailyQuestion, error)
 	Page(*pgdb.OffsetPageParams) DailyQuestionsQ

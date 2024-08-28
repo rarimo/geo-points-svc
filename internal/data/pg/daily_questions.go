@@ -14,22 +14,20 @@ import (
 const dailyQuestionsTable = "daily_questions"
 
 type dailyQuestionsQ struct {
-	db           *pgdb.DB
-	selector     squirrel.SelectBuilder
-	updater      squirrel.UpdateBuilder
-	counter      squirrel.SelectBuilder
-	deleter      squirrel.DeleteBuilder
-	timeSelector squirrel.SelectBuilder
+	db       *pgdb.DB
+	selector squirrel.SelectBuilder
+	updater  squirrel.UpdateBuilder
+	counter  squirrel.SelectBuilder
+	deleter  squirrel.DeleteBuilder
 }
 
 func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionsQ {
 	return &dailyQuestionsQ{
-		db:           db,
-		selector:     squirrel.Select("*").From(dailyQuestionsTable),
-		updater:      squirrel.Update(dailyQuestionsTable),
-		deleter:      squirrel.Delete(dailyQuestionsTable),
-		counter:      squirrel.Select("COUNT(*) as count").From(dailyQuestionsTable),
-		timeSelector: squirrel.Select("*").From(dailyQuestionsTable).OrderBy("starts_at ASC"),
+		db:       db,
+		selector: squirrel.Select("*").From(dailyQuestionsTable),
+		updater:  squirrel.Update(dailyQuestionsTable),
+		deleter:  squirrel.Delete(dailyQuestionsTable),
+		counter:  squirrel.Select("COUNT(*) as count").From(dailyQuestionsTable),
 	}
 }
 
@@ -96,14 +94,6 @@ func (q *dailyQuestionsQ) Select() ([]data.DailyQuestion, error) {
 	return res, nil
 }
 
-func (q *dailyQuestionsQ) SelectByTime() ([]data.DailyQuestion, error) {
-	var res []data.DailyQuestion
-	if err := q.db.Select(&res, q.timeSelector); err != nil {
-		return res, fmt.Errorf("select daily questions: %w", err)
-	}
-	return res, nil
-}
-
 func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	var res data.DailyQuestion
 
@@ -133,7 +123,7 @@ func applyDailyQuestionPage(page *pgdb.OffsetPageParams, sql squirrel.SelectBuil
 }
 
 func (q *dailyQuestionsQ) Page(page *pgdb.OffsetPageParams) data.DailyQuestionsQ {
-	q.selector = applyDailyQuestionPage(page, q.selector)
+	q.selector = page.ApplyTo(q.selector, "starts_at")
 	return q
 }
 
@@ -204,6 +194,5 @@ func (q *dailyQuestionsQ) applyCondition(cond squirrel.Sqlizer) data.DailyQuesti
 	q.updater = q.updater.Where(cond)
 	q.deleter = q.deleter.Where(cond)
 	q.counter = q.counter.Where(cond)
-	q.timeSelector = q.timeSelector.Where(cond)
 	return q
 }

@@ -45,14 +45,14 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if question == nil {
-		Log(r).Warnf("Question with ID %d not found", ID)
+		Log(r).Error("Question with ID %d not found", ID)
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
 	nowTime := time.Now().UTC()
-	if !question.StartsAt.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.UTC)) {
-		Log(r).Warnf("Cannot change a question id: %v that is available today or in the past", ID)
+	if !question.StartsAt.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+		Log(r).Errorf("Cannot change a question id: %v that is available today or in the past", ID)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
@@ -71,8 +71,8 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		nowTime := time.Now().UTC()
-		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.UTC)) {
-			Log(r).Warnf("Argument start_at must be more or equal tommorow midnoght now its: %s", timeReq.String())
+		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+			Log(r).Errorf("Argument start_at must be more or equal tommorow midnoght now its: %s", timeReq.String())
 			ape.RenderErr(w, problems.Forbidden())
 			return
 		}
@@ -80,7 +80,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		location := DailyQuestions(r).Location
 		question, err := DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
 		if err != nil {
-			Log(r).Errorf("Error on this day %v", err)
+			Log(r).WithError(err).Error("Error on this day")
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
@@ -89,7 +89,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
-		requestBody[data.ColStartAt] = *req.StartsAt
+		requestBody[data.ColStartAt] = req.StartsAt
 	}
 
 	if req.CorrectAnswer != nil {

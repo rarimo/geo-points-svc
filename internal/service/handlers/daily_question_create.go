@@ -43,8 +43,8 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, time.UTC)) {
-		Log(r).Warnf("Arg start_at must be more or equal tommorow midnoght noe: %s", timeReq.String())
+	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+		Log(r).Errorf("Arg start_at must be more or equal tommorow midnoght noe: %s", timeReq.String())
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
@@ -56,7 +56,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if question != nil {
-		Log(r).Infof("Question already exist for date %s, question: %+v", question.StartsAt, question)
+		Log(r).Errorf("Question already exist for date %s, question: %+v", question.StartsAt, question)
 		ape.RenderErr(w, problems.Conflict())
 		return
 	}
@@ -76,7 +76,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if !correctAnswerFound {
-		Log(r).Warnf("Correct answer option out of range: %v", req.CorrectAnswer)
+		Log(r).Errorf("Correct answer option out of range: %v", req.CorrectAnswer)
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
@@ -92,14 +92,14 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	err = DailyQuestionsQ(r).Insert(stmt)
 	if err != nil {
-		Log(r).Errorf("Error ger request NewDailyQuestion: %v", err)
+		Log(r).WithError(err).Error("Error ger request NewDailyQuestion")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
 	question, _ = DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
 
-	ape.Render(w, NewDailyQuestionCrate(&stmt, req.Options, question.ID))
+	ape.Render(w, NewDailyQuestionCreate(&stmt, req.Options, question.ID))
 }
 
 func ValidateOptions(options []resources.DailyQuestionOptions) error {
@@ -132,7 +132,7 @@ func ValidateOptions(options []resources.DailyQuestionOptions) error {
 	return nil
 }
 
-func NewDailyQuestionCrate(q *data.DailyQuestion, options []resources.DailyQuestionOptions, ID int64) resources.DailyQuestionDetailsResponse {
+func NewDailyQuestionCreate(q *data.DailyQuestion, options []resources.DailyQuestionOptions, ID int64) resources.DailyQuestionDetailsResponse {
 	return resources.DailyQuestionDetailsResponse{
 		Data: resources.DailyQuestionDetails{
 			Key: resources.NewKeyInt64(ID, resources.DAILY_QUESTIONS),

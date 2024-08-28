@@ -23,9 +23,10 @@ func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Error("error creating filter start at daily questions request")
 		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
 	}
 
-	res, err := DailyQuestionsQ(r).Page(&req.OffsetPageParams).SelectByTime()
+	res, err := DailyQuestionsQ(r).Page(&req.OffsetPageParams).Select()
 	if err != nil {
 		Log(r).WithError(err).Error("Error filtering questions")
 		ape.RenderErr(w, problems.InternalError())
