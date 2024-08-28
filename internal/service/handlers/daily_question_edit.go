@@ -162,7 +162,18 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	questionNew, _ := DailyQuestionsQ(r).FilterByID(ID).Get()
+	questionNew, err := DailyQuestionsQ(r).FilterByID(ID).Get()
+	if err != nil {
+		Log(r).WithError(err).Error("Error on this day")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if questionNew == nil {
+		Log(r).Errorf("Error get qurstion for response")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	resp, err := NewDailyQuestionEdite(ID, questionNew)
 	if err != nil {
 		Log(r).WithError(err).Error("Error editing daily question")
