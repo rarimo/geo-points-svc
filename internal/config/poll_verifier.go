@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 	"os"
 
@@ -108,7 +109,14 @@ func (v *PollVerifier) VerifyProof(proof zkptypes.ZKProof, proposalID, proposalE
 		return fmt.Errorf("failed to create proposal smt caller: %w", err)
 	}
 
-	it, err := proposalSMTCaller.FilterRootUpdated(nil, [][32]byte{root})
+	latestBlock, err := v.RPC.BlockNumber(nil)
+	if err != nil {
+		return fmt.Errorf("failed to get latest block: %w", err)
+	}
+
+	it, err := proposalSMTCaller.FilterRootUpdated(&bind.FilterOpts{
+		Start: max(0, latestBlock-5000),
+	}, [][32]byte{root})
 	if err != nil {
 		return fmt.Errorf("failed to get root: %w", err)
 	}
