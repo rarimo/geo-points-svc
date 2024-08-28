@@ -169,7 +169,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if questionNew == nil {
-		Log(r).Errorf("Error get qurstion for response")
+		Log(r).Errorf("Error get question for response")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}

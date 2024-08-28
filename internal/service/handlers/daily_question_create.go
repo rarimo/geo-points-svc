@@ -97,7 +97,17 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	question, _ = DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
+	question, err = DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
+	if err != nil {
+		Log(r).WithError(err).Error("Error on this day")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+	if question == nil {
+		Log(r).Errorf("Error get question for response")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
 
 	ape.Render(w, NewDailyQuestionCreate(&stmt, req.Options, question.ID))
 }
