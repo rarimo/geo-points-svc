@@ -29,6 +29,13 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 	attributes := req.Data.Attributes
 
+	if req.Data.Type != resources.DAILY_QUESTIONS {
+		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
+		Log(r).WithError(err).Error("Invalid data type")
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
+
 	err = ValidateOptions(attributes.Options)
 	if err != nil {
 		Log(r).WithError(err).Error("Error Answer Options")

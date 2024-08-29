@@ -38,6 +38,12 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	attributes := req.Data.Attributes
+	if req.Data.Type != resources.DAILY_QUESTIONS {
+		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
+		Log(r).WithError(err).Error("Invalid data type")
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
 
 	question, err := DailyQuestionsQ(r).FilterByID(ID).Get()
 	if err != nil {
