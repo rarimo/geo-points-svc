@@ -7,8 +7,6 @@ package resources
 type DailyQuestionDetailsAttributes struct {
 	// Correct answer ID
 	CorrectAnswer int64 `json:"correct_answer"`
-	// Start date when this question was create
-	CreatedAt string `json:"created_at"`
 	// Users who received the question, those who answered and those who did not answer in the time given to them
 	NumAllParticipants int64 `json:"num_all_participants"`
 	// Number of correct answers

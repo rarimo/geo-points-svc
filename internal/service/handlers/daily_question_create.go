@@ -137,8 +137,8 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
-	ape.Render(w, NewDailyQuestionCreate(&stmt, attributes.Options, question.ID))
+	loc := DailyQuestions(r).Location
+	ape.Render(w, NewDailyQuestionCreate(&stmt, attributes.Options, question.ID, loc))
 }
 
 func ValidateOptions(options []resources.DailyQuestionOptions) error {
@@ -171,7 +171,7 @@ func ValidateOptions(options []resources.DailyQuestionOptions) error {
 	return nil
 }
 
-func NewDailyQuestionCreate(q *data.DailyQuestion, options []resources.DailyQuestionOptions, ID int64) resources.DailyQuestionDetailsResponse {
+func NewDailyQuestionCreate(q *data.DailyQuestion, options []resources.DailyQuestionOptions, ID int64, loc *time.Location) resources.DailyQuestionDetailsResponse {
 	return resources.DailyQuestionDetailsResponse{
 		Data: resources.DailyQuestionDetails{
 			Key: resources.NewKeyInt64(ID, resources.DAILY_QUESTIONS),
@@ -181,8 +181,7 @@ func NewDailyQuestionCreate(q *data.DailyQuestion, options []resources.DailyQues
 				CorrectAnswer: q.CorrectAnswer,
 				Reward:        q.Reward,
 				TimeForAnswer: q.TimeForAnswer,
-				StartsAt:      q.StartsAt.String(),
-				CreatedAt:     time.Now().UTC().String(),
+				StartsAt:      q.StartsAt.In(loc).String(),
 			},
 		},
 	}

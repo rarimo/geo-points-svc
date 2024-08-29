@@ -58,8 +58,8 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
-	response, err := NewDailyQuestionDelete(ID, deletedQuestion)
+	loc := DailyQuestions(r).Location
+	response, err := NewDailyQuestionDelete(ID, deletedQuestion, loc)
 	if err != nil {
 		Log(r).WithError(err).Error("Error deleting daily question")
 		ape.RenderErr(w, problems.InternalError())
@@ -68,7 +68,7 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, response)
 }
 
-func NewDailyQuestionDelete(ID int64, q data.DailyQuestion) (resources.DailyQuestionDetailsResponse, error) {
+func NewDailyQuestionDelete(ID int64, q data.DailyQuestion, loc *time.Location) (resources.DailyQuestionDetailsResponse, error) {
 	var options []resources.DailyQuestionOptions
 	err := json.Unmarshal(q.AnswerOptions, &options)
 	if err != nil {
@@ -85,8 +85,7 @@ func NewDailyQuestionDelete(ID int64, q data.DailyQuestion) (resources.DailyQues
 				CorrectAnswer: q.CorrectAnswer,
 				Reward:        q.Reward,
 				TimeForAnswer: q.TimeForAnswer,
-				StartsAt:      q.StartsAt.String(),
-				CreatedAt:     q.CreatedAt.String(),
+				StartsAt:      q.StartsAt.In(loc).String(),
 			},
 		},
 	}, nil

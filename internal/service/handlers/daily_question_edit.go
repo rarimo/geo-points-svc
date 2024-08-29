@@ -202,8 +202,8 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-
-	resp, err := NewDailyQuestionEdite(ID, questionNew)
+	loc := DailyQuestions(r).Location
+	resp, err := NewDailyQuestionEdite(ID, questionNew, loc)
 	if err != nil {
 		Log(r).WithError(err).Error("Error editing daily question")
 		ape.RenderErr(w, problems.InternalError())
@@ -213,7 +213,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, resp)
 }
 
-func NewDailyQuestionEdite(ID int64, q *data.DailyQuestion) (resources.DailyQuestionDetailsResponse, error) {
+func NewDailyQuestionEdite(ID int64, q *data.DailyQuestion, loc *time.Location) (resources.DailyQuestionDetailsResponse, error) {
 	var options []resources.DailyQuestionOptions
 	err := json.Unmarshal(q.AnswerOptions, &options)
 	if err != nil {
@@ -228,7 +228,7 @@ func NewDailyQuestionEdite(ID int64, q *data.DailyQuestion) (resources.DailyQues
 				CorrectAnswer: q.CorrectAnswer,
 				Options:       options,
 				Reward:        q.Reward,
-				StartsAt:      q.StartsAt.String(),
+				StartsAt:      q.StartsAt.In(loc).String(),
 				TimeForAnswer: q.TimeForAnswer,
 				Title:         q.Title,
 			},
