@@ -45,11 +45,20 @@ func Run(ctx context.Context, cfg config.Config) {
 					})
 				})
 			})
-			r.Route("/daily_questions/{nullifier}", func(r chi.Router) {
+
+			r.Route("/daily_questions", func(r chi.Router) {
 				r.Use(authMW)
-				r.Get("/status", handlers.GetDailyQuestionsStatus)
-				r.Get("/", handlers.GetDailyQuestion)
-				r.Post("/", handlers.CheckDailyQuestion)
+				r.Route("/admin", func(r chi.Router) {
+					r.Delete("/{question_id}", handlers.DeleteDailyQuestion)
+					r.Patch("/{question_id}", handlers.EditDailyQuestion)
+					r.Post("/", handlers.CreateDailyQuestion)
+					r.Get("/", handlers.FilterStartAtDailyQuestions)
+				})
+				r.Route("/{nullifier}", func(r chi.Router) {
+					r.Get("/status", handlers.GetDailyQuestionsStatus)
+					r.Get("/", handlers.GetDailyQuestion)
+					r.Post("/", handlers.CheckDailyQuestion)
+				})
 			})
 			r.Route("/events", func(r chi.Router) {
 				r.Use(authMW)

@@ -7,12 +7,19 @@ import (
 	"time"
 
 	"github.com/rarimo/geo-points-svc/resources"
+	"gitlab.com/distributed_lab/kit/pgdb"
 )
 
 const (
-	ColCorrectAnswers   = "num_correct_answers"
-	ColIncorrectAnswers = "num_incorrect_answers"
-	ColAllParticipants  = "num_all_participants"
+	ColDailyQuestionTitle = "title"
+	ColTimeForAnswer      = "time_for_answer"
+	ColAnswerOption       = "answer_options"
+	ColCorrectAnswerID    = "correct_answer"
+	ColReward             = "reward"
+	ColStartAt            = "starts_at"
+	ColCorrectAnswers     = "num_correct_answers"
+	ColIncorrectAnswers   = "num_incorrect_answers"
+	ColAllParticipants    = "num_all_participants"
 )
 
 type DailyQuestion struct {
@@ -33,15 +40,17 @@ type DailyQuestionsQ interface {
 	New() DailyQuestionsQ
 	Insert(DailyQuestion) error
 	Update(map[string]any) error
-
+	Delete() (int64, error)
 	Count() (int64, error)
 	Select() ([]DailyQuestion, error)
-	Get() (*DailyQuestion, error)
 
+	Get() (*DailyQuestion, error)
+	Page(*pgdb.OffsetPageParams) DailyQuestionsQ
 	FilterTodayQuestions(offset int) DailyQuestionsQ
 	FilterByCreatedAtAfter(date time.Time) DailyQuestionsQ
 	FilterByStartsAtAfter(date time.Time) DailyQuestionsQ
 	FilterByID(ID int64) DailyQuestionsQ
+	FilterDayQuestions(location *time.Location, day time.Time) DailyQuestionsQ
 
 	IncrementCorrectAnswer() error
 	IncrementIncorrectAnswer() error
@@ -49,13 +58,11 @@ type DailyQuestionsQ interface {
 }
 
 func (q *DailyQuestion) ExtractOptions() ([]resources.DailyQuestionOptions, error) {
-	var options struct {
-		Options []resources.DailyQuestionOptions `json:"options"`
-	}
+	var options []resources.DailyQuestionOptions
 	err := json.NewDecoder(bytes.NewReader(q.AnswerOptions)).Decode(&options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal question options: %w", err)
 	}
 
-	return options.Options, nil
+	return options, nil
 }

@@ -18,6 +18,7 @@ type dailyQuestionsQ struct {
 	selector squirrel.SelectBuilder
 	updater  squirrel.UpdateBuilder
 	counter  squirrel.SelectBuilder
+	deleter  squirrel.DeleteBuilder
 }
 
 func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionsQ {
@@ -25,6 +26,7 @@ func NewDailyQuestionsQ(db *pgdb.DB) data.DailyQuestionsQ {
 		db:       db,
 		selector: squirrel.Select("*").From(dailyQuestionsTable),
 		updater:  squirrel.Update(dailyQuestionsTable),
+		deleter:  squirrel.Delete(dailyQuestionsTable),
 		counter:  squirrel.Select("COUNT(*) as count").From(dailyQuestionsTable),
 	}
 }
@@ -56,6 +58,20 @@ func (q *dailyQuestionsQ) Update(fields map[string]any) error {
 	}
 
 	return nil
+}
+
+func (q *dailyQuestionsQ) Delete() (int64, error) {
+	res, err := q.db.ExecWithResult(q.deleter)
+	if err != nil {
+		return 0, fmt.Errorf("delete daily question: %w", err)
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("count rows affected: %w", err)
+	}
+
+	return rows, nil
 }
 
 func (q *dailyQuestionsQ) Count() (int64, error) {
@@ -90,6 +106,11 @@ func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	return &res, nil
 }
 
+func (q *dailyQuestionsQ) Page(page *pgdb.OffsetPageParams) data.DailyQuestionsQ {
+	q.selector = page.ApplyTo(q.selector, "starts_at")
+	return q
+}
+
 func (q *dailyQuestionsQ) FilterByCreatedAtAfter(date time.Time) data.DailyQuestionsQ {
 	where := fmt.Sprintf("created_at >= '%s'::timestamp with time zone", date.Format("2006-01-02 15:04:05 -0700"))
 	q.selector = q.selector.Where(where)
@@ -116,6 +137,17 @@ func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ 
 	return q.applyCondition(squirrel.And{
 		squirrel.GtOrEq{"starts_at": todayStart},
 		squirrel.LtOrEq{"starts_at": todayEnd},
+	})
+}
+
+func (q *dailyQuestionsQ) FilterDayQuestions(location *time.Location, day time.Time) data.DailyQuestionsQ {
+	dayInLocation := day.In(location)
+	dayStart := time.Date(dayInLocation.Year(), dayInLocation.Month(), dayInLocation.Day(), 0, 0, 0, 0, location)
+	dayEnd := dayStart.Add(24 * time.Hour)
+
+	return q.applyCondition(squirrel.And{
+		squirrel.GtOrEq{"starts_at": dayStart},
+		squirrel.Lt{"starts_at": dayEnd},
 	})
 }
 
@@ -152,6 +184,7 @@ func (q *dailyQuestionsQ) IncrementAllParticipants() error {
 func (q *dailyQuestionsQ) applyCondition(cond squirrel.Sqlizer) data.DailyQuestionsQ {
 	q.selector = q.selector.Where(cond)
 	q.updater = q.updater.Where(cond)
+	q.deleter = q.deleter.Where(cond)
 	q.counter = q.counter.Where(cond)
 	return q
 }
