@@ -45,7 +45,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
 		Log(r).WithError(err).Error("Invalid data type")
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"type": fmt.Errorf("%v not alowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
+			"type": fmt.Errorf("%v not allowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
 		})...)
 		return
 	}
