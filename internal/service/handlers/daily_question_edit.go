@@ -33,7 +33,6 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.NewDailyQuestionEdit(r)
 	if err != nil {
-
 		Log(r).WithError(err).Error("Error creating daily question edit request")
 		ape.RenderErr(w, problems.InternalError())
 		return
@@ -87,7 +86,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if question != nil && ID != question.ID {
-			Log(r).Errorf("Error on this day %v, the daily question already has %v", question.StartsAt, question)
+			Log(r).Errorf("Error on this day %s, the daily question already has %s", question.StartsAt.String(), question)
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}

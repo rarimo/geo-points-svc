@@ -15,11 +15,8 @@ func NewDailyQuestionEdit(r *http.Request) (req resources.DailyQuestionEditRespo
 	}
 
 	return req, validation.Errors{
-		"time_for_answer": validation.Validate(&req.Data.Attributes.TimeForAnswer),
-		"correct_answer":  validation.Validate(&req.Data.Attributes.CorrectAnswer),
-		"starts_at":       validation.Validate(&req.Data.Attributes.StartsAt),
-		"options":         validation.Validate(&req.Data.Attributes.Options),
-		"reward":          validation.Validate(&req.Data.Attributes.Reward),
-		"title":           validation.Validate(&req.Data.Attributes.Title),
+		"data/id":         validation.Validate(&req.Data.ID, validation.Required),
+		"data/type":       validation.Validate(&req.Data.Type, validation.Required),
+		"data/attributes": validation.Validate(&req.Data.Attributes, validation.Required),
 	}.Filter()
 }

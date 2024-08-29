@@ -15,11 +15,8 @@ func NewDailyQuestion(r *http.Request) (req resources.DailyQuestionCreateRespons
 	}
 
 	return req, validation.Errors{
-		"data/attributes/time_for_answer": validation.Validate(req.Data.Attributes.TimeForAnswer, validation.Required),
-		"data/attributes/correct_answer":  validation.Validate(req.Data.Attributes.CorrectAnswer, validation.Required),
-		"data/attributes/starts_at":       validation.Validate(req.Data.Attributes.StartsAt, validation.Required),
-		"data/attributes/options":         validation.Validate(req.Data.Attributes.Options, validation.Required),
-		"data/attributes/reward":          validation.Validate(req.Data.Attributes.Reward, validation.Required),
-		"data/attributes/title":           validation.Validate(req.Data.Attributes.Title, validation.Required),
+		"data/id":         validation.Validate(&req.Data.ID, validation.Required),
+		"data/type":       validation.Validate(&req.Data.Type, validation.Required),
+		"data/attributes": validation.Validate(&req.Data.Attributes, validation.Required),
 	}.Filter()
 }
