@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
@@ -27,21 +28,25 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	ID, err := strconv.ParseInt(IDStr, 10, 64)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to parse ID")
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"query": fmt.Errorf("failed to parse ID: %v, err: %s", ID, err),
+		})...)
 		return
 	}
 
 	req, err := requests.NewDailyQuestionEdit(r)
 	if err != nil {
 		Log(r).WithError(err).Error("Error creating daily question edit request")
-		ape.RenderErr(w, problems.InternalError())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 	attributes := req.Data.Attributes
 	if req.Data.Type != resources.DAILY_QUESTIONS {
 		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
 		Log(r).WithError(err).Error("Invalid data type")
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"type": fmt.Errorf("%v not alowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
+		})...)
 		return
 	}
 
@@ -60,7 +65,9 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nowTime := time.Now().UTC()
 	if !question.StartsAt.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
 		Log(r).Errorf("Cannot change a question id: %v that is available today or in the past", ID)
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"starts_at": fmt.Errorf("cannot change a question id: %v that is available today or in the past", ID),
+		})...)
 		return
 	}
 
@@ -74,13 +81,17 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		timeReq, err := time.Parse("2006-01-02", *attributes.StartsAt)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to parse start time")
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.BadRequest(validation.Errors{
+				"starts_at": fmt.Errorf("failed to parse start time %s err: %s", *attributes.StartsAt, err),
+			})...)
 			return
 		}
 		nowTime := time.Now().UTC()
 		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
 			Log(r).Errorf("Argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String())
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.BadRequest(validation.Errors{
+				"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String()),
+			})...)
 			return
 		}
 
@@ -103,7 +114,9 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		l := len(question.AnswerOptions)
 		if *attributes.CorrectAnswer < 0 || l <= int(*attributes.CorrectAnswer) {
 			Log(r).Error("Invalid CorrectAnswer")
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.BadRequest(validation.Errors{
+				"correct_answer": fmt.Errorf("invalid value for correct_answer: %v", *attributes.CorrectAnswer),
+			})...)
 			return
 		}
 		requestBody[data.ColCorrectAnswerID] = *attributes.CorrectAnswer
@@ -113,7 +126,9 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		err = ValidateOptions(*attributes.Options)
 		if err != nil {
 			Log(r).WithError(err).Error("Error Answer Options")
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.BadRequest(validation.Errors{
+				"options": fmt.Errorf("invalid options: %v, err: %s", *attributes.Options, err),
+			})...)
 			return
 		}
 
@@ -138,7 +153,10 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		}
 		if !correctAnswerFound {
 			Log(r).Warnf("Correct answer option out of range: %v", question.CorrectAnswer)
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.BadRequest(
+				validation.Errors{
+					"correct_answer": fmt.Errorf("correct answer option out of range %v", localCorrectAnswer),
+				})...)
 			return
 		}
 		requestBody[data.ColAnswerOption] = answerOptions
@@ -147,7 +165,9 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if attributes.Reward != nil {
 		if *attributes.Reward <= 0 {
 			Log(r).Error("Invalid Reward")
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.BadRequest(validation.Errors{
+				"reward": fmt.Errorf("reward less than or equal to 0 reward: %v", attributes.Reward),
+			})...)
 			return
 		}
 		requestBody[data.ColReward] = *attributes.Reward
@@ -156,7 +176,9 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if attributes.TimeForAnswer != nil {
 		if *attributes.TimeForAnswer < 0 {
 			Log(r).Error("Invalid Time for answer")
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.BadRequest(validation.Errors{
+				"time_for_answer": fmt.Errorf("invalid value for time_for_answer: %v", *attributes.TimeForAnswer),
+			})...)
 			return
 		}
 		requestBody[data.ColTimeForAnswer] = *attributes.TimeForAnswer

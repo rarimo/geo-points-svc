@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
@@ -32,14 +33,18 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	if req.Data.Type != resources.DAILY_QUESTIONS {
 		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
 		Log(r).WithError(err).Error("Invalid data type")
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"type": fmt.Errorf("%v not alowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
+		})...)
 		return
 	}
 
 	err = ValidateOptions(attributes.Options)
 	if err != nil {
 		Log(r).WithError(err).Error("Error Answer Options")
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"options": fmt.Errorf("invalid options: %v, err: %s", attributes.Options, err),
+		})...)
 		return
 	}
 
@@ -47,13 +52,17 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	timeReq, err := time.Parse("2006-01-02", attributes.StartsAt)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to parse start time")
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"starts_at": fmt.Errorf("failed to parse start time %s err: %s", attributes.StartsAt, err),
+		})...)
 		return
 	}
 	nowTime := time.Now().UTC()
 	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
 		Log(r).Errorf("Arg start_at must be more or equal tomorow midnoght noe: %s", timeReq.String())
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String()),
+		})...)
 		return
 	}
 
@@ -85,7 +94,19 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 	if !correctAnswerFound {
 		Log(r).Errorf("Correct answer option out of range: %v", attributes.CorrectAnswer)
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(
+			validation.Errors{
+				"correct_answer": fmt.Errorf("correct answer option out of range %v", attributes.CorrectAnswer),
+			})...)
+		return
+	}
+
+	if attributes.Reward <= 0 {
+		Log(r).Errorf("Reward option out of range: %v", attributes.Reward)
+		ape.RenderErr(w, problems.BadRequest(
+			validation.Errors{
+				"reward": fmt.Errorf("reward less than or equal to 0 reward: %v", attributes.Reward),
+			})...)
 		return
 	}
 
