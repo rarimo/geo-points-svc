@@ -25,19 +25,13 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.NewDailyQuestion(r)
 	if err != nil {
 		Log(r).WithError(err).Error("Error get request NewDailyQuestion")
-		ape.RenderErr(w, problems.BadRequest(err)...)
-		return
-	}
-	attributes := req.Data.Attributes
-
-	if req.Data.Type != resources.DAILY_QUESTIONS {
-		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
-		Log(r).WithError(err).Error("Invalid data type")
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"type": fmt.Errorf("%v not allowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
+			"body": err,
 		})...)
 		return
 	}
+	loc := DailyQuestions(r).Location
+	attributes := req.Data.Attributes
 
 	err = ValidateOptions(attributes.Options)
 	if err != nil {
@@ -116,7 +110,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		Reward:        attributes.Reward,
 		AnswerOptions: answerOptions,
 		CorrectAnswer: attributes.CorrectAnswer,
-		StartsAt:      timeReq,
+		StartsAt:      timeReq.In(loc),
 	}
 
 	err = DailyQuestionsQ(r).Insert(stmt)
@@ -137,7 +131,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	loc := DailyQuestions(r).Location
+
 	ape.Render(w, NewDailyQuestionCreate(&stmt, attributes.Options, question.ID, loc))
 }
 

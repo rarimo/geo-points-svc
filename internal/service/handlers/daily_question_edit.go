@@ -37,18 +37,12 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.NewDailyQuestionEdit(r)
 	if err != nil {
 		Log(r).WithError(err).Error("Error creating daily question edit request")
-		ape.RenderErr(w, problems.BadRequest(err)...)
-		return
-	}
-	attributes := req.Data.Attributes
-	if req.Data.Type != resources.DAILY_QUESTIONS {
-		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
-		Log(r).WithError(err).Error("Invalid data type")
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"type": fmt.Errorf("%v not allowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
+			"body": err,
 		})...)
 		return
 	}
+	attributes := req.Data.Attributes
 
 	question, err := DailyQuestionsQ(r).FilterByID(ID).Get()
 	if err != nil {
@@ -107,7 +101,12 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
-		requestBody[data.ColStartAt] = attributes.StartsAt
+		parsedTime, err := time.Parse("2006-01-02", *attributes.StartsAt)
+		if err != nil {
+			Log(r).WithError(err).Error("Failed to parse start time")
+			return
+		}
+		requestBody[data.ColStartAt] = parsedTime.In(location).Format("2006-01-02 15:04:05")
 	}
 
 	if attributes.CorrectAnswer != nil {

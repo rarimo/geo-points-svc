@@ -2,6 +2,7 @@ package requests
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -12,6 +13,11 @@ func NewDailyQuestionEdit(r *http.Request) (req resources.DailyQuestionEditRespo
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = newDecodeError("body", err)
 		return
+	}
+
+	if req.Data.Type != resources.DAILY_QUESTIONS {
+		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
+		return req, fmt.Errorf("%v not allowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err)
 	}
 
 	return req, validation.Errors{
