@@ -140,13 +140,11 @@ func (q *dailyQuestionsQ) FilterTodayQuestions(offset int) data.DailyQuestionsQ 
 	})
 }
 
-func (q *dailyQuestionsQ) FilterDayQuestions(location *time.Location, day time.Time) data.DailyQuestionsQ {
-	dayInLocation := day.In(location)
-	dayStart := time.Date(dayInLocation.Year(), dayInLocation.Month(), dayInLocation.Day(), 0, 0, 0, 0, location)
-	dayEnd := dayStart.Add(24 * time.Hour)
+func (q *dailyQuestionsQ) FilterDayQuestions(day time.Time) data.DailyQuestionsQ {
+	dayEnd := day.Add(24 * time.Hour)
 
 	return q.applyCondition(squirrel.And{
-		squirrel.GtOrEq{"starts_at": dayStart},
+		squirrel.GtOrEq{"starts_at": day},
 		squirrel.Lt{"starts_at": dayEnd},
 	})
 }

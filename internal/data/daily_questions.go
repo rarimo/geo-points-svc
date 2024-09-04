@@ -50,7 +50,7 @@ type DailyQuestionsQ interface {
 	FilterByCreatedAtAfter(date time.Time) DailyQuestionsQ
 	FilterByStartsAtAfter(date time.Time) DailyQuestionsQ
 	FilterByID(ID int64) DailyQuestionsQ
-	FilterDayQuestions(location *time.Location, day time.Time) DailyQuestionsQ
+	FilterDayQuestions(day time.Time) DailyQuestionsQ
 
 	IncrementCorrectAnswer() error
 	IncrementIncorrectAnswer() error

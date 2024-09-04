@@ -72,7 +72,8 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attributes.StartsAt != nil {
-		timeReq, err := time.Parse("2006-01-02", *attributes.StartsAt)
+		location := DailyQuestions(r).Location
+		timeReq, err := time.ParseInLocation("2006-01-02", *attributes.StartsAt, location)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to parse start time")
 			ape.RenderErr(w, problems.BadRequest(validation.Errors{
@@ -89,8 +90,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		location := DailyQuestions(r).Location
-		question, err := DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
+		question, err := DailyQuestionsQ(r).FilterDayQuestions(timeReq).Get()
 		if err != nil {
 			Log(r).WithError(err).Error("Error on this day")
 			ape.RenderErr(w, problems.InternalError())
@@ -101,12 +101,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
-		parsedTime, err := time.Parse("2006-01-02", *attributes.StartsAt)
-		if err != nil {
-			Log(r).WithError(err).Error("Failed to parse start time")
-			return
-		}
-		requestBody[data.ColStartAt] = parsedTime.In(location).Format("2006-01-02 15:04:05")
+		requestBody[data.ColStartAt] = timeReq.UTC()
 	}
 
 	if attributes.CorrectAnswer != nil {
@@ -201,8 +196,8 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	loc := DailyQuestions(r).Location
-	resp, err := NewDailyQuestionEdite(ID, questionNew, loc)
+
+	resp, err := NewDailyQuestionEdite(ID, questionNew)
 	if err != nil {
 		Log(r).WithError(err).Error("Error editing daily question")
 		ape.RenderErr(w, problems.InternalError())
@@ -212,7 +207,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, resp)
 }
 
-func NewDailyQuestionEdite(ID int64, q *data.DailyQuestion, loc *time.Location) (resources.DailyQuestionDetailsResponse, error) {
+func NewDailyQuestionEdite(ID int64, q *data.DailyQuestion) (resources.DailyQuestionDetailsResponse, error) {
 	var options []resources.DailyQuestionOptions
 	err := json.Unmarshal(q.AnswerOptions, &options)
 	if err != nil {
@@ -227,7 +222,7 @@ func NewDailyQuestionEdite(ID int64, q *data.DailyQuestion, loc *time.Location) 
 				CorrectAnswer: q.CorrectAnswer,
 				Options:       options,
 				Reward:        q.Reward,
-				StartsAt:      q.StartsAt.In(loc).String(),
+				StartsAt:      q.StartsAt.String(),
 				TimeForAnswer: q.TimeForAnswer,
 				Title:         q.Title,
 			},
