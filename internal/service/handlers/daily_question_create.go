@@ -101,7 +101,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt := data.DailyQuestion{
+	dailyQuestion := data.DailyQuestion{
 		Title:         attributes.Title,
 		TimeForAnswer: attributes.TimeForAnswer,
 		Reward:        attributes.Reward,
@@ -110,7 +110,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		StartsAt:      timeReq.UTC(),
 	}
 
-	err = DailyQuestionsQ(r).Insert(stmt)
+	err = DailyQuestionsQ(r).Insert(dailyQuestion)
 	if err != nil {
 		Log(r).WithError(err).Error("Error ger request NewDailyQuestion")
 		ape.RenderErr(w, problems.InternalError())
@@ -129,7 +129,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionCreate(&stmt, attributes.Options, question.ID, location))
+	ape.Render(w, NewDailyQuestionCreate(&dailyQuestion, attributes.Options, question.ID))
 }
 
 func ValidateOptions(options []resources.DailyQuestionOptions) error {
@@ -162,7 +162,7 @@ func ValidateOptions(options []resources.DailyQuestionOptions) error {
 	return nil
 }
 
-func NewDailyQuestionCreate(q *data.DailyQuestion, options []resources.DailyQuestionOptions, ID int64, loc *time.Location) resources.DailyQuestionDetailsResponse {
+func NewDailyQuestionCreate(q *data.DailyQuestion, options []resources.DailyQuestionOptions, ID int64) resources.DailyQuestionDetailsResponse {
 	return resources.DailyQuestionDetailsResponse{
 		Data: resources.DailyQuestionDetails{
 			Key: resources.NewKeyInt64(ID, resources.DAILY_QUESTIONS),
