@@ -36,19 +36,10 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.NewDailyQuestionEdit(r)
 	if err != nil {
-		Log(r).WithError(err).Error("Error creating daily question edit request")
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 	attributes := req.Data.Attributes
-	if req.Data.Type != resources.DAILY_QUESTIONS {
-		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
-		Log(r).WithError(err).Error("Invalid data type")
-		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"type": fmt.Errorf("%v not allowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
-		})...)
-		return
-	}
 
 	question, err := DailyQuestionsQ(r).FilterByID(ID).Get()
 	if err != nil {
@@ -78,7 +69,8 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attributes.StartsAt != nil {
-		timeReq, err := time.Parse("2006-01-02", *attributes.StartsAt)
+		location := DailyQuestions(r).Location
+		timeReq, err := time.ParseInLocation("2006-01-02", *attributes.StartsAt, location)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to parse start time")
 			ape.RenderErr(w, problems.BadRequest(validation.Errors{
@@ -95,8 +87,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		location := DailyQuestions(r).Location
-		question, err := DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
+		question, err := DailyQuestionsQ(r).FilterDayQuestions(timeReq).Get()
 		if err != nil {
 			Log(r).WithError(err).Error("Error on this day")
 			ape.RenderErr(w, problems.InternalError())
@@ -107,7 +98,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
-		requestBody[data.ColStartAt] = attributes.StartsAt
+		requestBody[data.ColStartAt] = timeReq.UTC()
 	}
 
 	if attributes.CorrectAnswer != nil {

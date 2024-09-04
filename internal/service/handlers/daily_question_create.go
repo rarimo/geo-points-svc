@@ -24,20 +24,10 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.NewDailyQuestion(r)
 	if err != nil {
-		Log(r).WithError(err).Error("Error get request NewDailyQuestion")
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 	attributes := req.Data.Attributes
-
-	if req.Data.Type != resources.DAILY_QUESTIONS {
-		err := fmt.Errorf("invalid request data type %s", req.Data.Type)
-		Log(r).WithError(err).Error("Invalid data type")
-		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"type": fmt.Errorf("%v not allowed for this endpoint, must be %v err: %s", req.Data.Type, resources.DAILY_QUESTIONS, err),
-		})...)
-		return
-	}
 
 	err = ValidateOptions(attributes.Options)
 	if err != nil {
@@ -49,7 +39,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	location := DailyQuestions(r).Location
-	timeReq, err := time.Parse("2006-01-02", attributes.StartsAt)
+	timeReq, err := time.ParseInLocation("2006-01-02", attributes.StartsAt, location)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to parse start time")
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
@@ -66,7 +56,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	question, err := DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
+	question, err := DailyQuestionsQ(r).FilterDayQuestions(timeReq).Get()
 	if err != nil {
 		Log(r).WithError(err).Error("Error on this day")
 		ape.RenderErr(w, problems.InternalError())
@@ -110,23 +100,23 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt := data.DailyQuestion{
+	dailyQuestion := data.DailyQuestion{
 		Title:         attributes.Title,
 		TimeForAnswer: attributes.TimeForAnswer,
 		Reward:        attributes.Reward,
 		AnswerOptions: answerOptions,
 		CorrectAnswer: attributes.CorrectAnswer,
-		StartsAt:      timeReq,
+		StartsAt:      timeReq.UTC(),
 	}
 
-	err = DailyQuestionsQ(r).Insert(stmt)
+	err = DailyQuestionsQ(r).Insert(dailyQuestion)
 	if err != nil {
 		Log(r).WithError(err).Error("Error ger request NewDailyQuestion")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	question, err = DailyQuestionsQ(r).FilterDayQuestions(location, timeReq).Get()
+	question, err = DailyQuestionsQ(r).FilterDayQuestions(timeReq.UTC()).Get()
 	if err != nil {
 		Log(r).WithError(err).Error("Error on this day")
 		ape.RenderErr(w, problems.InternalError())
@@ -138,7 +128,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, NewDailyQuestionCreate(&stmt, attributes.Options, question.ID))
+	ape.Render(w, NewDailyQuestionCreate(&dailyQuestion, attributes.Options, question.ID))
 }
 
 func ValidateOptions(options []resources.DailyQuestionOptions) error {
@@ -182,7 +172,6 @@ func NewDailyQuestionCreate(q *data.DailyQuestion, options []resources.DailyQues
 				Reward:        q.Reward,
 				TimeForAnswer: q.TimeForAnswer,
 				StartsAt:      q.StartsAt.String(),
-				CreatedAt:     time.Now().UTC().String(),
 			},
 		},
 	}

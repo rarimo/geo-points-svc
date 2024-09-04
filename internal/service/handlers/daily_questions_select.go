@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
@@ -33,7 +34,8 @@ func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := NewDailyQuestionsFilterDate(res)
+	loc := DailyQuestions(r).Location
+	resp, err := NewDailyQuestionsFilterDate(res, loc)
 	if err != nil {
 		Log(r).WithError(err).Error("Error filtering questions")
 		ape.RenderErr(w, problems.InternalError())
@@ -54,7 +56,7 @@ func FilterStartAtDailyQuestions(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, resp)
 }
 
-func NewDailyQuestionModel(question data.DailyQuestion) (resources.DailyQuestionDetails, error) {
+func NewDailyQuestionModel(question data.DailyQuestion, loc *time.Location) (resources.DailyQuestionDetails, error) {
 	var options []resources.DailyQuestionOptions
 
 	err := json.Unmarshal(question.AnswerOptions, &options)
@@ -67,23 +69,22 @@ func NewDailyQuestionModel(question data.DailyQuestion) (resources.DailyQuestion
 		Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS),
 		Attributes: resources.DailyQuestionDetailsAttributes{
 			CorrectAnswer:       question.CorrectAnswer,
-			CreatedAt:           question.CreatedAt.String(),
 			NumAllParticipants:  question.NumAllParticipants,
 			NumCorrectAnswers:   question.NumCorrectAnswers,
 			NumIncorrectAnswers: question.NumIncorrectAnswers,
 			Options:             options,
 			Reward:              question.Reward,
-			StartsAt:            question.StartsAt.String(),
+			StartsAt:            question.StartsAt.In(loc).String(),
 			TimeForAnswer:       question.TimeForAnswer,
 			Title:               question.Title,
 		},
 	}, nil
 }
 
-func NewDailyQuestionsFilterDate(questions []data.DailyQuestion) (resources.DailyQuestionDetailsListResponse, error) {
+func NewDailyQuestionsFilterDate(questions []data.DailyQuestion, loc *time.Location) (resources.DailyQuestionDetailsListResponse, error) {
 	list := make([]resources.DailyQuestionDetails, len(questions))
 	for i, q := range questions {
-		qModel, err := NewDailyQuestionModel(q)
+		qModel, err := NewDailyQuestionModel(q, loc)
 		if err != nil {
 			return resources.DailyQuestionDetailsListResponse{}, fmt.Errorf("error make %s daily question model, %s", q, err)
 		}

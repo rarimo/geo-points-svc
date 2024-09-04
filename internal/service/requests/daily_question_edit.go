@@ -16,7 +16,7 @@ func NewDailyQuestionEdit(r *http.Request) (req resources.DailyQuestionEditRespo
 
 	return req, validation.Errors{
 		"data/id":         validation.Validate(&req.Data.ID),
-		"data/type":       validation.Validate(&req.Data.Type, validation.Required),
+		"data/type":       validation.Validate(&req.Data.Type, validation.Required, validation.In(resources.DAILY_QUESTIONS)),
 		"data/attributes": validation.Validate(&req.Data.Attributes, validation.Required),
 	}.Filter()
 }
