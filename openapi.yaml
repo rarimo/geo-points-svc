@@ -1509,7 +1509,6 @@ components:
                 - correct_answer
                 - time_for_answer
                 - starts_at
-                - created_at
                 - num_correct_answers
                 - num_incorrect_answers
                 - num_all_participants
@@ -1545,10 +1544,6 @@ components:
                 starts_at:
                   type: string
                   description: 'Start date when this question is available, hours and minutes are always 0'
-                  example: '2024-08-26T00:00:00Z'
-                created_at:
-                  type: string
-                  description: Start date when this question was create
                   example: '2024-08-26T00:00:00Z'
                 num_correct_answers:
                   type: integer
