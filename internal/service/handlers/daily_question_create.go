@@ -24,7 +24,6 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.NewDailyQuestion(r)
 	if err != nil {
-		Log(r).WithError(err).Error("Error get request NewDailyQuestion")
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}

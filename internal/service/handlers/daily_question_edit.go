@@ -36,10 +36,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.NewDailyQuestionEdit(r)
 	if err != nil {
-		Log(r).WithError(err).Error("Error creating daily question edit request")
-		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"body": err,
-		})...)
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 	attributes := req.Data.Attributes
