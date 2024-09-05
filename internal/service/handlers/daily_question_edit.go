@@ -53,8 +53,10 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nowTime := time.Now().UTC()
-	if !question.StartsAt.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+	location := DailyQuestions(r).Location
+	nowTime := time.Now().In(location).UTC()
+
+	if question.StartsAt.UTC().Before(nowTime) {
 		Log(r).Errorf("Cannot change a question id: %v that is available today or in the past", ID)
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
 			"starts_at": fmt.Errorf("cannot change a question id: %v that is available today or in the past", ID),
@@ -69,7 +71,6 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attributes.StartsAt != nil {
-		location := DailyQuestions(r).Location
 		timeReq, err := time.ParseInLocation("2006-01-02", *attributes.StartsAt, location)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to parse start time")
@@ -78,16 +79,16 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			})...)
 			return
 		}
-		nowTime := time.Now().UTC()
-		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
-			Log(r).Errorf("Argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String())
+
+		if !timeReq.After(nowTime.UTC().AddDate(0, 0, -1)) {
+			Log(r).Errorf("Argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.UTC().String())
 			ape.RenderErr(w, problems.BadRequest(validation.Errors{
-				"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String()),
+				"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.UTC().String()),
 			})...)
 			return
 		}
 
-		question, err := DailyQuestionsQ(r).FilterDayQuestions(timeReq).Get()
+		question, err := DailyQuestionsQ(r).FilterDayQuestions(timeReq.UTC()).Get()
 		if err != nil {
 			Log(r).WithError(err).Error("Error on this day")
 			ape.RenderErr(w, problems.InternalError())

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -42,13 +43,24 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
-	deletedQuestion := *question
 
-	timeReq := question.StartsAt
-	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
-		Log(r).Errorf("Only questions that start tomorrow or later can be delete: %s", timeReq.String())
-		ape.RenderErr(w, problems.BadRequest(err)...)
+	location := DailyQuestions(r).Location
+	timeReq, err := time.ParseInLocation("2006-01-02 15:04:05 -0700 MST", question.StartsAt.String(), location)
+	if err != nil {
+		Log(r).WithError(err).Error("Failed to parse start time")
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"starts_at": fmt.Errorf("failed to parse start time %s err: %s", question.StartsAt.String(), err),
+		})...)
+		return
+	}
+
+	nowTime := time.Now().In(location).UTC()
+
+	if timeReq.UTC().Before(nowTime.AddDate(0, 0, 1)) {
+		Log(r).Errorf("Error %s", timeReq.UTC().String())
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow mid night now: %s", timeReq.UTC().String()),
+		})...)
 		return
 	}
 
@@ -58,8 +70,8 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	loc := DailyQuestions(r).Location
-	response, err := NewDailyQuestionDelete(ID, deletedQuestion, loc)
+
+	response, err := NewDailyQuestionDelete(ID, *question, location)
 	if err != nil {
 		Log(r).WithError(err).Error("Error deleting daily question")
 		ape.RenderErr(w, problems.InternalError())
