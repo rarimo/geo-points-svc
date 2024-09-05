@@ -74,7 +74,7 @@ func NewDailyQuestionModel(question data.DailyQuestion, loc *time.Location) (res
 			NumIncorrectAnswers: question.NumIncorrectAnswers,
 			Options:             options,
 			Reward:              question.Reward,
-			StartsAt:            question.StartsAt.In(loc).String(),
+			StartsAt:            question.StartsAt.In(loc).Format("2006-01-02"),
 			TimeForAnswer:       question.TimeForAnswer,
 			Title:               question.Title,
 		},

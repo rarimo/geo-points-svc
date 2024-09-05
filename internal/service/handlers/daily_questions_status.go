@@ -62,7 +62,7 @@ func newDailyQuestionsStatus(question *data.DailyQuestion) resources.DailyQuesti
 			Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS_STATUS),
 			Attributes: resources.DailyQuestionsStatusAttributes{
 				NextQuestionDate: question.StartsAt.Unix(),
-				Reward:           int64(question.Reward),
+				Reward:           question.Reward,
 				TimeForAnswer:    question.TimeForAnswer,
 			},
 		},
