@@ -48,7 +48,7 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nowTime := time.Now().In(location).UTC()
+	nowTime := time.Now().UTC()
 	TimeDeadline := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, location).UTC()
 
 	if TimeDeadline.AddDate(0, 0, -1).After(timeReq.UTC()) {

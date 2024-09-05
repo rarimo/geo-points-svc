@@ -45,7 +45,7 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	location := DailyQuestions(r).Location
-	timeReq, err := time.ParseInLocation("2006-01-02 15:04:05 -0700 MST", question.StartsAt.String(), location)
+	timeReq, err := time.ParseInLocation("2006-01-02", question.StartsAt.Format("2006-01-02"), location)
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to parse start time")
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
@@ -54,7 +54,7 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nowTime := time.Now().In(location).UTC()
+	nowTime := time.Now().UTC()
 
 	if timeReq.UTC().Before(nowTime.AddDate(0, 0, 1)) {
 		Log(r).Errorf("Error %s", timeReq.UTC().String())

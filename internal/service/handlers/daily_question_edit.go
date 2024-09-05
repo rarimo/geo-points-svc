@@ -54,7 +54,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	location := DailyQuestions(r).Location
-	nowTime := time.Now().In(location).UTC()
+	nowTime := time.Now().UTC()
 
 	if question.StartsAt.UTC().Before(nowTime) {
 		Log(r).Errorf("Cannot change a question id: %v that is available today or in the past", ID)
