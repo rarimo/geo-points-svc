@@ -56,7 +56,7 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	location := DailyQuestions(r).Location
 	nowTime := time.Now().UTC()
 
-	if question.StartsAt.UTC().Before(nowTime) {
+	if question.StartsAt.UTC().Before(nowTime.AddDate(0, 0, -1)) {
 		Log(r).Errorf("Cannot change a question id: %v that is available today or in the past", ID)
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
 			"starts_at": fmt.Errorf("cannot change a question id: %v that is available today or in the past", ID),

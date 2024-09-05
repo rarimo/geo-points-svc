@@ -56,7 +56,7 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 
 	nowTime := time.Now().UTC()
 
-	if timeReq.UTC().Before(nowTime.AddDate(0, 0, 1)) {
+	if timeReq.UTC().Before(nowTime.AddDate(0, 0, -2)) {
 		Log(r).Errorf("Error %s", timeReq.UTC().String())
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
 			"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow mid night now: %s", timeReq.UTC().String()),
