@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"math/big"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"
@@ -27,14 +27,7 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	proof := req.Data.Attributes.Proof
-
 	nullifier := UserClaims(r)[0].Nullifier
-	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) ||
-		new(big.Int).SetBytes(hexutil.MustDecode(nullifier)).String() != proof.PubSignals[config.PollChallengedNullifier] {
-		ape.RenderErr(w, problems.Unauthorized())
-		return
-	}
-
 	proposalID, _ := new(big.Int).SetString(req.Data.Attributes.ProposalId, 10)
 	proposalEventID, _ := new(big.Int).SetString(proof.PubSignals[config.PollParticipationEventID], 10)
 
@@ -44,6 +37,13 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 		"proposal_id":       proposalID,
 		"proposal_event_id": proposalEventID,
 	})
+
+	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) ||
+		new(big.Int).SetBytes(hexutil.MustDecode(nullifier)).String() != proof.PubSignals[config.PollChallengedNullifier] {
+		log.Debug("failed to authenticate user")
+		ape.RenderErr(w, problems.Unauthorized())
+		return
+	}
 
 	balance, err := BalancesQ(r).FilterByNullifier(nullifier).Get()
 	if err != nil {
