@@ -49,9 +49,9 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nowTime := time.Now().UTC()
-	TimeDeadline := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, location).UTC()
+	TimeDeadline := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, location).UTC()
 
-	if TimeDeadline.AddDate(0, 0, -1).After(timeReq.UTC()) {
+	if TimeDeadline.After(timeReq.UTC()) {
 		Log(r).Errorf("Error %s", timeReq.UTC().String())
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
 			"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow mid night now: %s", timeReq.UTC().String()),
