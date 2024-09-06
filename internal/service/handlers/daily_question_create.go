@@ -47,8 +47,10 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		})...)
 		return
 	}
-	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, DailyQuestions(r).Location)) {
+	// We use current time in Georgia
+	nowTime := time.Now().In(location)
+	// we check that timeReq (start time of daily question in Georgia) is before than start time of current day in Georgia
+	if timeReq.Before(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, location)) {
 		Log(r).Errorf("Arg start_at must be more or equal tomorow midnoght noe: %s", timeReq.String())
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
 			"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String()),

@@ -45,8 +45,11 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	deletedQuestion := *question
 
 	timeReq := question.StartsAt
-	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+	location := DailyQuestions(r).Location
+	// We use current time in Georgia
+	nowTime := time.Now().In(location)
+	// we check that timeReq (start time of daily question in Georgia) is before than start time of current day in Georgia
+	if timeReq.Before(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, location)) {
 		Log(r).Errorf("Only questions that start tomorrow or later can be delete: %s", timeReq.String())
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
