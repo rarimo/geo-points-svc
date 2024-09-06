@@ -29,7 +29,7 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	option := req.Data.Attributes.Answer
 	dq := DailyQuestions(r)
 
-	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) {
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}

@@ -38,7 +38,7 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 		"proposal_event_id": proposalEventID,
 	})
 
-	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) ||
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) ||
 		new(big.Int).SetBytes(hexutil.MustDecode(nullifier)).String() != proof.PubSignals[config.PollChallengedNullifier] {
 		log.Debug("failed to authenticate user")
 		ape.RenderErr(w, problems.Unauthorized())
