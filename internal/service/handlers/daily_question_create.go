@@ -10,6 +10,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/service/referralid"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -47,11 +48,12 @@ func CreateDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		})...)
 		return
 	}
+	timeReq = timeReq.UTC()
 	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, DailyQuestions(r).Location)) {
-		Log(r).Errorf("Arg start_at must be more or equal tomorow midnoght noe: %s", timeReq.String())
+	if !referralid.CheckOpportunityChange(nowTime, timeReq, location) {
+		Log(r).Errorf("Arg start_at must be more or equal tomorow mid night noe: %s", timeReq.String())
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String()),
+			"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow mid night now its: %s", timeReq.UTC().String()),
 		})...)
 		return
 	}

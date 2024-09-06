@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/service/referralid"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -44,11 +46,13 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 	deletedQuestion := *question
 
-	timeReq := question.StartsAt
+	timeReq := question.StartsAt.UTC()
 	nowTime := time.Now().UTC()
-	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+	if !referralid.CheckOpportunityChange(nowTime, timeReq, DailyQuestions(r).Location) {
 		Log(r).Errorf("Only questions that start tomorrow or later can be delete: %s", timeReq.String())
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"query": fmt.Errorf("impossible to delete a question that is in the past"),
+		})...)
 		return
 	}
 

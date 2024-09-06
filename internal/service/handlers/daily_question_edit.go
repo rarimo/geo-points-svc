@@ -12,6 +12,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/service/referralid"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
 	"gitlab.com/distributed_lab/ape"
@@ -53,8 +54,9 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	location := DailyQuestions(r).Location
 	nowTime := time.Now().UTC()
-	if !question.StartsAt.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
+	if !referralid.CheckOpportunityChange(nowTime, question.StartsAt, location) {
 		Log(r).Errorf("Cannot change a question id: %v that is available today or in the past", ID)
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
 			"starts_at": fmt.Errorf("cannot change a question id: %v that is available today or in the past", ID),
@@ -69,7 +71,6 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attributes.StartsAt != nil {
-		location := DailyQuestions(r).Location
 		timeReq, err := time.ParseInLocation("2006-01-02", *attributes.StartsAt, location)
 		if err != nil {
 			Log(r).WithError(err).Error("Failed to parse start time")
@@ -78,23 +79,22 @@ func EditDailyQuestion(w http.ResponseWriter, r *http.Request) {
 			})...)
 			return
 		}
-		nowTime := time.Now().UTC()
-		if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day()+1, 0, 0, 0, 0, DailyQuestions(r).Location)) {
-			Log(r).Errorf("Argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String())
+		if !referralid.CheckOpportunityChange(nowTime, timeReq, location) {
+			Log(r).Errorf("Argument start_at must be more or equal tomorow mid night now its: %s", timeReq.String())
 			ape.RenderErr(w, problems.BadRequest(validation.Errors{
-				"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow midnoght now its: %s", timeReq.String()),
+				"starts_at": fmt.Errorf("argument start_at must be more or equal tomorow mid night now its: %s", timeReq.String()),
 			})...)
 			return
 		}
 
-		question, err := DailyQuestionsQ(r).FilterDayQuestions(timeReq).Get()
+		question, err := DailyQuestionsQ(r).FilterDayQuestions(timeReq.UTC()).Get()
 		if err != nil {
 			Log(r).WithError(err).Error("Error on this day")
 			ape.RenderErr(w, problems.InternalError())
 			return
 		}
 		if question != nil && ID != question.ID {
-			Log(r).Errorf("Error on this day %s, the daily question already has %s", question.StartsAt.String(), question)
+			Log(r).Errorf("Error on this day %s, the daily question already has %v", question.StartsAt.String(), question.ID)
 			ape.RenderErr(w, problems.Conflict())
 			return
 		}
