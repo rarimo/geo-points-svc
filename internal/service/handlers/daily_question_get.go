@@ -19,7 +19,7 @@ func GetDailyQuestion(w http.ResponseWriter, r *http.Request) {
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 	dq := DailyQuestions(r)
 
-	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) {
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}

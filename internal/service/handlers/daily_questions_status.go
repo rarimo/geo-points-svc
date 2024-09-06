@@ -16,7 +16,7 @@ import (
 func GetDailyQuestionsStatus(w http.ResponseWriter, r *http.Request) {
 	nullifier := strings.ToLower(chi.URLParam(r, "nullifier"))
 
-	if !auth.Authenticates(UserClaims(r), auth.VerifiedGrant(nullifier)) {
+	if !auth.Authenticates(UserClaims(r), auth.UserGrant(nullifier)) {
 		ape.RenderErr(w, problems.Unauthorized())
 		return
 	}
@@ -62,7 +62,7 @@ func newDailyQuestionsStatus(question *data.DailyQuestion) resources.DailyQuesti
 			Key: resources.NewKeyInt64(question.ID, resources.DAILY_QUESTIONS_STATUS),
 			Attributes: resources.DailyQuestionsStatusAttributes{
 				NextQuestionDate: question.StartsAt.Unix(),
-				Reward:           int64(question.Reward),
+				Reward:           question.Reward,
 				TimeForAnswer:    question.TimeForAnswer,
 			},
 		},

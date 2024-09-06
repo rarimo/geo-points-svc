@@ -23,6 +23,7 @@ func AuthMiddleware(auth *auth.Client, log *logan.Entry) func(http.Handler) http
 			}
 
 			if len(claims) == 0 {
+				log.Debug("Claims are empty")
 				ape.RenderErr(w, problems.Unauthorized())
 				return
 			}
