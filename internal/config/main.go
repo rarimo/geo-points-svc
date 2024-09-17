@@ -20,6 +20,7 @@ type Config interface {
 	evtypes.EventTypeser
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
+	Rarimarket
 
 	Levels() *Levels
 	Verifiers() Verifiers
@@ -35,6 +36,7 @@ type config struct {
 	evtypes.EventTypeser
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
+	Rarimarket
 
 	passport root.VerifierProvider
 
@@ -56,5 +58,6 @@ func New(getter kv.Getter) Config {
 		passport:              root.NewVerifierProvider(getter, root.PoseidonSMT),
 		EventTypeser:          evtypes.NewConfig(getter),
 		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
+		Rarimarket:            NewRarimarketConfig(getter),
 	}
 }

@@ -22,7 +22,6 @@ func Run(cfg config.Config, date int) error {
 	referralsQ := pg.NewReferrals(db)
 
 	evType := evTypes.Get(models.TypeEarlyTest, evtypes.FilterInactive)
-
 	if evType == nil {
 		log.Infof("Event type %s is inactive", models.TypeEarlyTest)
 		return nil

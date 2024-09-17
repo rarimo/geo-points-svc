@@ -25,6 +25,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxSigCalculator(cfg.SigCalculator()),
 			handlers.CtxPollVerifier(cfg.PollVerifier()),
 			handlers.CtxDailyQuestion(cfg.DailyQuestions()),
+			handlers.CtxRarimarket(cfg.RarimarketConfig()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)
@@ -43,6 +44,7 @@ func Run(ctx context.Context, cfg config.Config) {
 					r.Route("/verify", func(r chi.Router) {
 						r.Post("/external", handlers.VerifyExternalPassport)
 					})
+					r.Post("/withdrawals", nil)
 				})
 			})
 

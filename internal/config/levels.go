@@ -10,10 +10,11 @@ import (
 )
 
 type Level struct {
-	Level     int  `fig:"lvl,required"`
-	Threshold int  `fig:"threshold,required"`
-	Referrals int  `fig:"referrals"`
-	Infinity  bool `fig:"infinity"`
+	Level             int  `fig:"lvl,required"`
+	Threshold         int  `fig:"threshold,required"`
+	Referrals         int  `fig:"referrals"`
+	Infinity          bool `fig:"infinity"`
+	WithdrawalAllowed bool `fig:"withdrawal_allowed"`
 }
 
 type Levels struct {
@@ -49,6 +50,15 @@ func (c *config) Levels() *Levels {
 			Downgradeable: cfg.Downgradeable,
 		}
 	}).(*Levels)
+}
+
+func (l *Levels) WithdrawalAllowed(level int) bool {
+	levelConfig, ok := l.levels[level]
+	if !ok {
+		return false
+	}
+
+	return levelConfig.WithdrawalAllowed
 }
 
 // LvlUp Calculates new lvl. New lvl always greater then current level

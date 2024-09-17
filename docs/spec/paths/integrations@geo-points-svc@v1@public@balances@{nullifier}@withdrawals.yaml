@@ -1,0 +1,39 @@
+post:
+  tags:
+    - Points balance
+  summary: Withdraw points
+  description: |
+    Convert points to RariMarket points by exchange rate and withdraw to user wallet.
+    Updated balance with new rank is returned.
+  operationId: withdrawPoints
+  parameters:
+    - $ref: '#/components/parameters/pathNullifier'
+  requestBody:
+    required: true
+    content:
+      application/vnd.api+json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/Withdraw'
+  responses:
+    200:
+      description: Success
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Balance'
+    400:
+      $ref: '#/components/responses/invalidParameter'
+    401:
+      $ref: '#/components/responses/invalidAuth'
+    500:
+      $ref: '#/components/responses/internalError'
