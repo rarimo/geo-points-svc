@@ -29,6 +29,7 @@ func (q *withdrawals) New() data.WithdrawalsQ {
 func (q *withdrawals) Insert(w data.Withdrawal) (*data.Withdrawal, error) {
 	var res data.Withdrawal
 	stmt := squirrel.Insert(withdrawalsTable).SetMap(map[string]interface{}{
+		"tx_hash":   w.TxHash,
 		"nullifier": w.Nullifier,
 		"amount":    w.Amount,
 	}).Suffix("RETURNING *")

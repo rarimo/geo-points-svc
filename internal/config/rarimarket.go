@@ -162,20 +162,20 @@ func (r *RarimarketConfig) GetAccount(nullifier [32]byte) (common.Address, error
 	return accountAddress, nil
 }
 
-func (r *RarimarketConfig) Mint(ctx context.Context, account common.Address, amount *big.Int) error {
+func (r *RarimarketConfig) Mint(ctx context.Context, account common.Address, amount *big.Int) (common.Hash, error) {
 	signerOpts, err := bind.NewKeyedTransactorWithChainID(r.privateKey, r.ChainID)
 	if err != nil {
-		return fmt.Errorf("failed to get keyed transactor: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to get keyed transactor: %w", err)
 	}
 
 	pointTokensInstance, err := pointTokens.NewPoints(r.PointTokens, r.RPC)
 	if err != nil {
-		return fmt.Errorf("failed to get account factory: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to get account factory: %w", err)
 	}
 
 	tx, err := pointTokensInstance.Mint(signerOpts, account, amount)
 	if err != nil {
-		return fmt.Errorf("failed to deploy rarimarket account: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to deploy rarimarket account: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
@@ -183,10 +183,10 @@ func (r *RarimarketConfig) Mint(ctx context.Context, account common.Address, amo
 
 	_, err = bind.WaitMined(ctx, r.RPC, tx)
 	if err != nil {
-		return fmt.Errorf("failed to wait mined transaction: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to wait mined transaction: %w", err)
 	}
 
-	return nil
+	return tx.Hash(), nil
 }
 
 func extractPrivateKey(vaultAddress, vaultMountPath string) *ecdsa.PrivateKey {

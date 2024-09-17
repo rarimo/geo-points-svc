@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS withdrawals
 (
-    id         uuid PRIMARY KEY default gen_random_uuid(),
+    tx_hash    BYTEA PRIMARY KEY,
     nullifier  TEXT    NOT NULL REFERENCES balances (nullifier),
     amount     integer NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()

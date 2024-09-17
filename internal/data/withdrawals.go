@@ -7,7 +7,7 @@ import (
 )
 
 type Withdrawal struct {
-	ID        string    `db:"id"`
+	TxHash    []byte    `db:"tx_hash"`
 	Nullifier string    `db:"nullifier"`
 	Amount    int64     `db:"amount"`
 	CreatedAt time.Time `db:"created_at"`

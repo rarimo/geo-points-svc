@@ -72,6 +72,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var txHash [32]byte
 	err = EventsQ(r).Transaction(func() error {
 		err = BalancesQ(r).FilterByNullifier(nullifier).Update(map[string]any{
 			data.ColAmount: pg.AddToValue(data.ColAmount, -req.Data.Attributes.Amount),
@@ -80,23 +81,26 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("decrease points amount: %w", err)
 		}
 
-		_, err = WithdrawalsQ(r).Insert(data.Withdrawal{
-			Nullifier: nullifier,
-			Amount:    req.Data.Attributes.Amount,
-		})
-		if err != nil {
-			return fmt.Errorf("add withdrawal entry: %w", err)
-		}
-
-		err = Rarimarket(r).Mint(r.Context(), addr, new(big.Int).Mul(Rarimarket(r).PointPrice, big.NewInt(req.Data.Attributes.Amount)))
-
+		txHash, err = Rarimarket(r).Mint(r.Context(), addr, new(big.Int).Mul(Rarimarket(r).PointPrice, big.NewInt(req.Data.Attributes.Amount)))
 		if err != nil {
 			return fmt.Errorf("failed to mint points: %w", err)
 		}
+
 		return nil
 	})
 	if err != nil {
 		log.WithError(err).Error("Failed to perform withdrawal")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	_, err = WithdrawalsQ(r).Insert(data.Withdrawal{
+		TxHash:    txHash[:],
+		Nullifier: nullifier,
+		Amount:    req.Data.Attributes.Amount,
+	})
+	if err != nil {
+		log.WithError(err).Error("Failed to insert withdraw")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
