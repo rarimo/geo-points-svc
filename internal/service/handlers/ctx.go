@@ -21,6 +21,7 @@ const (
 	referralsQCtxKey
 	eventTypesCtxKey
 	eventTypesQCtxKey
+	withdrawalsQCtxKey
 	userClaimsCtxKey
 	levelsCtxKey
 	verifiersCtxKey
@@ -28,6 +29,7 @@ const (
 	voteVerifierCtxKey
 	dailyQuestionsCtxKey
 	dailyQuestionsCfgCtxKey
+	rarimarketCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -100,6 +102,16 @@ func EventTypesQ(r *http.Request) data.EventTypesQ {
 	return r.Context().Value(eventTypesQCtxKey).(data.EventTypesQ).New()
 }
 
+func CtxWithdrawalsQ(q data.WithdrawalsQ) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, withdrawalsQCtxKey, q)
+	}
+}
+
+func WithdrawalsQ(r *http.Request) data.WithdrawalsQ {
+	return r.Context().Value(withdrawalsQCtxKey).(data.WithdrawalsQ).New()
+}
+
 func CtxUserClaims(claim []resources.Claim) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, userClaimsCtxKey, claim)
@@ -158,4 +170,14 @@ func CtxLevels(levels *config.Levels) func(context.Context) context.Context {
 
 func Levels(r *http.Request) *config.Levels {
 	return r.Context().Value(levelsCtxKey).(*config.Levels)
+}
+
+func CtxRarimarket(rarimarket *config.RarimarketConfig) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, rarimarketCtxKey, rarimarket)
+	}
+}
+
+func Rarimarket(r *http.Request) *config.RarimarketConfig {
+	return r.Context().Value(rarimarketCtxKey).(*config.RarimarketConfig)
 }

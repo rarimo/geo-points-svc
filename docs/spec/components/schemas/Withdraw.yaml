@@ -1,0 +1,22 @@
+allOf:
+  - $ref: '#/components/schemas/WithdrawKey'
+  - type: object
+    x-go-is-request: true
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - amount
+          - proof
+        properties:
+          amount:
+            type: integer
+            format: int64
+            description: Amount of points to withdraw
+            example: 580
+          proof:
+            type: object
+            format: types.ZKProof
+            description: Query ZK passport verification proof.

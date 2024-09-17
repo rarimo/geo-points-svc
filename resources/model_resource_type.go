@@ -20,4 +20,5 @@ const (
 	FULFILL_POLL_EVENT     ResourceType = "fulfill_poll_event"
 	FULFILL_QR_EVENT       ResourceType = "fulfill_qr_event"
 	VERIFY_PASSPORT        ResourceType = "verify_passport"
+	WITHDRAW               ResourceType = "withdraw"
 )
