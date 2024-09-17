@@ -577,6 +577,68 @@
         }
       }
     },
+    "/integrations/geo-points-svc/v1/public/balances/{nullifier}/withdrawals": {
+      "post": {
+        "tags": [
+          "Points balance"
+        ],
+        "summary": "Withdraw points",
+        "description": "Convert points to RariMarket points by exchange rate and withdraw to user wallet.\nUpdated balance with new rank is returned.\n",
+        "operationId": "withdrawPoints",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pathNullifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/vnd.api+json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "$ref": "#/components/schemas/Withdraw"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Balance"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/invalidParameter"
+          },
+          "401": {
+            "$ref": "#/components/responses/invalidAuth"
+          },
+          "500": {
+            "$ref": "#/components/responses/internalError"
+          }
+        }
+      }
+    },
     "/integrations/geo-points-svc/v1/public/daily_questions/{nullifier}": {
       "get": {
         "tags": [
@@ -3131,6 +3193,63 @@
             "type": "string",
             "enum": [
               "verify_passport"
+            ]
+          }
+        }
+      },
+      "Withdraw": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WithdrawKey"
+          },
+          {
+            "type": "object",
+            "x-go-is-request": true,
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "proof"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Amount of points to withdraw",
+                    "example": 580
+                  },
+                  "proof": {
+                    "type": "object",
+                    "format": "types.ZKProof",
+                    "description": "Query ZK passport verification proof."
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "WithdrawKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Nullifier of the points owner",
+            "example": "0x123...abc",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "withdraw"
             ]
           }
         }
