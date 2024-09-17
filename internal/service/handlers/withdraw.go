@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"math"
 	"math/big"
 	"net/http"
 
@@ -17,7 +15,6 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 
-	zk "github.com/rarimo/zkverifier-kit"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -43,7 +40,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	balance, errs := getAndVerifyBalanceEligibility(r, nullifier, nil)
+	balance, errs := getAndVerifyBalanceEligibility(r, nullifier, &proof)
 	if len(errs) > 0 {
 		ape.RenderErr(w, errs...)
 		return
@@ -69,22 +66,6 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// never panics because of request validation
-	proof.PubSignals[zk.Nullifier] = mustHexToInt(nullifier)
-
-	err = Verifiers(r).Passport.VerifyProof(proof)
-	if err != nil {
-		var vErr validation.Errors
-		if errors.As(err, &vErr) {
-			ape.RenderErr(w, problems.BadRequest(err)...)
-			return
-		}
-
-		Log(r).WithError(err).Error("Failed to verify proof")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
 	errs = isEligibleToWithdraw(r, balance, req.Data.Attributes.Amount)
 	if len(errs) > 0 {
 		ape.RenderErr(w, errs...)
@@ -107,12 +88,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("add withdrawal entry: %w", err)
 		}
 
-		err = Rarimarket(r).Mint(r.Context(), addr,
-			new(big.Int).Mul(
-				new(big.Int).Mul(
-					big.NewInt(int64(math.Pow10(9))),
-					big.NewInt(Rarimarket(r).PointPrice)),
-				big.NewInt(req.Data.Attributes.Amount)))
+		err = Rarimarket(r).Mint(r.Context(), addr, new(big.Int).Mul(Rarimarket(r).PointPrice, big.NewInt(req.Data.Attributes.Amount)))
 
 		if err != nil {
 			return fmt.Errorf("failed to mint points: %w", err)

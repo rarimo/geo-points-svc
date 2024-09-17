@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math"
 	"math/big"
 	"time"
 
@@ -43,7 +44,7 @@ type RarimarketConfig struct {
 	AccountFactory common.Address
 	PointTokens    common.Address
 	ChainID        *big.Int
-	PointPrice     int64
+	PointPrice     *big.Int
 
 	privateKey *ecdsa.PrivateKey
 }
@@ -54,7 +55,7 @@ func (c *rarimarketConfig) RarimarketConfig() *RarimarketConfig {
 			RPC            *ethclient.Client `fig:"rpc,required"`
 			AccountFactory common.Address    `fig:"account_factory,required"`
 			PointTokens    common.Address    `fig:"point_tokens,required"`
-			PointPrice     int64             `fig:"point_price,required"`
+			PointPrice     int64             `fig:"point_price"`
 
 			VaultAddress   string            `fig:"vault_address"`
 			VaultMountPath string            `fig:"vault_mount_path"`
@@ -79,12 +80,21 @@ func (c *rarimarketConfig) RarimarketConfig() *RarimarketConfig {
 			panic(fmt.Errorf("failed to get chain id: %w", err))
 		}
 
+		if cfg.PointPrice == 0 {
+			// Default 1 point price == 1 collateral
+			cfg.PointPrice = int64(math.Pow10(9))
+		}
+
 		return &RarimarketConfig{
 			RPC:            cfg.RPC,
 			AccountFactory: cfg.AccountFactory,
 			PointTokens:    cfg.PointTokens,
 			ChainID:        chainID,
-			PointPrice:     cfg.PointPrice,
+			// Collateral tokens has precission 10^18. Point price will be with precission 10^9
+			// This mean that 10^9 point price ~ 10^18 collateral
+			PointPrice: new(big.Int).Mul(
+				big.NewInt(int64(math.Pow10(9))),
+				big.NewInt(cfg.PointPrice)),
 
 			privateKey: privateKey,
 		}
