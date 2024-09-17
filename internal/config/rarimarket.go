@@ -41,6 +41,7 @@ type rarimarketConfig struct {
 type RarimarketConfig struct {
 	RPC            *ethclient.Client
 	AccountFactory common.Address
+	PointTokens    common.Address
 	ChainID        *big.Int
 	PointPrice     int64
 
@@ -81,6 +82,7 @@ func (c *rarimarketConfig) RarimarketConfig() *RarimarketConfig {
 		return &RarimarketConfig{
 			RPC:            cfg.RPC,
 			AccountFactory: cfg.AccountFactory,
+			PointTokens:    cfg.PointTokens,
 			ChainID:        chainID,
 			PointPrice:     cfg.PointPrice,
 
@@ -156,7 +158,7 @@ func (r *RarimarketConfig) Mint(ctx context.Context, account common.Address, amo
 		return fmt.Errorf("failed to get keyed transactor: %w", err)
 	}
 
-	pointTokensInstance, err := pointTokens.NewPoints(r.AccountFactory, r.RPC)
+	pointTokensInstance, err := pointTokens.NewPoints(r.PointTokens, r.RPC)
 	if err != nil {
 		return fmt.Errorf("failed to get account factory: %w", err)
 	}
