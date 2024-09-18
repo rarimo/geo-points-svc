@@ -35,6 +35,7 @@ func Run(ctx context.Context, cfg config.Config) {
 		r.Route("/public", func(r chi.Router) {
 			r.Route("/rarimarket", func(r chi.Router) {
 				r.Route("/accounts", func(r chi.Router) {
+					r.Use(authMW)
 					r.Post("/", handlers.CreateRarimarketAccount)
 					r.Get("/{nullifier}", handlers.GetRarimarketAccount)
 				})
