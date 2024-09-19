@@ -52,7 +52,7 @@ func Run(ctx context.Context, cfg config.Config) {
 					r.Route("/verify", func(r chi.Router) {
 						r.Post("/external", handlers.VerifyExternalPassport)
 					})
-					r.Post("/withdrawals", nil)
+					r.Post("/withdrawals", handlers.Withdraw)
 				})
 			})
 
