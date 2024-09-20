@@ -170,12 +170,12 @@ func (r *RarimarketConfig) Mint(ctx context.Context, account common.Address, amo
 
 	pointTokensInstance, err := pointTokens.NewPoints(r.PointTokens, r.RPC)
 	if err != nil {
-		return common.Hash{}, fmt.Errorf("failed to get account factory: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to get points instance: %w", err)
 	}
 
 	tx, err := pointTokensInstance.Mint(signerOpts, account, amount)
 	if err != nil {
-		return common.Hash{}, fmt.Errorf("failed to deploy rarimarket account: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to mint points: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)

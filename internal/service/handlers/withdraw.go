@@ -14,6 +14,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
+	"github.com/rarimo/geo-points-svc/resources"
 
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -113,7 +114,9 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newBalanceModel(*balance))
+	ape.Render(w, resources.BalanceResponse{
+		Data: newBalanceModel(*balance),
+	})
 }
 
 func isEligibleToWithdraw(
