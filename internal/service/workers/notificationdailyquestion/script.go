@@ -32,8 +32,8 @@ func getMessage(msgFile string) (*messaging.Message, error) {
 	return &data.Msg, nil
 }
 
-func main() {
-	credFile := flag.String("file", "creds.json", "Path to file with Firebase service account credentionals in json")
+func Script(toCreds string) {
+	credFile := flag.String("file", toCreds, "Path to file with Firebase service account credentionals in json")
 	msgFile := flag.String("msg", "msg.json", "Path to file with message. https://firebase.google.com/docs/cloud-messaging/concept-options")
 	flag.Parse()
 

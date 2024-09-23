@@ -30,6 +30,7 @@ const (
 	dailyQuestionsCtxKey
 	dailyQuestionsCfgCtxKey
 	rarimarketCtxKey
+	credsCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -150,6 +151,16 @@ func CtxPollVerifier(v *config.PollVerifier) func(context.Context) context.Conte
 
 func PollVerifier(r *http.Request) *config.PollVerifier {
 	return r.Context().Value(voteVerifierCtxKey).(*config.PollVerifier)
+}
+
+func CtxCreds(creds *config.CredsDetails) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, credsCtxKey, creds)
+	}
+}
+
+func Creds(r *http.Request) *config.CredsDetails {
+	return r.Context().Value(credsCtxKey).(*config.CredsDetails)
 }
 
 func CtxSigCalculator(calc hmacsig.Calculator) func(context.Context) context.Context {

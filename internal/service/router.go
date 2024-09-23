@@ -24,6 +24,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxVerifiers(cfg.Verifiers()),
 			handlers.CtxSigCalculator(cfg.SigCalculator()),
 			handlers.CtxPollVerifier(cfg.PollVerifier()),
+			handlers.CtxCreds(cfg.Creds()),
 			handlers.CtxDailyQuestion(cfg.DailyQuestions()),
 			handlers.CtxRarimarket(cfg.RarimarketConfig()),
 		),

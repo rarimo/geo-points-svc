@@ -23,14 +23,14 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 		gocron.NewTask(func() {
 			curQuestion, err := questionsQ.FilterDayQuestions(time.Now().UTC()).Get()
 			if err != nil {
-				err = fmt.Errorf("error get daily question: %s", err)
+				log.Fatalf("error getting daily question: %v", err)
 				return
 			}
 			if curQuestion == nil {
 				log.Infof("There's no daily question today")
 				return
 			}
-			//TODO
+			Script(cfg.Creds().Path)
 		}),
 		gocron.WithName("daily-questions-notification"),
 	)
