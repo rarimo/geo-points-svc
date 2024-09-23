@@ -66,6 +66,14 @@ func sendingNotifications(toCreds string) {
 				},
 			},
 		},
+		Android: &messaging.AndroidConfig{
+			Priority: "high",
+			Notification: &messaging.AndroidNotification{
+				Title: "Daily Question",
+				Body:  "The new daily question is finally available",
+				Tag:   "daily-question",
+			},
+		},
 	}
 
 	fmt.Printf("%+v\n", msg)
