@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
 )

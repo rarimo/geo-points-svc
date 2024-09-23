@@ -2,8 +2,9 @@ package cli
 
 import (
 	"context"
-	"github.com/rarimo/geo-points-svc/internal/service/workers/notificationdailyquestion"
 	"sync"
+
+	"github.com/rarimo/geo-points-svc/internal/service/workers/notificationdailyquestion"
 
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data/evtypes"

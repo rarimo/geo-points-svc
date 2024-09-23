@@ -2,17 +2,18 @@ package notificationdailyquestion
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"time"
+
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
-	"fmt"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/cleanquestiondeadlines"
 	"github.com/rarimo/geo-points-svc/internal/service/workers/cron"
 	"google.golang.org/api/option"
-	"log"
-	"time"
 )
 
 func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
