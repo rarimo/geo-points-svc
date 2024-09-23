@@ -19,7 +19,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 	eventsQ := pg.NewEvents(cfg.DB().Clone())
 	questionsQ := pg.NewDailyQuestionsQ(cfg.DB().Clone())
 
-	offset := cfg.DailyQuestions().LocalTime(atDayStart(time.Now().UTC())).Hour()
+	offset := cfg.DailyQuestions().LocalTime(AtDayStart(time.Now().UTC())).Hour()
 	_, err := cron.NewJob(
 		gocron.DailyJob(1, gocron.NewAtTimes(gocron.NewAtTime(uint(offset), 0, 0))),
 		gocron.NewTask(func() {
@@ -61,7 +61,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 	cron.Start(ctx)
 }
 
-func atDayStart(date time.Time) time.Time {
+func AtDayStart(date time.Time) time.Time {
 	year, month, day := date.Date()
 	return time.Date(year, month, day, 0, 0, 0, 0, date.Location())
 }
