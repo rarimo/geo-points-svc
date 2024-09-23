@@ -153,14 +153,14 @@ func PollVerifier(r *http.Request) *config.PollVerifier {
 	return r.Context().Value(voteVerifierCtxKey).(*config.PollVerifier)
 }
 
-func CtxCreds(creds *config.CredsDetails) func(context.Context) context.Context {
+func CtxCreds(creds *config.Creds) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, credsCtxKey, creds)
 	}
 }
 
-func Creds(r *http.Request) *config.CredsDetails {
-	return r.Context().Value(credsCtxKey).(*config.CredsDetails)
+func Creds(r *http.Request) *config.Creds {
+	return r.Context().Value(credsCtxKey).(*config.Creds)
 }
 
 func CtxSigCalculator(calc hmacsig.Calculator) func(context.Context) context.Context {

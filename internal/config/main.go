@@ -21,11 +21,11 @@ type Config interface {
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
 	Rarimarket
-	Creds
 
 	Levels() *Levels
 	Verifiers() Verifiers
 	DailyQuestions() *DailyQuestions
+	Creds() *Creds
 }
 
 type config struct {
@@ -38,10 +38,10 @@ type config struct {
 	hmacsig.SigCalculatorProvider
 	PollVerifierer
 	Rarimarket
-	Creds
 
 	passport root.VerifierProvider
 
+	Cred          comfig.Once
 	DailyQuestion comfig.Once
 	levels        comfig.Once
 	verifier      comfig.Once
@@ -61,6 +61,5 @@ func New(getter kv.Getter) Config {
 		EventTypeser:          evtypes.NewConfig(getter),
 		SigCalculatorProvider: hmacsig.NewCalculatorProvider(getter),
 		Rarimarket:            NewRarimarketConfig(getter),
-		Creds:                 NewCreds(getter),
 	}
 }
