@@ -35,7 +35,7 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 				logger.Infof("There's no daily question today")
 				return
 			}
-			sendingNotifications(cfg.Creds().Path)
+			sendingNotifications(cfg.Creds().Path, cfg.DailyQuestionsNotification())
 		}),
 		gocron.WithName("daily-questions-notification"),
 	)
@@ -47,15 +47,11 @@ func Run(ctx context.Context, cfg config.Config, sig chan struct{}) {
 	cron.Start(ctx)
 }
 
-func sendingNotifications(toCreds string) {
+func sendingNotifications(toCreds string, notification *config.DailyQuestionsNotification) {
 	credFile := toCreds
 
 	msg := &messaging.Message{
-		Notification: &messaging.Notification{
-			Title: "Daily Question",
-			Body:  "The new daily question is finally available",
-		},
-		Topic: "daily-questions",
+		Topic: "mokalake-rewardable-stage",
 		APNS: &messaging.APNSConfig{
 			Headers: map[string]string{
 				"apns-priority": "10",
@@ -63,15 +59,27 @@ func sendingNotifications(toCreds string) {
 			Payload: &messaging.APNSPayload{
 				Aps: &messaging.Aps{
 					MutableContent: true,
+					Alert: &messaging.ApsAlert{
+						Title: notification.Title,
+						Body:  notification.Body,
+					},
+				},
+				CustomData: map[string]interface{}{
+					"type": "daily_question",
 				},
 			},
 		},
 		Android: &messaging.AndroidConfig{
 			Priority: "high",
 			Notification: &messaging.AndroidNotification{
-				Title: "Daily Question",
-				Body:  "The new daily question is finally available",
-				Tag:   "daily-question",
+				Title: notification.Title,
+				Body:  notification.Body,
+			},
+			Data: map[string]string{
+				"type":        "daily_question",
+				"content":     "{\"event_name\": \"early_test\"}", // custim metadata
+				"title":       notification.Title,
+				"description": notification.Body,
 			},
 		},
 	}

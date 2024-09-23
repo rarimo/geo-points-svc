@@ -31,6 +31,7 @@ const (
 	dailyQuestionsCfgCtxKey
 	rarimarketCtxKey
 	credsCtxKey
+	dailyQuestionsNotificationCfgCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -153,12 +154,6 @@ func PollVerifier(r *http.Request) *config.PollVerifier {
 	return r.Context().Value(voteVerifierCtxKey).(*config.PollVerifier)
 }
 
-func CtxCreds(creds *config.Creds) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, credsCtxKey, creds)
-	}
-}
-
 func CtxSigCalculator(calc hmacsig.Calculator) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, sigCalculatorCtxKey, calc)
@@ -187,4 +182,16 @@ func CtxRarimarket(rarimarket *config.RarimarketConfig) func(context.Context) co
 
 func Rarimarket(r *http.Request) *config.RarimarketConfig {
 	return r.Context().Value(rarimarketCtxKey).(*config.RarimarketConfig)
+}
+
+func CtxCreds(creds *config.Creds) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, credsCtxKey, creds)
+	}
+}
+
+func CtxDailyQuestionNotification(v *config.DailyQuestionsNotification) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, dailyQuestionsNotificationCfgCtxKey, v)
+	}
 }

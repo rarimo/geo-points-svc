@@ -26,6 +26,7 @@ type Config interface {
 	Verifiers() Verifiers
 	DailyQuestions() *DailyQuestions
 	Creds() *Creds
+	DailyQuestionsNotification() *DailyQuestionsNotification
 }
 
 type config struct {
@@ -41,11 +42,12 @@ type config struct {
 
 	passport root.VerifierProvider
 
-	Cred          comfig.Once
-	DailyQuestion comfig.Once
-	levels        comfig.Once
-	verifier      comfig.Once
-	getter        kv.Getter
+	Cred                      comfig.Once
+	DailyQuestionNotification comfig.Once
+	DailyQuestion             comfig.Once
+	levels                    comfig.Once
+	verifier                  comfig.Once
+	getter                    kv.Getter
 }
 
 func New(getter kv.Getter) Config {

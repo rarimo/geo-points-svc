@@ -110,6 +110,8 @@ event_types:
 
 daily_questions:
   timezone: 4
+  title: "Title"
+  body: "description"
 
 levels:
   downgradeable: false
