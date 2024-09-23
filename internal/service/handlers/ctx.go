@@ -159,10 +159,6 @@ func CtxCreds(creds *config.Creds) func(context.Context) context.Context {
 	}
 }
 
-func Creds(r *http.Request) *config.Creds {
-	return r.Context().Value(credsCtxKey).(*config.Creds)
-}
-
 func CtxSigCalculator(calc hmacsig.Calculator) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, sigCalculatorCtxKey, calc)
