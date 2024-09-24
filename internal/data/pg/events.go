@@ -175,27 +175,23 @@ func (q *events) SelectReopenable() ([]data.ReopenableEvent, error) {
 }
 
 func (q *events) SelectAbsentTypes(allTypes ...string) ([]data.ReopenableEvent, error) {
-	values := make([]string, len(allTypes))
-	for i, t := range allTypes {
-		values[i] = fmt.Sprintf("('%s')", t)
+	interfaceTypes := make([]any, 0, len(allTypes))
+	patternValues := make([]string, 0, len(allTypes))
+	for _, types := range allTypes {
+		interfaceTypes = append(interfaceTypes, types)
+		patternValues = append(patternValues, "(?)")
 	}
 
 	// including disabled balances to open events intentionally
-	query := fmt.Sprintf(`
-		WITH types(type) AS (
-    		VALUES %s
-		)
-		SELECT u.nullifier, t.type
-		FROM (
-    		SELECT nullifier FROM %s
-		) u
-		CROSS JOIN types t
-		LEFT JOIN %s e ON e.nullifier = u.nullifier AND e.type = t.type
-		WHERE e.type IS NULL;
-	`, strings.Join(values, ", "), balancesTable, eventsTable)
+	stmt := squirrel.Select("b.nullifier, t.type").
+		From(fmt.Sprintf("%s b", balancesTable)).
+		Prefix(fmt.Sprintf("WITH types(type) AS (VALUES %s)", strings.Join(patternValues, ", ")), interfaceTypes...).
+		CrossJoin("types t").
+		LeftJoin(fmt.Sprintf("%s e ON e.nullifier = b.nullifier AND e.type = t.type", eventsTable)).
+		Where(squirrel.Eq{"e.type": nil})
 
 	var res []data.ReopenableEvent
-	if err := q.db.SelectRaw(&res, query); err != nil {
+	if err := q.db.Select(&res, stmt); err != nil {
 		return nil, fmt.Errorf("select absent types for each nullifier: %w", err)
 	}
 

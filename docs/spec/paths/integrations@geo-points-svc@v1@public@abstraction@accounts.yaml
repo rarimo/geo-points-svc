@@ -1,15 +1,13 @@
 post:
   tags:
-    - Points balance
-  summary: Withdraw points
+    - Abstraction
+  summary: Create abstraction account
   description: |
-    Convert points to abstract points by exchange rate and withdraw to user wallet.
-    Updated balance with new rank is returned.
-  operationId: withdrawPoints
-  parameters:
-    - $ref: '#/components/parameters/pathNullifier'
+    Create account for abstraction associated with nullifier. 
+        
+    User must provide query proof.
+  operationId: createAbstractionAccount
   requestBody:
-    required: true
     content:
       application/vnd.api+json:
         schema:
@@ -18,10 +16,10 @@ post:
             - data
           properties:
             data:
-              $ref: '#/components/schemas/Withdraw'
+              $ref: '#/components/schemas/CreateAbstractionAccount'
   responses:
-    200:
-      description: Success
+    201:
+      description: Created
       content:
         application/vnd.api+json:
           schema:
@@ -30,10 +28,16 @@ post:
               - data
             properties:
               data:
-                $ref: '#/components/schemas/Balance'
+                $ref: '#/components/schemas/AbstractionAccount'
     400:
       $ref: '#/components/responses/invalidParameter'
     401:
       $ref: '#/components/responses/invalidAuth'
+    409:
+      description: Abstraction account already exists for provided nullifier
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Errors'
     500:
       $ref: '#/components/responses/internalError'

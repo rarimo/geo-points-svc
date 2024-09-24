@@ -68,8 +68,21 @@ func openEvents(r *http.Request, evType models.EventType) error {
 		return fmt.Errorf("select balances: %w", err)
 	}
 
+	balancesWithEvent := make(map[string]struct{})
+	existedEvents, err := EventsQ(r).FilterByType(evType.Name).Select()
+	if err != nil {
+		return fmt.Errorf("failed to select events with type %s: %w", evType.Name, err)
+	}
+
+	for _, existedEvent := range existedEvents {
+		balancesWithEvent[existedEvent.Nullifier] = struct{}{}
+	}
+
 	eventsToInsert := make([]data.Event, 0, len(balances))
 	for _, b := range balances {
+		if _, ok := balancesWithEvent[b.Nullifier]; ok {
+			continue
+		}
 		eventsToInsert = append(eventsToInsert, data.Event{
 			Nullifier: b.Nullifier,
 			Status:    data.EventOpen,
