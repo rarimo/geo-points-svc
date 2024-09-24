@@ -46,7 +46,16 @@ func UpdateEventType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	typeModel := models.ResourceToModel(req.Data.Attributes)
+	typeModel := *evType
+	model := req.Data.Attributes
+	typeModel.Description = model.Description
+	typeModel.ShortDescription = model.ShortDescription
+	typeModel.Reward = model.Reward
+	typeModel.Title = model.Title
+	typeModel.AutoClaim = model.AutoClaim
+	typeModel.Disabled = model.Disabled
+	typeModel.ActionURL = model.ActionUrl
+	typeModel.Logo = model.Logo
 
 	var updated []models.EventType
 	err = EventsQ(r).Transaction(func() error {

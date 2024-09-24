@@ -89,7 +89,6 @@ func (e EventType) ForUpdate() map[string]any {
 		"short_description": e.ShortDescription,
 		"reward":            e.Reward,
 		"title":             e.Title,
-		"frequency":         e.Frequency,
 		"starts_at":         e.StartsAt,
 		"expires_at":        e.ExpiresAt,
 		"auto_claim":        e.AutoClaim,

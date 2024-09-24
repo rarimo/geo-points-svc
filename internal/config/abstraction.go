@@ -13,8 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	vaultapi "github.com/hashicorp/vault/api"
+	accountFactory "github.com/rarimo/geo-points-svc/internal/contracts/abstractionaccountfactory"
 	pointTokens "github.com/rarimo/geo-points-svc/internal/contracts/points"
-	accountFactory "github.com/rarimo/geo-points-svc/internal/contracts/rarimarketaccountfactory"
 
 	"gitlab.com/distributed_lab/dig"
 	"gitlab.com/distributed_lab/figure/v3"
@@ -24,22 +24,22 @@ import (
 
 var ZeroAddress = common.HexToAddress("0x0000000000000000000000000000000000000000")
 
-type Rarimarket interface {
-	RarimarketConfig() *RarimarketConfig
+type Abstraction interface {
+	AbstractionConfig() *AbstractionConfig
 }
 
-func NewRarimarketConfig(getter kv.Getter) Rarimarket {
-	return &rarimarketConfig{
+func NewAbstractionConfig(getter kv.Getter) Abstraction {
+	return &abstractionConfig{
 		getter: getter,
 	}
 }
 
-type rarimarketConfig struct {
+type abstractionConfig struct {
 	once   comfig.Once
 	getter kv.Getter
 }
 
-type RarimarketConfig struct {
+type AbstractionConfig struct {
 	RPC            *ethclient.Client
 	AccountFactory common.Address
 	PointTokens    common.Address
@@ -49,7 +49,7 @@ type RarimarketConfig struct {
 	privateKey *ecdsa.PrivateKey
 }
 
-func (c *rarimarketConfig) RarimarketConfig() *RarimarketConfig {
+func (c *abstractionConfig) AbstractionConfig() *AbstractionConfig {
 	return c.once.Do(func() interface{} {
 		var cfg struct {
 			RPC            *ethclient.Client `fig:"rpc,required"`
@@ -63,11 +63,11 @@ func (c *rarimarketConfig) RarimarketConfig() *RarimarketConfig {
 		}
 
 		err := figure.Out(&cfg).
-			From(kv.MustGetStringMap(c.getter, "rarimarket")).
+			From(kv.MustGetStringMap(c.getter, "abstraction")).
 			With(figure.EthereumHooks, figure.BaseHooks).
 			Please()
 		if err != nil {
-			panic(fmt.Errorf("failed to figure out rarimarket config: %w", err))
+			panic(fmt.Errorf("failed to figure out abstraction config: %w", err))
 		}
 
 		privateKey := cfg.PrivateKey
@@ -85,7 +85,7 @@ func (c *rarimarketConfig) RarimarketConfig() *RarimarketConfig {
 			cfg.PointPrice = int64(math.Pow10(9))
 		}
 
-		return &RarimarketConfig{
+		return &AbstractionConfig{
 			RPC:            cfg.RPC,
 			AccountFactory: cfg.AccountFactory,
 			PointTokens:    cfg.PointTokens,
@@ -98,23 +98,23 @@ func (c *rarimarketConfig) RarimarketConfig() *RarimarketConfig {
 
 			privateKey: privateKey,
 		}
-	}).(*RarimarketConfig)
+	}).(*AbstractionConfig)
 }
 
-func (r *RarimarketConfig) CreateAccount(ctx context.Context, nullifier [32]byte) (common.Address, error) {
+func (r *AbstractionConfig) CreateAccount(ctx context.Context, nullifier [32]byte) (common.Address, error) {
 	signerOpts, err := bind.NewKeyedTransactorWithChainID(r.privateKey, r.ChainID)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get keyed transactor: %w", err)
 	}
 
-	accountFactoryInstance, err := accountFactory.NewRarimarketAccountFactory(r.AccountFactory, r.RPC)
+	accountFactoryInstance, err := accountFactory.NewAbstractionAccountFactory(r.AccountFactory, r.RPC)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get account factory: %w", err)
 	}
 
-	tx, err := accountFactoryInstance.DeployRarimarketAccount(signerOpts, nullifier)
+	tx, err := accountFactoryInstance.DeployAbstractionAccount(signerOpts, nullifier)
 	if err != nil {
-		return common.Address{}, fmt.Errorf("failed to deploy rarimarket account: %w", err)
+		return common.Address{}, fmt.Errorf("failed to deploy abstraction account: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
@@ -125,20 +125,20 @@ func (r *RarimarketConfig) CreateAccount(ctx context.Context, nullifier [32]byte
 		return common.Address{}, fmt.Errorf("failed to wait mined transaction: %w", err)
 	}
 
-	abi, err := accountFactory.RarimarketAccountFactoryMetaData.GetAbi()
+	abi, err := accountFactory.AbstractionAccountFactoryMetaData.GetAbi()
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get contract abi: %w", err)
 	}
 
-	rarimarketAccountDeployedTopic := abi.Events["RarimarketAccountDeployed"].ID
+	abstractionAccountDeployedTopic := abi.Events["AbstractionAccountDeployed"].ID
 
-	var event *accountFactory.RarimarketAccountFactoryRarimarketAccountDeployed
+	var event *accountFactory.AbstractionAccountFactoryAbstractionAccountDeployed
 	for _, log := range rec.Logs {
-		if !bytes.Equal(log.Topics[0][:], rarimarketAccountDeployedTopic[:]) {
+		if !bytes.Equal(log.Topics[0][:], abstractionAccountDeployedTopic[:]) {
 			continue
 		}
 
-		event, err = accountFactoryInstance.ParseRarimarketAccountDeployed(*log)
+		event, err = accountFactoryInstance.ParseAbstractionAccountDeployed(*log)
 		if err != nil {
 			return common.Address{}, fmt.Errorf("failed to unpack log: %w", err)
 		}
@@ -148,21 +148,21 @@ func (r *RarimarketConfig) CreateAccount(ctx context.Context, nullifier [32]byte
 	return event.Account, nil
 }
 
-func (r *RarimarketConfig) GetAccount(nullifier [32]byte) (common.Address, error) {
-	accountFactoryInstance, err := accountFactory.NewRarimarketAccountFactory(r.AccountFactory, r.RPC)
+func (r *AbstractionConfig) GetAccount(nullifier [32]byte) (common.Address, error) {
+	accountFactoryInstance, err := accountFactory.NewAbstractionAccountFactory(r.AccountFactory, r.RPC)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get account factory: %w", err)
 	}
 
-	accountAddress, err := accountFactoryInstance.GetRarimarketAccount(nil, nullifier)
+	accountAddress, err := accountFactoryInstance.GetAbstractionAccount(nil, nullifier)
 	if err != nil {
-		return common.Address{}, fmt.Errorf("failed to get rarimarket account: %w", err)
+		return common.Address{}, fmt.Errorf("failed to get abstraction account: %w", err)
 	}
 
 	return accountAddress, nil
 }
 
-func (r *RarimarketConfig) Mint(ctx context.Context, account common.Address, amount *big.Int) (common.Hash, error) {
+func (r *AbstractionConfig) Mint(ctx context.Context, account common.Address, amount *big.Int) (common.Hash, error) {
 	signerOpts, err := bind.NewKeyedTransactorWithChainID(r.privateKey, r.ChainID)
 	if err != nil {
 		return common.Hash{}, fmt.Errorf("failed to get keyed transactor: %w", err)
@@ -170,12 +170,12 @@ func (r *RarimarketConfig) Mint(ctx context.Context, account common.Address, amo
 
 	pointTokensInstance, err := pointTokens.NewPoints(r.PointTokens, r.RPC)
 	if err != nil {
-		return common.Hash{}, fmt.Errorf("failed to get account factory: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to get points instance: %w", err)
 	}
 
 	tx, err := pointTokensInstance.Mint(signerOpts, account, amount)
 	if err != nil {
-		return common.Hash{}, fmt.Errorf("failed to deploy rarimarket account: %w", err)
+		return common.Hash{}, fmt.Errorf("failed to mint points: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)

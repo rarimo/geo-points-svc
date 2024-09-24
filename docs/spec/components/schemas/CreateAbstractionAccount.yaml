@@ -1,0 +1,16 @@
+allOf:
+  - $ref: '#/components/schemas/AbstractionAccountKey'
+  - type: object
+    x-go-is-request: true
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - proof
+        properties:
+          proof:
+            type: object
+            format: types.ZKProof
+            description: Query ZK passport verification proof.
