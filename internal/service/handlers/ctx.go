@@ -177,6 +177,7 @@ func CtxAbstraction(abstraction *config.AbstractionConfig) func(context.Context)
 		return context.WithValue(ctx, abstractionCtxKey, abstraction)
 	}
 }
+
 func Abstraction(r *http.Request) *config.AbstractionConfig {
 	return r.Context().Value(abstractionCtxKey).(*config.AbstractionConfig)
 }
