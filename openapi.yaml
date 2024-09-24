@@ -7,6 +7,79 @@ servers:
   - url: 'https://api.stage.rarime.com'
     description: TokenD Developer Environment
 paths:
+  /integrations/geo-points-svc/v1/public/abstraction/accounts:
+    post:
+      tags:
+        - Abstraction
+      summary: Create abstraction account
+      description: |
+        Create account for abstraction associated with nullifier. 
+            
+        User must provide query proof.
+      operationId: createAbstractionAccount
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateAbstractionAccount'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AbstractionAccount'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '409':
+          description: Abstraction account already exists for provided nullifier
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
+  '/integrations/geo-points-svc/v1/public/abstraction/accounts/{nullifier}':
+    get:
+      tags:
+        - Abstraction
+      summary: Get abstraction acccount
+      description: Get abstraction account associated with provided nullifier.
+      operationId: getAbstractionAccount
+      parameters:
+        - $ref: '#/components/parameters/pathNullifier'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AbstractionAccount'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '404':
+          $ref: '#/components/responses/notFound'
+        '500':
+          $ref: '#/components/responses/internalError'
   /integrations/geo-points-svc/v1/public/balances:
     post:
       tags:
@@ -392,7 +465,7 @@ paths:
         - Points balance
       summary: Withdraw points
       description: |
-        Convert points to RariMarket points by exchange rate and withdraw to user wallet.
+        Convert points to abstract points by exchange rate and withdraw to user wallet.
         Updated balance with new rank is returned.
       operationId: withdrawPoints
       parameters:
@@ -1267,81 +1340,40 @@ paths:
                 $ref: '#/components/schemas/Errors'
         '500':
           $ref: '#/components/responses/internalError'
-  /integrations/geo-points-svc/v1/public/rarimarket/accounts:
-    post:
-      tags:
-        - Rarimarket
-      summary: Create rarimarket account
-      description: |
-        Create account for rarimarket associated with nullifier. 
-            
-        User must provide query proof.
-      operationId: createRarimarketAccount
-      requestBody:
-        content:
-          application/vnd.api+json:
-            schema:
-              type: object
-              required:
-                - data
-              properties:
-                data:
-                  $ref: '#/components/schemas/CreateRarimarketAccount'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/vnd.api+json:
-              schema:
-                type: object
-                required:
-                  - data
-                properties:
-                  data:
-                    $ref: '#/components/schemas/RarimarketAccount'
-        '400':
-          $ref: '#/components/responses/invalidParameter'
-        '401':
-          $ref: '#/components/responses/invalidAuth'
-        '409':
-          description: Rarimarket account already exists for provided nullifier
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Errors'
-        '500':
-          $ref: '#/components/responses/internalError'
-  '/integrations/geo-points-svc/v1/public/rarimarket/accounts/{nullifier}':
-    get:
-      tags:
-        - Rarimarket
-      summary: Get rarimarket acccount
-      description: Get rarimarket account associated with provided nullifier.
-      operationId: getRarimarketAccount
-      parameters:
-        - $ref: '#/components/parameters/pathNullifier'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/vnd.api+json:
-              schema:
-                type: object
-                required:
-                  - data
-                properties:
-                  data:
-                    $ref: '#/components/schemas/RarimarketAccount'
-        '400':
-          $ref: '#/components/responses/invalidParameter'
-        '401':
-          $ref: '#/components/responses/invalidAuth'
-        '404':
-          $ref: '#/components/responses/notFound'
-        '500':
-          $ref: '#/components/responses/internalError'
 components:
   schemas:
+    AbstractionAccount:
+      allOf:
+        - $ref: '#/components/schemas/AbstractionAccountKey'
+        - type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - address
+              properties:
+                address:
+                  type: string
+                  example: 0x123...abc
+                  pattern: '^0x[0-9a-fA-F]{40}$'
+                  description: Account abstraction address.
+    AbstractionAccountKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: Abstraction account address
+          example: 0x123...abc
+          pattern: '^0x[0-9a-fA-F]{40}$'
+        type:
+          type: string
+          enum:
+            - abstraction_account
     ActivateBalance:
       allOf:
         - $ref: '#/components/schemas/ActivateBalanceKey'
@@ -1465,6 +1497,23 @@ components:
           type: string
           enum:
             - claim_event
+    CreateAbstractionAccount:
+      allOf:
+        - $ref: '#/components/schemas/AbstractionAccountKey'
+        - type: object
+          x-go-is-request: true
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - proof
+              properties:
+                proof:
+                  type: object
+                  format: types.ZKProof
+                  description: Query ZK passport verification proof.
     CreateBalance:
       allOf:
         - $ref: '#/components/schemas/CreateBalanceKey'
@@ -1499,23 +1548,6 @@ components:
           type: string
           enum:
             - create_balance
-    CreateRarimarketAccount:
-      allOf:
-        - $ref: '#/components/schemas/RarimarketAccountKey'
-        - type: object
-          x-go-is-request: true
-          required:
-            - attributes
-          properties:
-            attributes:
-              type: object
-              required:
-                - proof
-              properties:
-                proof:
-                  type: object
-                  format: types.ZKProof
-                  description: Query ZK passport verification proof.
     DailyQuestionAnswers:
       allOf:
         - $ref: '#/components/schemas/DailyQuestionsKey'
@@ -2201,39 +2233,6 @@ components:
           type: string
           enum:
             - fulfill_qr_event
-    RarimarketAccount:
-      allOf:
-        - $ref: '#/components/schemas/RarimarketAccountKey'
-        - type: object
-          x-go-is-request: true
-          required:
-            - attributes
-          properties:
-            attributes:
-              type: object
-              required:
-                - address
-              properties:
-                address:
-                  type: string
-                  example: 0x123...abc
-                  pattern: '^0x[0-9a-fA-F]{40}$'
-                  description: Account abstraction address.
-    RarimarketAccountKey:
-      type: object
-      required:
-        - id
-        - type
-      properties:
-        id:
-          type: string
-          description: Nullifier of the points owner
-          example: 0x123...abc
-          pattern: '^0x[0-9a-fA-F]{64}$'
-        type:
-          type: string
-          enum:
-            - rarimarket_account
     ReferralCode:
       type: object
       required:
