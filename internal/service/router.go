@@ -26,8 +26,7 @@ func Run(ctx context.Context, cfg config.Config) {
 			handlers.CtxPollVerifier(cfg.PollVerifier()),
 			handlers.CtxCreds(cfg.Creds()),
 			handlers.CtxDailyQuestion(cfg.DailyQuestions()),
-			handlers.CtxDailyQuestionNotification(cfg.DailyQuestionsNotification()),
-			handlers.CtxRarimarket(cfg.RarimarketConfig()),
+			handlers.CtxAbstraction(cfg.AbstractionConfig()),
 		),
 		handlers.DBCloneMiddleware(cfg.DB()),
 	)
@@ -35,6 +34,14 @@ func Run(ctx context.Context, cfg config.Config) {
 	authMW := handlers.AuthMiddleware(cfg.Auth(), cfg.Log())
 	r.Route("/integrations/geo-points-svc/v1", func(r chi.Router) {
 		r.Route("/public", func(r chi.Router) {
+			r.Route("/abstraction", func(r chi.Router) {
+				r.Route("/accounts", func(r chi.Router) {
+					r.Use(authMW)
+					r.Post("/", handlers.CreateAbstractionAccount)
+					r.Get("/{nullifier}", handlers.GetAbstractionAccount)
+				})
+			})
+
 			r.Route("/balances", func(r chi.Router) {
 				r.Use(authMW)
 				r.Post("/", handlers.CreateBalance)
@@ -46,7 +53,7 @@ func Run(ctx context.Context, cfg config.Config) {
 					r.Route("/verify", func(r chi.Router) {
 						r.Post("/external", handlers.VerifyExternalPassport)
 					})
-					r.Post("/withdrawals", nil)
+					r.Post("/withdrawals", handlers.Withdraw)
 				})
 			})
 

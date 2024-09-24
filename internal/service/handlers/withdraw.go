@@ -14,6 +14,7 @@ import (
 	"github.com/rarimo/geo-points-svc/internal/data"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
+	"github.com/rarimo/geo-points-svc/resources"
 
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
@@ -50,15 +51,15 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 	// never panic because of request validation
 	new(big.Int).SetBytes(hexutil.MustDecode(nullifier)).FillBytes(nullifierBytes[:])
 
-	addr, err := Rarimarket(r).GetAccount(nullifierBytes)
+	addr, err := Abstraction(r).GetAccount(nullifierBytes)
 	if err != nil {
 		log.WithError(err).Error("Failed to get account")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if bytes.Equal(addr[:], config.ZeroAddress[:]) {
-		log.Info("Rarimarket account absent. Creating new!")
-		addr, err = Rarimarket(r).CreateAccount(r.Context(), nullifierBytes)
+		log.Info("Abstraction account absent. Creating new!")
+		addr, err = Abstraction(r).CreateAccount(r.Context(), nullifierBytes)
 		if err != nil {
 			log.WithError(err).Error("Failed to create account")
 			ape.RenderErr(w, problems.InternalError())
@@ -81,7 +82,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("decrease points amount: %w", err)
 		}
 
-		txHash, err = Rarimarket(r).Mint(r.Context(), addr, new(big.Int).Mul(Rarimarket(r).PointPrice, big.NewInt(req.Data.Attributes.Amount)))
+		txHash, err = Abstraction(r).Mint(r.Context(), addr, new(big.Int).Mul(Abstraction(r).PointPrice, big.NewInt(req.Data.Attributes.Amount)))
 		if err != nil {
 			return fmt.Errorf("failed to mint points: %w", err)
 		}
@@ -113,7 +114,9 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newBalanceModel(*balance))
+	ape.Render(w, resources.BalanceResponse{
+		Data: newBalanceModel(*balance),
+	})
 }
 
 func isEligibleToWithdraw(

@@ -29,9 +29,7 @@ const (
 	voteVerifierCtxKey
 	dailyQuestionsCtxKey
 	dailyQuestionsCfgCtxKey
-	rarimarketCtxKey
-	credsCtxKey
-	dailyQuestionsNotificationCfgCtxKey
+	abstractionCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -174,24 +172,11 @@ func Levels(r *http.Request) *config.Levels {
 	return r.Context().Value(levelsCtxKey).(*config.Levels)
 }
 
-func CtxRarimarket(rarimarket *config.RarimarketConfig) func(context.Context) context.Context {
+func CtxAbstraction(abstraction *config.AbstractionConfig) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, rarimarketCtxKey, rarimarket)
+		return context.WithValue(ctx, abstractionCtxKey, abstraction)
 	}
 }
-
-func Rarimarket(r *http.Request) *config.RarimarketConfig {
-	return r.Context().Value(rarimarketCtxKey).(*config.RarimarketConfig)
-}
-
-func CtxCreds(creds *config.Creds) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, credsCtxKey, creds)
-	}
-}
-
-func CtxDailyQuestionNotification(v *config.DailyQuestionsNotification) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, dailyQuestionsNotificationCfgCtxKey, v)
-	}
+func Abstraction(r *http.Request) *config.AbstractionConfig {
+	return r.Context().Value(abstractionCtxKey).(*config.AbstractionConfig)
 }
