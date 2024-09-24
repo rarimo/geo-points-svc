@@ -31,8 +31,8 @@ func NewUpdateEventType(r *http.Request) (req resources.EventTypeResponse, err e
 		// not updatable, as QR code includes event type name
 		"data/attributes/qr_code_value": val.Validate(attr.QrCodeValue, val.Empty),
 
-		"data/attributes/poll_event_id": val.Validate(attr.PollEventId, val.Nil),
-		"data/attributes/poll_contract": val.Validate(attr.PollContract, val.Nil),
+		"data/attributes/poll_event_id": val.Validate(attr.PollEventId, val.Empty),
+		"data/attributes/poll_contract": val.Validate(attr.PollContract, val.Empty),
 		// these fields are not currently supported, because cron jobs implementation is required
 		"data/attributes/starts_at":  val.Validate(attr.StartsAt, val.Empty),
 		"data/attributes/expires_at": val.Validate(attr.ExpiresAt, val.Empty),
