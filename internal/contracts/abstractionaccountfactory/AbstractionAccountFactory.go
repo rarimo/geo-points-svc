@@ -29,113 +29,113 @@ var (
 	_ = abi.ConvertType
 )
 
-// AbstractionAccountFactoryMetaData contains all meta data concerning the AbstractionAccountFactory contract.
-var AbstractionAccountFactoryMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"previousAdmin\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAdmin\",\"type\":\"address\"}],\"name\":\"AdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"beacon\",\"type\":\"address\"}],\"name\":\"BeaconUpgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AbstractionAccountDeployed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"abstractionAccountImplementation_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"negRiskAdapter_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"ctfExchange_\",\"type\":\"address\"},{\"internalType\":\"contractIERC20\",\"name\":\"points_\",\"type\":\"address\"},{\"internalType\":\"contractIERC1155\",\"name\":\"ctf_\",\"type\":\"address\"}],\"name\":\"__AbstractionAccountFactory_init\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ctf\",\"outputs\":[{\"internalType\":\"contractIERC1155\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ctfExchange\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nullifier_\",\"type\":\"bytes32\"}],\"name\":\"deployAbstractionAccount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nullifier_\",\"type\":\"bytes32\"}],\"name\":\"getAbstractionAccount\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAbstractionAccountImplementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"negRiskAdapter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"points\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nullifier_\",\"type\":\"bytes32\"}],\"name\":\"predictAbstractionAccountAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"proxiableUUID\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"abstractionAccounts\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"setAbstractionAccountImplementation\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"upgradeTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgradeToAndCall\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+// RarimarketAccountFactoryMetaData contains all meta data concerning the RarimarketAccountFactory contract.
+var RarimarketAccountFactoryMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"previousAdmin\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAdmin\",\"type\":\"address\"}],\"name\":\"AdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"beacon\",\"type\":\"address\"}],\"name\":\"BeaconUpgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"RarimarketAccountDeployed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"rarimarketAccountImplementation_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"negRiskAdapter_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"ctfExchange_\",\"type\":\"address\"},{\"internalType\":\"contractIERC20\",\"name\":\"points_\",\"type\":\"address\"},{\"internalType\":\"contractIERC1155\",\"name\":\"ctf_\",\"type\":\"address\"}],\"name\":\"__RarimarketAccountFactory_init\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ctf\",\"outputs\":[{\"internalType\":\"contractIERC1155\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ctfExchange\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nullifier_\",\"type\":\"bytes32\"}],\"name\":\"deployRarimarketAccount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nullifier_\",\"type\":\"bytes32\"}],\"name\":\"getRarimarketAccount\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRarimarketAccountImplementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"negRiskAdapter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"points\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nullifier_\",\"type\":\"bytes32\"}],\"name\":\"predictRarimarketAccountAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"proxiableUUID\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"rarimarketAccounts\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"setRarimarketAccountImplementation\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"upgradeTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgradeToAndCall\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 }
 
-// AbstractionAccountFactoryABI is the input ABI used to generate the binding from.
-// Deprecated: Use AbstractionAccountFactoryMetaData.ABI instead.
-var AbstractionAccountFactoryABI = AbstractionAccountFactoryMetaData.ABI
+// RarimarketAccountFactoryABI is the input ABI used to generate the binding from.
+// Deprecated: Use RarimarketAccountFactoryMetaData.ABI instead.
+var RarimarketAccountFactoryABI = RarimarketAccountFactoryMetaData.ABI
 
-// AbstractionAccountFactory is an auto generated Go binding around an Ethereum contract.
-type AbstractionAccountFactory struct {
-	AbstractionAccountFactoryCaller     // Read-only binding to the contract
-	AbstractionAccountFactoryTransactor // Write-only binding to the contract
-	AbstractionAccountFactoryFilterer   // Log filterer for contract events
+// RarimarketAccountFactory is an auto generated Go binding around an Ethereum contract.
+type RarimarketAccountFactory struct {
+	RarimarketAccountFactoryCaller     // Read-only binding to the contract
+	RarimarketAccountFactoryTransactor // Write-only binding to the contract
+	RarimarketAccountFactoryFilterer   // Log filterer for contract events
 }
 
-// AbstractionAccountFactoryCaller is an auto generated read-only Go binding around an Ethereum contract.
-type AbstractionAccountFactoryCaller struct {
+// RarimarketAccountFactoryCaller is an auto generated read-only Go binding around an Ethereum contract.
+type RarimarketAccountFactoryCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// AbstractionAccountFactoryTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type AbstractionAccountFactoryTransactor struct {
+// RarimarketAccountFactoryTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type RarimarketAccountFactoryTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// AbstractionAccountFactoryFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type AbstractionAccountFactoryFilterer struct {
+// RarimarketAccountFactoryFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type RarimarketAccountFactoryFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// AbstractionAccountFactorySession is an auto generated Go binding around an Ethereum contract,
+// RarimarketAccountFactorySession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type AbstractionAccountFactorySession struct {
-	Contract     *AbstractionAccountFactory // Generic contract binding to set the session for
+type RarimarketAccountFactorySession struct {
+	Contract     *RarimarketAccountFactory // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts             // Call options to use throughout this session
 	TransactOpts bind.TransactOpts         // Transaction auth options to use throughout this session
 }
 
-// AbstractionAccountFactoryCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// RarimarketAccountFactoryCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type AbstractionAccountFactoryCallerSession struct {
-	Contract *AbstractionAccountFactoryCaller // Generic contract caller binding to set the session for
+type RarimarketAccountFactoryCallerSession struct {
+	Contract *RarimarketAccountFactoryCaller // Generic contract caller binding to set the session for
 	CallOpts bind.CallOpts                   // Call options to use throughout this session
 }
 
-// AbstractionAccountFactoryTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// RarimarketAccountFactoryTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type AbstractionAccountFactoryTransactorSession struct {
-	Contract     *AbstractionAccountFactoryTransactor // Generic contract transactor binding to set the session for
+type RarimarketAccountFactoryTransactorSession struct {
+	Contract     *RarimarketAccountFactoryTransactor // Generic contract transactor binding to set the session for
 	TransactOpts bind.TransactOpts                   // Transaction auth options to use throughout this session
 }
 
-// AbstractionAccountFactoryRaw is an auto generated low-level Go binding around an Ethereum contract.
-type AbstractionAccountFactoryRaw struct {
-	Contract *AbstractionAccountFactory // Generic contract binding to access the raw methods on
+// RarimarketAccountFactoryRaw is an auto generated low-level Go binding around an Ethereum contract.
+type RarimarketAccountFactoryRaw struct {
+	Contract *RarimarketAccountFactory // Generic contract binding to access the raw methods on
 }
 
-// AbstractionAccountFactoryCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type AbstractionAccountFactoryCallerRaw struct {
-	Contract *AbstractionAccountFactoryCaller // Generic read-only contract binding to access the raw methods on
+// RarimarketAccountFactoryCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type RarimarketAccountFactoryCallerRaw struct {
+	Contract *RarimarketAccountFactoryCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// AbstractionAccountFactoryTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type AbstractionAccountFactoryTransactorRaw struct {
-	Contract *AbstractionAccountFactoryTransactor // Generic write-only contract binding to access the raw methods on
+// RarimarketAccountFactoryTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type RarimarketAccountFactoryTransactorRaw struct {
+	Contract *RarimarketAccountFactoryTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewAbstractionAccountFactory creates a new instance of AbstractionAccountFactory, bound to a specific deployed contract.
-func NewAbstractionAccountFactory(address common.Address, backend bind.ContractBackend) (*AbstractionAccountFactory, error) {
-	contract, err := bindAbstractionAccountFactory(address, backend, backend, backend)
+// NewRarimarketAccountFactory creates a new instance of RarimarketAccountFactory, bound to a specific deployed contract.
+func NewRarimarketAccountFactory(address common.Address, backend bind.ContractBackend) (*RarimarketAccountFactory, error) {
+	contract, err := bindRarimarketAccountFactory(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactory{AbstractionAccountFactoryCaller: AbstractionAccountFactoryCaller{contract: contract}, AbstractionAccountFactoryTransactor: AbstractionAccountFactoryTransactor{contract: contract}, AbstractionAccountFactoryFilterer: AbstractionAccountFactoryFilterer{contract: contract}}, nil
+	return &RarimarketAccountFactory{RarimarketAccountFactoryCaller: RarimarketAccountFactoryCaller{contract: contract}, RarimarketAccountFactoryTransactor: RarimarketAccountFactoryTransactor{contract: contract}, RarimarketAccountFactoryFilterer: RarimarketAccountFactoryFilterer{contract: contract}}, nil
 }
 
-// NewAbstractionAccountFactoryCaller creates a new read-only instance of AbstractionAccountFactory, bound to a specific deployed contract.
-func NewAbstractionAccountFactoryCaller(address common.Address, caller bind.ContractCaller) (*AbstractionAccountFactoryCaller, error) {
-	contract, err := bindAbstractionAccountFactory(address, caller, nil, nil)
+// NewRarimarketAccountFactoryCaller creates a new read-only instance of RarimarketAccountFactory, bound to a specific deployed contract.
+func NewRarimarketAccountFactoryCaller(address common.Address, caller bind.ContractCaller) (*RarimarketAccountFactoryCaller, error) {
+	contract, err := bindRarimarketAccountFactory(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryCaller{contract: contract}, nil
+	return &RarimarketAccountFactoryCaller{contract: contract}, nil
 }
 
-// NewAbstractionAccountFactoryTransactor creates a new write-only instance of AbstractionAccountFactory, bound to a specific deployed contract.
-func NewAbstractionAccountFactoryTransactor(address common.Address, transactor bind.ContractTransactor) (*AbstractionAccountFactoryTransactor, error) {
-	contract, err := bindAbstractionAccountFactory(address, nil, transactor, nil)
+// NewRarimarketAccountFactoryTransactor creates a new write-only instance of RarimarketAccountFactory, bound to a specific deployed contract.
+func NewRarimarketAccountFactoryTransactor(address common.Address, transactor bind.ContractTransactor) (*RarimarketAccountFactoryTransactor, error) {
+	contract, err := bindRarimarketAccountFactory(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryTransactor{contract: contract}, nil
+	return &RarimarketAccountFactoryTransactor{contract: contract}, nil
 }
 
-// NewAbstractionAccountFactoryFilterer creates a new log filterer instance of AbstractionAccountFactory, bound to a specific deployed contract.
-func NewAbstractionAccountFactoryFilterer(address common.Address, filterer bind.ContractFilterer) (*AbstractionAccountFactoryFilterer, error) {
-	contract, err := bindAbstractionAccountFactory(address, nil, nil, filterer)
+// NewRarimarketAccountFactoryFilterer creates a new log filterer instance of RarimarketAccountFactory, bound to a specific deployed contract.
+func NewRarimarketAccountFactoryFilterer(address common.Address, filterer bind.ContractFilterer) (*RarimarketAccountFactoryFilterer, error) {
+	contract, err := bindRarimarketAccountFactory(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryFilterer{contract: contract}, nil
+	return &RarimarketAccountFactoryFilterer{contract: contract}, nil
 }
 
-// bindAbstractionAccountFactory binds a generic wrapper to an already deployed contract.
-func bindAbstractionAccountFactory(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := AbstractionAccountFactoryMetaData.GetAbi()
+// bindRarimarketAccountFactory binds a generic wrapper to an already deployed contract.
+func bindRarimarketAccountFactory(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := RarimarketAccountFactoryMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -146,46 +146,46 @@ func bindAbstractionAccountFactory(address common.Address, caller bind.ContractC
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_AbstractionAccountFactory *AbstractionAccountFactoryRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _AbstractionAccountFactory.Contract.AbstractionAccountFactoryCaller.contract.Call(opts, result, method, params...)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _RarimarketAccountFactory.Contract.RarimarketAccountFactoryCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_AbstractionAccountFactory *AbstractionAccountFactoryRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.AbstractionAccountFactoryTransactor.contract.Transfer(opts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.RarimarketAccountFactoryTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_AbstractionAccountFactory *AbstractionAccountFactoryRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.AbstractionAccountFactoryTransactor.contract.Transact(opts, method, params...)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.RarimarketAccountFactoryTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _AbstractionAccountFactory.Contract.contract.Call(opts, result, method, params...)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _RarimarketAccountFactory.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.contract.Transfer(opts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.contract.Transact(opts, method, params...)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.contract.Transact(opts, method, params...)
 }
 
 // Ctf is a free data retrieval call binding the contract method 0x22a9339f.
 //
 // Solidity: function ctf() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Ctf(opts *bind.CallOpts) (common.Address, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) Ctf(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "ctf")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "ctf")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -200,23 +200,23 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Ctf(opts *bin
 // Ctf is a free data retrieval call binding the contract method 0x22a9339f.
 //
 // Solidity: function ctf() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) Ctf() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Ctf(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) Ctf() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Ctf(&_RarimarketAccountFactory.CallOpts)
 }
 
 // Ctf is a free data retrieval call binding the contract method 0x22a9339f.
 //
 // Solidity: function ctf() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) Ctf() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Ctf(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) Ctf() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Ctf(&_RarimarketAccountFactory.CallOpts)
 }
 
 // CtfExchange is a free data retrieval call binding the contract method 0x4b8295e7.
 //
 // Solidity: function ctfExchange() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) CtfExchange(opts *bind.CallOpts) (common.Address, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) CtfExchange(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "ctfExchange")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "ctfExchange")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -231,23 +231,23 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) CtfExchange(o
 // CtfExchange is a free data retrieval call binding the contract method 0x4b8295e7.
 //
 // Solidity: function ctfExchange() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) CtfExchange() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.CtfExchange(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) CtfExchange() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.CtfExchange(&_RarimarketAccountFactory.CallOpts)
 }
 
 // CtfExchange is a free data retrieval call binding the contract method 0x4b8295e7.
 //
 // Solidity: function ctfExchange() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) CtfExchange() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.CtfExchange(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) CtfExchange() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.CtfExchange(&_RarimarketAccountFactory.CallOpts)
 }
 
-// GetAbstractionAccount is a free data retrieval call binding the contract method 0x2d1ac65a.
+// GetRarimarketAccount is a free data retrieval call binding the contract method 0x2d1ac65a.
 //
-// Solidity: function getAbstractionAccount(bytes32 nullifier_) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) GetAbstractionAccount(opts *bind.CallOpts, nullifier_ [32]byte) (common.Address, error) {
+// Solidity: function getRarimarketAccount(bytes32 nullifier_) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) GetRarimarketAccount(opts *bind.CallOpts, nullifier_ [32]byte) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "getAbstractionAccount", nullifier_)
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "getRarimarketAccount", nullifier_)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -259,26 +259,26 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) GetAbstractio
 
 }
 
-// GetAbstractionAccount is a free data retrieval call binding the contract method 0x2d1ac65a.
+// GetRarimarketAccount is a free data retrieval call binding the contract method 0x2d1ac65a.
 //
-// Solidity: function getAbstractionAccount(bytes32 nullifier_) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) GetAbstractionAccount(nullifier_ [32]byte) (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.GetAbstractionAccount(&_AbstractionAccountFactory.CallOpts, nullifier_)
+// Solidity: function getRarimarketAccount(bytes32 nullifier_) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) GetRarimarketAccount(nullifier_ [32]byte) (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.GetRarimarketAccount(&_RarimarketAccountFactory.CallOpts, nullifier_)
 }
 
-// GetAbstractionAccount is a free data retrieval call binding the contract method 0x2d1ac65a.
+// GetRarimarketAccount is a free data retrieval call binding the contract method 0x2d1ac65a.
 //
-// Solidity: function getAbstractionAccount(bytes32 nullifier_) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) GetAbstractionAccount(nullifier_ [32]byte) (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.GetAbstractionAccount(&_AbstractionAccountFactory.CallOpts, nullifier_)
+// Solidity: function getRarimarketAccount(bytes32 nullifier_) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) GetRarimarketAccount(nullifier_ [32]byte) (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.GetRarimarketAccount(&_RarimarketAccountFactory.CallOpts, nullifier_)
 }
 
-// GetAbstractionAccountImplementation is a free data retrieval call binding the contract method 0xad04299b.
+// GetRarimarketAccountImplementation is a free data retrieval call binding the contract method 0xad04299b.
 //
-// Solidity: function getAbstractionAccountImplementation() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) GetAbstractionAccountImplementation(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function getRarimarketAccountImplementation() view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) GetRarimarketAccountImplementation(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "getAbstractionAccountImplementation")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "getRarimarketAccountImplementation")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -290,26 +290,26 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) GetAbstractio
 
 }
 
-// GetAbstractionAccountImplementation is a free data retrieval call binding the contract method 0xad04299b.
+// GetRarimarketAccountImplementation is a free data retrieval call binding the contract method 0xad04299b.
 //
-// Solidity: function getAbstractionAccountImplementation() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) GetAbstractionAccountImplementation() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.GetAbstractionAccountImplementation(&_AbstractionAccountFactory.CallOpts)
+// Solidity: function getRarimarketAccountImplementation() view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) GetRarimarketAccountImplementation() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.GetRarimarketAccountImplementation(&_RarimarketAccountFactory.CallOpts)
 }
 
-// GetAbstractionAccountImplementation is a free data retrieval call binding the contract method 0xad04299b.
+// GetRarimarketAccountImplementation is a free data retrieval call binding the contract method 0xad04299b.
 //
-// Solidity: function getAbstractionAccountImplementation() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) GetAbstractionAccountImplementation() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.GetAbstractionAccountImplementation(&_AbstractionAccountFactory.CallOpts)
+// Solidity: function getRarimarketAccountImplementation() view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) GetRarimarketAccountImplementation() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.GetRarimarketAccountImplementation(&_RarimarketAccountFactory.CallOpts)
 }
 
 // Implementation is a free data retrieval call binding the contract method 0x5c60da1b.
 //
 // Solidity: function implementation() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Implementation(opts *bind.CallOpts) (common.Address, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) Implementation(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "implementation")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "implementation")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -324,23 +324,23 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Implementatio
 // Implementation is a free data retrieval call binding the contract method 0x5c60da1b.
 //
 // Solidity: function implementation() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) Implementation() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Implementation(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) Implementation() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Implementation(&_RarimarketAccountFactory.CallOpts)
 }
 
 // Implementation is a free data retrieval call binding the contract method 0x5c60da1b.
 //
 // Solidity: function implementation() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) Implementation() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Implementation(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) Implementation() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Implementation(&_RarimarketAccountFactory.CallOpts)
 }
 
 // NegRiskAdapter is a free data retrieval call binding the contract method 0xf6ef95a1.
 //
 // Solidity: function negRiskAdapter() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) NegRiskAdapter(opts *bind.CallOpts) (common.Address, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) NegRiskAdapter(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "negRiskAdapter")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "negRiskAdapter")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -355,23 +355,23 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) NegRiskAdapte
 // NegRiskAdapter is a free data retrieval call binding the contract method 0xf6ef95a1.
 //
 // Solidity: function negRiskAdapter() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) NegRiskAdapter() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.NegRiskAdapter(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) NegRiskAdapter() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.NegRiskAdapter(&_RarimarketAccountFactory.CallOpts)
 }
 
 // NegRiskAdapter is a free data retrieval call binding the contract method 0xf6ef95a1.
 //
 // Solidity: function negRiskAdapter() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) NegRiskAdapter() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.NegRiskAdapter(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) NegRiskAdapter() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.NegRiskAdapter(&_RarimarketAccountFactory.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
 // Solidity: function owner() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "owner")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "owner")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -386,23 +386,23 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Owner(opts *b
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
 // Solidity: function owner() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) Owner() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Owner(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) Owner() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Owner(&_RarimarketAccountFactory.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
 // Solidity: function owner() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) Owner() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Owner(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) Owner() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Owner(&_RarimarketAccountFactory.CallOpts)
 }
 
 // Points is a free data retrieval call binding the contract method 0x1be6dd64.
 //
 // Solidity: function points() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Points(opts *bind.CallOpts) (common.Address, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) Points(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "points")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "points")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -417,23 +417,23 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) Points(opts *
 // Points is a free data retrieval call binding the contract method 0x1be6dd64.
 //
 // Solidity: function points() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) Points() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Points(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) Points() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Points(&_RarimarketAccountFactory.CallOpts)
 }
 
 // Points is a free data retrieval call binding the contract method 0x1be6dd64.
 //
 // Solidity: function points() view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) Points() (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.Points(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) Points() (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.Points(&_RarimarketAccountFactory.CallOpts)
 }
 
-// PredictAbstractionAccountAddress is a free data retrieval call binding the contract method 0xaedbd803.
+// PredictRarimarketAccountAddress is a free data retrieval call binding the contract method 0xaedbd803.
 //
-// Solidity: function predictAbstractionAccountAddress(bytes32 nullifier_) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) PredictAbstractionAccountAddress(opts *bind.CallOpts, nullifier_ [32]byte) (common.Address, error) {
+// Solidity: function predictRarimarketAccountAddress(bytes32 nullifier_) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) PredictRarimarketAccountAddress(opts *bind.CallOpts, nullifier_ [32]byte) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "predictAbstractionAccountAddress", nullifier_)
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "predictRarimarketAccountAddress", nullifier_)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -445,26 +445,26 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) PredictAbstra
 
 }
 
-// PredictAbstractionAccountAddress is a free data retrieval call binding the contract method 0xaedbd803.
+// PredictRarimarketAccountAddress is a free data retrieval call binding the contract method 0xaedbd803.
 //
-// Solidity: function predictAbstractionAccountAddress(bytes32 nullifier_) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) PredictAbstractionAccountAddress(nullifier_ [32]byte) (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.PredictAbstractionAccountAddress(&_AbstractionAccountFactory.CallOpts, nullifier_)
+// Solidity: function predictRarimarketAccountAddress(bytes32 nullifier_) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) PredictRarimarketAccountAddress(nullifier_ [32]byte) (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.PredictRarimarketAccountAddress(&_RarimarketAccountFactory.CallOpts, nullifier_)
 }
 
-// PredictAbstractionAccountAddress is a free data retrieval call binding the contract method 0xaedbd803.
+// PredictRarimarketAccountAddress is a free data retrieval call binding the contract method 0xaedbd803.
 //
-// Solidity: function predictAbstractionAccountAddress(bytes32 nullifier_) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) PredictAbstractionAccountAddress(nullifier_ [32]byte) (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.PredictAbstractionAccountAddress(&_AbstractionAccountFactory.CallOpts, nullifier_)
+// Solidity: function predictRarimarketAccountAddress(bytes32 nullifier_) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) PredictRarimarketAccountAddress(nullifier_ [32]byte) (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.PredictRarimarketAccountAddress(&_RarimarketAccountFactory.CallOpts, nullifier_)
 }
 
 // ProxiableUUID is a free data retrieval call binding the contract method 0x52d1902d.
 //
 // Solidity: function proxiableUUID() view returns(bytes32)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) ProxiableUUID(opts *bind.CallOpts) ([32]byte, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) ProxiableUUID(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "proxiableUUID")
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "proxiableUUID")
 
 	if err != nil {
 		return *new([32]byte), err
@@ -479,23 +479,23 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) ProxiableUUID
 // ProxiableUUID is a free data retrieval call binding the contract method 0x52d1902d.
 //
 // Solidity: function proxiableUUID() view returns(bytes32)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) ProxiableUUID() ([32]byte, error) {
-	return _AbstractionAccountFactory.Contract.ProxiableUUID(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) ProxiableUUID() ([32]byte, error) {
+	return _RarimarketAccountFactory.Contract.ProxiableUUID(&_RarimarketAccountFactory.CallOpts)
 }
 
 // ProxiableUUID is a free data retrieval call binding the contract method 0x52d1902d.
 //
 // Solidity: function proxiableUUID() view returns(bytes32)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) ProxiableUUID() ([32]byte, error) {
-	return _AbstractionAccountFactory.Contract.ProxiableUUID(&_AbstractionAccountFactory.CallOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) ProxiableUUID() ([32]byte, error) {
+	return _RarimarketAccountFactory.Contract.ProxiableUUID(&_RarimarketAccountFactory.CallOpts)
 }
 
-// AbstractionAccounts is a free data retrieval call binding the contract method 0x60b7ddc0.
+// RarimarketAccounts is a free data retrieval call binding the contract method 0x60b7ddc0.
 //
-// Solidity: function abstractionAccounts(bytes32 ) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) AbstractionAccounts(opts *bind.CallOpts, arg0 [32]byte) (common.Address, error) {
+// Solidity: function rarimarketAccounts(bytes32 ) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCaller) RarimarketAccounts(opts *bind.CallOpts, arg0 [32]byte) (common.Address, error) {
 	var out []interface{}
-	err := _AbstractionAccountFactory.contract.Call(opts, &out, "abstractionAccounts", arg0)
+	err := _RarimarketAccountFactory.contract.Call(opts, &out, "rarimarketAccounts", arg0)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -507,170 +507,170 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryCaller) AbstractionAc
 
 }
 
-// AbstractionAccounts is a free data retrieval call binding the contract method 0x60b7ddc0.
+// RarimarketAccounts is a free data retrieval call binding the contract method 0x60b7ddc0.
 //
-// Solidity: function abstractionAccounts(bytes32 ) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) AbstractionAccounts(arg0 [32]byte) (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.AbstractionAccounts(&_AbstractionAccountFactory.CallOpts, arg0)
+// Solidity: function rarimarketAccounts(bytes32 ) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) RarimarketAccounts(arg0 [32]byte) (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.RarimarketAccounts(&_RarimarketAccountFactory.CallOpts, arg0)
 }
 
-// AbstractionAccounts is a free data retrieval call binding the contract method 0x60b7ddc0.
+// RarimarketAccounts is a free data retrieval call binding the contract method 0x60b7ddc0.
 //
-// Solidity: function abstractionAccounts(bytes32 ) view returns(address)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryCallerSession) AbstractionAccounts(arg0 [32]byte) (common.Address, error) {
-	return _AbstractionAccountFactory.Contract.AbstractionAccounts(&_AbstractionAccountFactory.CallOpts, arg0)
+// Solidity: function rarimarketAccounts(bytes32 ) view returns(address)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryCallerSession) RarimarketAccounts(arg0 [32]byte) (common.Address, error) {
+	return _RarimarketAccountFactory.Contract.RarimarketAccounts(&_RarimarketAccountFactory.CallOpts, arg0)
 }
 
-// AbstractionAccountFactoryInit is a paid mutator transaction binding the contract method 0xa3a4aa4f.
+// RarimarketAccountFactoryInit is a paid mutator transaction binding the contract method 0xa3a4aa4f.
 //
-// Solidity: function __AbstractionAccountFactory_init(address abstractionAccountImplementation_, address negRiskAdapter_, address ctfExchange_, address points_, address ctf_) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactor) AbstractionAccountFactoryInit(opts *bind.TransactOpts, abstractionAccountImplementation_ common.Address, negRiskAdapter_ common.Address, ctfExchange_ common.Address, points_ common.Address, ctf_ common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.contract.Transact(opts, "__AbstractionAccountFactory_init", abstractionAccountImplementation_, negRiskAdapter_, ctfExchange_, points_, ctf_)
+// Solidity: function __RarimarketAccountFactory_init(address rarimarketAccountImplementation_, address negRiskAdapter_, address ctfExchange_, address points_, address ctf_) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactor) RarimarketAccountFactoryInit(opts *bind.TransactOpts, rarimarketAccountImplementation_ common.Address, negRiskAdapter_ common.Address, ctfExchange_ common.Address, points_ common.Address, ctf_ common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.contract.Transact(opts, "__RarimarketAccountFactory_init", rarimarketAccountImplementation_, negRiskAdapter_, ctfExchange_, points_, ctf_)
 }
 
-// AbstractionAccountFactoryInit is a paid mutator transaction binding the contract method 0xa3a4aa4f.
+// RarimarketAccountFactoryInit is a paid mutator transaction binding the contract method 0xa3a4aa4f.
 //
-// Solidity: function __AbstractionAccountFactory_init(address abstractionAccountImplementation_, address negRiskAdapter_, address ctfExchange_, address points_, address ctf_) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) AbstractionAccountFactoryInit(abstractionAccountImplementation_ common.Address, negRiskAdapter_ common.Address, ctfExchange_ common.Address, points_ common.Address, ctf_ common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.AbstractionAccountFactoryInit(&_AbstractionAccountFactory.TransactOpts, abstractionAccountImplementation_, negRiskAdapter_, ctfExchange_, points_, ctf_)
+// Solidity: function __RarimarketAccountFactory_init(address rarimarketAccountImplementation_, address negRiskAdapter_, address ctfExchange_, address points_, address ctf_) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) RarimarketAccountFactoryInit(rarimarketAccountImplementation_ common.Address, negRiskAdapter_ common.Address, ctfExchange_ common.Address, points_ common.Address, ctf_ common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.RarimarketAccountFactoryInit(&_RarimarketAccountFactory.TransactOpts, rarimarketAccountImplementation_, negRiskAdapter_, ctfExchange_, points_, ctf_)
 }
 
-// AbstractionAccountFactoryInit is a paid mutator transaction binding the contract method 0xa3a4aa4f.
+// RarimarketAccountFactoryInit is a paid mutator transaction binding the contract method 0xa3a4aa4f.
 //
-// Solidity: function __AbstractionAccountFactory_init(address abstractionAccountImplementation_, address negRiskAdapter_, address ctfExchange_, address points_, address ctf_) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorSession) AbstractionAccountFactoryInit(abstractionAccountImplementation_ common.Address, negRiskAdapter_ common.Address, ctfExchange_ common.Address, points_ common.Address, ctf_ common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.AbstractionAccountFactoryInit(&_AbstractionAccountFactory.TransactOpts, abstractionAccountImplementation_, negRiskAdapter_, ctfExchange_, points_, ctf_)
+// Solidity: function __RarimarketAccountFactory_init(address rarimarketAccountImplementation_, address negRiskAdapter_, address ctfExchange_, address points_, address ctf_) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorSession) RarimarketAccountFactoryInit(rarimarketAccountImplementation_ common.Address, negRiskAdapter_ common.Address, ctfExchange_ common.Address, points_ common.Address, ctf_ common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.RarimarketAccountFactoryInit(&_RarimarketAccountFactory.TransactOpts, rarimarketAccountImplementation_, negRiskAdapter_, ctfExchange_, points_, ctf_)
 }
 
-// DeployAbstractionAccount is a paid mutator transaction binding the contract method 0xcd95b7b0.
+// DeployRarimarketAccount is a paid mutator transaction binding the contract method 0xcd95b7b0.
 //
-// Solidity: function deployAbstractionAccount(bytes32 nullifier_) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactor) DeployAbstractionAccount(opts *bind.TransactOpts, nullifier_ [32]byte) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.contract.Transact(opts, "deployAbstractionAccount", nullifier_)
+// Solidity: function deployRarimarketAccount(bytes32 nullifier_) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactor) DeployRarimarketAccount(opts *bind.TransactOpts, nullifier_ [32]byte) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.contract.Transact(opts, "deployRarimarketAccount", nullifier_)
 }
 
-// DeployAbstractionAccount is a paid mutator transaction binding the contract method 0xcd95b7b0.
+// DeployRarimarketAccount is a paid mutator transaction binding the contract method 0xcd95b7b0.
 //
-// Solidity: function deployAbstractionAccount(bytes32 nullifier_) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) DeployAbstractionAccount(nullifier_ [32]byte) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.DeployAbstractionAccount(&_AbstractionAccountFactory.TransactOpts, nullifier_)
+// Solidity: function deployRarimarketAccount(bytes32 nullifier_) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) DeployRarimarketAccount(nullifier_ [32]byte) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.DeployRarimarketAccount(&_RarimarketAccountFactory.TransactOpts, nullifier_)
 }
 
-// DeployAbstractionAccount is a paid mutator transaction binding the contract method 0xcd95b7b0.
+// DeployRarimarketAccount is a paid mutator transaction binding the contract method 0xcd95b7b0.
 //
-// Solidity: function deployAbstractionAccount(bytes32 nullifier_) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorSession) DeployAbstractionAccount(nullifier_ [32]byte) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.DeployAbstractionAccount(&_AbstractionAccountFactory.TransactOpts, nullifier_)
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.contract.Transact(opts, "renounceOwnership")
+// Solidity: function deployRarimarketAccount(bytes32 nullifier_) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorSession) DeployRarimarketAccount(nullifier_ [32]byte) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.DeployRarimarketAccount(&_RarimarketAccountFactory.TransactOpts, nullifier_)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
 // Solidity: function renounceOwnership() returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) RenounceOwnership() (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.RenounceOwnership(&_AbstractionAccountFactory.TransactOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.contract.Transact(opts, "renounceOwnership")
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
 // Solidity: function renounceOwnership() returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorSession) RenounceOwnership() (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.RenounceOwnership(&_AbstractionAccountFactory.TransactOpts)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) RenounceOwnership() (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.RenounceOwnership(&_RarimarketAccountFactory.TransactOpts)
 }
 
-// SetAbstractionAccountImplementation is a paid mutator transaction binding the contract method 0x85a3cbd9.
+// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
-// Solidity: function setAbstractionAccountImplementation(address newImplementation) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactor) SetAbstractionAccountImplementation(opts *bind.TransactOpts, newImplementation common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.contract.Transact(opts, "setAbstractionAccountImplementation", newImplementation)
+// Solidity: function renounceOwnership() returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorSession) RenounceOwnership() (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.RenounceOwnership(&_RarimarketAccountFactory.TransactOpts)
 }
 
-// SetAbstractionAccountImplementation is a paid mutator transaction binding the contract method 0x85a3cbd9.
+// SetRarimarketAccountImplementation is a paid mutator transaction binding the contract method 0x85a3cbd9.
 //
-// Solidity: function setAbstractionAccountImplementation(address newImplementation) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) SetAbstractionAccountImplementation(newImplementation common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.SetAbstractionAccountImplementation(&_AbstractionAccountFactory.TransactOpts, newImplementation)
+// Solidity: function setRarimarketAccountImplementation(address newImplementation) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactor) SetRarimarketAccountImplementation(opts *bind.TransactOpts, newImplementation common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.contract.Transact(opts, "setRarimarketAccountImplementation", newImplementation)
 }
 
-// SetAbstractionAccountImplementation is a paid mutator transaction binding the contract method 0x85a3cbd9.
+// SetRarimarketAccountImplementation is a paid mutator transaction binding the contract method 0x85a3cbd9.
 //
-// Solidity: function setAbstractionAccountImplementation(address newImplementation) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorSession) SetAbstractionAccountImplementation(newImplementation common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.SetAbstractionAccountImplementation(&_AbstractionAccountFactory.TransactOpts, newImplementation)
+// Solidity: function setRarimarketAccountImplementation(address newImplementation) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) SetRarimarketAccountImplementation(newImplementation common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.SetRarimarketAccountImplementation(&_RarimarketAccountFactory.TransactOpts, newImplementation)
+}
+
+// SetRarimarketAccountImplementation is a paid mutator transaction binding the contract method 0x85a3cbd9.
+//
+// Solidity: function setRarimarketAccountImplementation(address newImplementation) returns()
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorSession) SetRarimarketAccountImplementation(newImplementation common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.SetRarimarketAccountImplementation(&_RarimarketAccountFactory.TransactOpts, newImplementation)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
 // Solidity: function transferOwnership(address newOwner) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.contract.Transact(opts, "transferOwnership", newOwner)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.contract.Transact(opts, "transferOwnership", newOwner)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
 // Solidity: function transferOwnership(address newOwner) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.TransferOwnership(&_AbstractionAccountFactory.TransactOpts, newOwner)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.TransferOwnership(&_RarimarketAccountFactory.TransactOpts, newOwner)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
 // Solidity: function transferOwnership(address newOwner) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.TransferOwnership(&_AbstractionAccountFactory.TransactOpts, newOwner)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.TransferOwnership(&_RarimarketAccountFactory.TransactOpts, newOwner)
 }
 
 // UpgradeTo is a paid mutator transaction binding the contract method 0x3659cfe6.
 //
 // Solidity: function upgradeTo(address newImplementation) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactor) UpgradeTo(opts *bind.TransactOpts, newImplementation common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.contract.Transact(opts, "upgradeTo", newImplementation)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactor) UpgradeTo(opts *bind.TransactOpts, newImplementation common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.contract.Transact(opts, "upgradeTo", newImplementation)
 }
 
 // UpgradeTo is a paid mutator transaction binding the contract method 0x3659cfe6.
 //
 // Solidity: function upgradeTo(address newImplementation) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) UpgradeTo(newImplementation common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.UpgradeTo(&_AbstractionAccountFactory.TransactOpts, newImplementation)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) UpgradeTo(newImplementation common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.UpgradeTo(&_RarimarketAccountFactory.TransactOpts, newImplementation)
 }
 
 // UpgradeTo is a paid mutator transaction binding the contract method 0x3659cfe6.
 //
 // Solidity: function upgradeTo(address newImplementation) returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorSession) UpgradeTo(newImplementation common.Address) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.UpgradeTo(&_AbstractionAccountFactory.TransactOpts, newImplementation)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorSession) UpgradeTo(newImplementation common.Address) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.UpgradeTo(&_RarimarketAccountFactory.TransactOpts, newImplementation)
 }
 
 // UpgradeToAndCall is a paid mutator transaction binding the contract method 0x4f1ef286.
 //
 // Solidity: function upgradeToAndCall(address newImplementation, bytes data) payable returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactor) UpgradeToAndCall(opts *bind.TransactOpts, newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.contract.Transact(opts, "upgradeToAndCall", newImplementation, data)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactor) UpgradeToAndCall(opts *bind.TransactOpts, newImplementation common.Address, data []byte) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.contract.Transact(opts, "upgradeToAndCall", newImplementation, data)
 }
 
 // UpgradeToAndCall is a paid mutator transaction binding the contract method 0x4f1ef286.
 //
 // Solidity: function upgradeToAndCall(address newImplementation, bytes data) payable returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactorySession) UpgradeToAndCall(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.UpgradeToAndCall(&_AbstractionAccountFactory.TransactOpts, newImplementation, data)
+func (_RarimarketAccountFactory *RarimarketAccountFactorySession) UpgradeToAndCall(newImplementation common.Address, data []byte) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.UpgradeToAndCall(&_RarimarketAccountFactory.TransactOpts, newImplementation, data)
 }
 
 // UpgradeToAndCall is a paid mutator transaction binding the contract method 0x4f1ef286.
 //
 // Solidity: function upgradeToAndCall(address newImplementation, bytes data) payable returns()
-func (_AbstractionAccountFactory *AbstractionAccountFactoryTransactorSession) UpgradeToAndCall(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _AbstractionAccountFactory.Contract.UpgradeToAndCall(&_AbstractionAccountFactory.TransactOpts, newImplementation, data)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryTransactorSession) UpgradeToAndCall(newImplementation common.Address, data []byte) (*types.Transaction, error) {
+	return _RarimarketAccountFactory.Contract.UpgradeToAndCall(&_RarimarketAccountFactory.TransactOpts, newImplementation, data)
 }
 
-// AbstractionAccountFactoryAdminChangedIterator is returned from FilterAdminChanged and is used to iterate over the raw logs and unpacked data for AdminChanged events raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryAdminChangedIterator struct {
-	Event *AbstractionAccountFactoryAdminChanged // Event containing the contract specifics and raw log
+// RarimarketAccountFactoryAdminChangedIterator is returned from FilterAdminChanged and is used to iterate over the raw logs and unpacked data for AdminChanged events raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryAdminChangedIterator struct {
+	Event *RarimarketAccountFactoryAdminChanged // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -684,7 +684,7 @@ type AbstractionAccountFactoryAdminChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AbstractionAccountFactoryAdminChangedIterator) Next() bool {
+func (it *RarimarketAccountFactoryAdminChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -693,7 +693,7 @@ func (it *AbstractionAccountFactoryAdminChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AbstractionAccountFactoryAdminChanged)
+			it.Event = new(RarimarketAccountFactoryAdminChanged)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -708,7 +708,7 @@ func (it *AbstractionAccountFactoryAdminChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AbstractionAccountFactoryAdminChanged)
+		it.Event = new(RarimarketAccountFactoryAdminChanged)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -724,19 +724,19 @@ func (it *AbstractionAccountFactoryAdminChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbstractionAccountFactoryAdminChangedIterator) Error() error {
+func (it *RarimarketAccountFactoryAdminChangedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AbstractionAccountFactoryAdminChangedIterator) Close() error {
+func (it *RarimarketAccountFactoryAdminChangedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AbstractionAccountFactoryAdminChanged represents a AdminChanged event raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryAdminChanged struct {
+// RarimarketAccountFactoryAdminChanged represents a AdminChanged event raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryAdminChanged struct {
 	PreviousAdmin common.Address
 	NewAdmin      common.Address
 	Raw           types.Log // Blockchain specific contextual infos
@@ -745,21 +745,21 @@ type AbstractionAccountFactoryAdminChanged struct {
 // FilterAdminChanged is a free log retrieval operation binding the contract event 0x7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f.
 //
 // Solidity: event AdminChanged(address previousAdmin, address newAdmin)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) FilterAdminChanged(opts *bind.FilterOpts) (*AbstractionAccountFactoryAdminChangedIterator, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) FilterAdminChanged(opts *bind.FilterOpts) (*RarimarketAccountFactoryAdminChangedIterator, error) {
 
-	logs, sub, err := _AbstractionAccountFactory.contract.FilterLogs(opts, "AdminChanged")
+	logs, sub, err := _RarimarketAccountFactory.contract.FilterLogs(opts, "AdminChanged")
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryAdminChangedIterator{contract: _AbstractionAccountFactory.contract, event: "AdminChanged", logs: logs, sub: sub}, nil
+	return &RarimarketAccountFactoryAdminChangedIterator{contract: _RarimarketAccountFactory.contract, event: "AdminChanged", logs: logs, sub: sub}, nil
 }
 
 // WatchAdminChanged is a free log subscription operation binding the contract event 0x7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f.
 //
 // Solidity: event AdminChanged(address previousAdmin, address newAdmin)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchAdminChanged(opts *bind.WatchOpts, sink chan<- *AbstractionAccountFactoryAdminChanged) (event.Subscription, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) WatchAdminChanged(opts *bind.WatchOpts, sink chan<- *RarimarketAccountFactoryAdminChanged) (event.Subscription, error) {
 
-	logs, sub, err := _AbstractionAccountFactory.contract.WatchLogs(opts, "AdminChanged")
+	logs, sub, err := _RarimarketAccountFactory.contract.WatchLogs(opts, "AdminChanged")
 	if err != nil {
 		return nil, err
 	}
@@ -769,8 +769,8 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchAdminC
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AbstractionAccountFactoryAdminChanged)
-				if err := _AbstractionAccountFactory.contract.UnpackLog(event, "AdminChanged", log); err != nil {
+				event := new(RarimarketAccountFactoryAdminChanged)
+				if err := _RarimarketAccountFactory.contract.UnpackLog(event, "AdminChanged", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -794,18 +794,18 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchAdminC
 // ParseAdminChanged is a log parse operation binding the contract event 0x7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f.
 //
 // Solidity: event AdminChanged(address previousAdmin, address newAdmin)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) ParseAdminChanged(log types.Log) (*AbstractionAccountFactoryAdminChanged, error) {
-	event := new(AbstractionAccountFactoryAdminChanged)
-	if err := _AbstractionAccountFactory.contract.UnpackLog(event, "AdminChanged", log); err != nil {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) ParseAdminChanged(log types.Log) (*RarimarketAccountFactoryAdminChanged, error) {
+	event := new(RarimarketAccountFactoryAdminChanged)
+	if err := _RarimarketAccountFactory.contract.UnpackLog(event, "AdminChanged", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// AbstractionAccountFactoryBeaconUpgradedIterator is returned from FilterBeaconUpgraded and is used to iterate over the raw logs and unpacked data for BeaconUpgraded events raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryBeaconUpgradedIterator struct {
-	Event *AbstractionAccountFactoryBeaconUpgraded // Event containing the contract specifics and raw log
+// RarimarketAccountFactoryBeaconUpgradedIterator is returned from FilterBeaconUpgraded and is used to iterate over the raw logs and unpacked data for BeaconUpgraded events raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryBeaconUpgradedIterator struct {
+	Event *RarimarketAccountFactoryBeaconUpgraded // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -819,7 +819,7 @@ type AbstractionAccountFactoryBeaconUpgradedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AbstractionAccountFactoryBeaconUpgradedIterator) Next() bool {
+func (it *RarimarketAccountFactoryBeaconUpgradedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -828,7 +828,7 @@ func (it *AbstractionAccountFactoryBeaconUpgradedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AbstractionAccountFactoryBeaconUpgraded)
+			it.Event = new(RarimarketAccountFactoryBeaconUpgraded)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -843,7 +843,7 @@ func (it *AbstractionAccountFactoryBeaconUpgradedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AbstractionAccountFactoryBeaconUpgraded)
+		it.Event = new(RarimarketAccountFactoryBeaconUpgraded)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -859,19 +859,19 @@ func (it *AbstractionAccountFactoryBeaconUpgradedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbstractionAccountFactoryBeaconUpgradedIterator) Error() error {
+func (it *RarimarketAccountFactoryBeaconUpgradedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AbstractionAccountFactoryBeaconUpgradedIterator) Close() error {
+func (it *RarimarketAccountFactoryBeaconUpgradedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AbstractionAccountFactoryBeaconUpgraded represents a BeaconUpgraded event raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryBeaconUpgraded struct {
+// RarimarketAccountFactoryBeaconUpgraded represents a BeaconUpgraded event raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryBeaconUpgraded struct {
 	Beacon common.Address
 	Raw    types.Log // Blockchain specific contextual infos
 }
@@ -879,31 +879,31 @@ type AbstractionAccountFactoryBeaconUpgraded struct {
 // FilterBeaconUpgraded is a free log retrieval operation binding the contract event 0x1cf3b03a6cf19fa2baba4df148e9dcabedea7f8a5c07840e207e5c089be95d3e.
 //
 // Solidity: event BeaconUpgraded(address indexed beacon)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) FilterBeaconUpgraded(opts *bind.FilterOpts, beacon []common.Address) (*AbstractionAccountFactoryBeaconUpgradedIterator, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) FilterBeaconUpgraded(opts *bind.FilterOpts, beacon []common.Address) (*RarimarketAccountFactoryBeaconUpgradedIterator, error) {
 
 	var beaconRule []interface{}
 	for _, beaconItem := range beacon {
 		beaconRule = append(beaconRule, beaconItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.FilterLogs(opts, "BeaconUpgraded", beaconRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.FilterLogs(opts, "BeaconUpgraded", beaconRule)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryBeaconUpgradedIterator{contract: _AbstractionAccountFactory.contract, event: "BeaconUpgraded", logs: logs, sub: sub}, nil
+	return &RarimarketAccountFactoryBeaconUpgradedIterator{contract: _RarimarketAccountFactory.contract, event: "BeaconUpgraded", logs: logs, sub: sub}, nil
 }
 
 // WatchBeaconUpgraded is a free log subscription operation binding the contract event 0x1cf3b03a6cf19fa2baba4df148e9dcabedea7f8a5c07840e207e5c089be95d3e.
 //
 // Solidity: event BeaconUpgraded(address indexed beacon)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchBeaconUpgraded(opts *bind.WatchOpts, sink chan<- *AbstractionAccountFactoryBeaconUpgraded, beacon []common.Address) (event.Subscription, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) WatchBeaconUpgraded(opts *bind.WatchOpts, sink chan<- *RarimarketAccountFactoryBeaconUpgraded, beacon []common.Address) (event.Subscription, error) {
 
 	var beaconRule []interface{}
 	for _, beaconItem := range beacon {
 		beaconRule = append(beaconRule, beaconItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.WatchLogs(opts, "BeaconUpgraded", beaconRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.WatchLogs(opts, "BeaconUpgraded", beaconRule)
 	if err != nil {
 		return nil, err
 	}
@@ -913,8 +913,8 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchBeacon
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AbstractionAccountFactoryBeaconUpgraded)
-				if err := _AbstractionAccountFactory.contract.UnpackLog(event, "BeaconUpgraded", log); err != nil {
+				event := new(RarimarketAccountFactoryBeaconUpgraded)
+				if err := _RarimarketAccountFactory.contract.UnpackLog(event, "BeaconUpgraded", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -938,18 +938,18 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchBeacon
 // ParseBeaconUpgraded is a log parse operation binding the contract event 0x1cf3b03a6cf19fa2baba4df148e9dcabedea7f8a5c07840e207e5c089be95d3e.
 //
 // Solidity: event BeaconUpgraded(address indexed beacon)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) ParseBeaconUpgraded(log types.Log) (*AbstractionAccountFactoryBeaconUpgraded, error) {
-	event := new(AbstractionAccountFactoryBeaconUpgraded)
-	if err := _AbstractionAccountFactory.contract.UnpackLog(event, "BeaconUpgraded", log); err != nil {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) ParseBeaconUpgraded(log types.Log) (*RarimarketAccountFactoryBeaconUpgraded, error) {
+	event := new(RarimarketAccountFactoryBeaconUpgraded)
+	if err := _RarimarketAccountFactory.contract.UnpackLog(event, "BeaconUpgraded", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// AbstractionAccountFactoryInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryInitializedIterator struct {
-	Event *AbstractionAccountFactoryInitialized // Event containing the contract specifics and raw log
+// RarimarketAccountFactoryInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryInitializedIterator struct {
+	Event *RarimarketAccountFactoryInitialized // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -963,7 +963,7 @@ type AbstractionAccountFactoryInitializedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AbstractionAccountFactoryInitializedIterator) Next() bool {
+func (it *RarimarketAccountFactoryInitializedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -972,7 +972,7 @@ func (it *AbstractionAccountFactoryInitializedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AbstractionAccountFactoryInitialized)
+			it.Event = new(RarimarketAccountFactoryInitialized)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -987,7 +987,7 @@ func (it *AbstractionAccountFactoryInitializedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AbstractionAccountFactoryInitialized)
+		it.Event = new(RarimarketAccountFactoryInitialized)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1003,19 +1003,19 @@ func (it *AbstractionAccountFactoryInitializedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbstractionAccountFactoryInitializedIterator) Error() error {
+func (it *RarimarketAccountFactoryInitializedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AbstractionAccountFactoryInitializedIterator) Close() error {
+func (it *RarimarketAccountFactoryInitializedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AbstractionAccountFactoryInitialized represents a Initialized event raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryInitialized struct {
+// RarimarketAccountFactoryInitialized represents a Initialized event raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryInitialized struct {
 	Version uint8
 	Raw     types.Log // Blockchain specific contextual infos
 }
@@ -1023,21 +1023,21 @@ type AbstractionAccountFactoryInitialized struct {
 // FilterInitialized is a free log retrieval operation binding the contract event 0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498.
 //
 // Solidity: event Initialized(uint8 version)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) FilterInitialized(opts *bind.FilterOpts) (*AbstractionAccountFactoryInitializedIterator, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) FilterInitialized(opts *bind.FilterOpts) (*RarimarketAccountFactoryInitializedIterator, error) {
 
-	logs, sub, err := _AbstractionAccountFactory.contract.FilterLogs(opts, "Initialized")
+	logs, sub, err := _RarimarketAccountFactory.contract.FilterLogs(opts, "Initialized")
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryInitializedIterator{contract: _AbstractionAccountFactory.contract, event: "Initialized", logs: logs, sub: sub}, nil
+	return &RarimarketAccountFactoryInitializedIterator{contract: _RarimarketAccountFactory.contract, event: "Initialized", logs: logs, sub: sub}, nil
 }
 
 // WatchInitialized is a free log subscription operation binding the contract event 0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498.
 //
 // Solidity: event Initialized(uint8 version)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *AbstractionAccountFactoryInitialized) (event.Subscription, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *RarimarketAccountFactoryInitialized) (event.Subscription, error) {
 
-	logs, sub, err := _AbstractionAccountFactory.contract.WatchLogs(opts, "Initialized")
+	logs, sub, err := _RarimarketAccountFactory.contract.WatchLogs(opts, "Initialized")
 	if err != nil {
 		return nil, err
 	}
@@ -1047,8 +1047,8 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchInitia
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AbstractionAccountFactoryInitialized)
-				if err := _AbstractionAccountFactory.contract.UnpackLog(event, "Initialized", log); err != nil {
+				event := new(RarimarketAccountFactoryInitialized)
+				if err := _RarimarketAccountFactory.contract.UnpackLog(event, "Initialized", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1072,18 +1072,18 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchInitia
 // ParseInitialized is a log parse operation binding the contract event 0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498.
 //
 // Solidity: event Initialized(uint8 version)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) ParseInitialized(log types.Log) (*AbstractionAccountFactoryInitialized, error) {
-	event := new(AbstractionAccountFactoryInitialized)
-	if err := _AbstractionAccountFactory.contract.UnpackLog(event, "Initialized", log); err != nil {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) ParseInitialized(log types.Log) (*RarimarketAccountFactoryInitialized, error) {
+	event := new(RarimarketAccountFactoryInitialized)
+	if err := _RarimarketAccountFactory.contract.UnpackLog(event, "Initialized", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// AbstractionAccountFactoryOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryOwnershipTransferredIterator struct {
-	Event *AbstractionAccountFactoryOwnershipTransferred // Event containing the contract specifics and raw log
+// RarimarketAccountFactoryOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryOwnershipTransferredIterator struct {
+	Event *RarimarketAccountFactoryOwnershipTransferred // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1097,7 +1097,7 @@ type AbstractionAccountFactoryOwnershipTransferredIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AbstractionAccountFactoryOwnershipTransferredIterator) Next() bool {
+func (it *RarimarketAccountFactoryOwnershipTransferredIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1106,7 +1106,7 @@ func (it *AbstractionAccountFactoryOwnershipTransferredIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AbstractionAccountFactoryOwnershipTransferred)
+			it.Event = new(RarimarketAccountFactoryOwnershipTransferred)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1121,7 +1121,7 @@ func (it *AbstractionAccountFactoryOwnershipTransferredIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AbstractionAccountFactoryOwnershipTransferred)
+		it.Event = new(RarimarketAccountFactoryOwnershipTransferred)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1137,19 +1137,19 @@ func (it *AbstractionAccountFactoryOwnershipTransferredIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbstractionAccountFactoryOwnershipTransferredIterator) Error() error {
+func (it *RarimarketAccountFactoryOwnershipTransferredIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AbstractionAccountFactoryOwnershipTransferredIterator) Close() error {
+func (it *RarimarketAccountFactoryOwnershipTransferredIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AbstractionAccountFactoryOwnershipTransferred represents a OwnershipTransferred event raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryOwnershipTransferred struct {
+// RarimarketAccountFactoryOwnershipTransferred represents a OwnershipTransferred event raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryOwnershipTransferred struct {
 	PreviousOwner common.Address
 	NewOwner      common.Address
 	Raw           types.Log // Blockchain specific contextual infos
@@ -1158,7 +1158,7 @@ type AbstractionAccountFactoryOwnershipTransferred struct {
 // FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 //
 // Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*AbstractionAccountFactoryOwnershipTransferredIterator, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*RarimarketAccountFactoryOwnershipTransferredIterator, error) {
 
 	var previousOwnerRule []interface{}
 	for _, previousOwnerItem := range previousOwner {
@@ -1169,17 +1169,17 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) FilterOwner
 		newOwnerRule = append(newOwnerRule, newOwnerItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryOwnershipTransferredIterator{contract: _AbstractionAccountFactory.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
+	return &RarimarketAccountFactoryOwnershipTransferredIterator{contract: _RarimarketAccountFactory.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
 }
 
 // WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 //
 // Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *AbstractionAccountFactoryOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *RarimarketAccountFactoryOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
 
 	var previousOwnerRule []interface{}
 	for _, previousOwnerItem := range previousOwner {
@@ -1190,7 +1190,7 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchOwners
 		newOwnerRule = append(newOwnerRule, newOwnerItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1200,8 +1200,8 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchOwners
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AbstractionAccountFactoryOwnershipTransferred)
-				if err := _AbstractionAccountFactory.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+				event := new(RarimarketAccountFactoryOwnershipTransferred)
+				if err := _RarimarketAccountFactory.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1225,18 +1225,18 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchOwners
 // ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 //
 // Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) ParseOwnershipTransferred(log types.Log) (*AbstractionAccountFactoryOwnershipTransferred, error) {
-	event := new(AbstractionAccountFactoryOwnershipTransferred)
-	if err := _AbstractionAccountFactory.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) ParseOwnershipTransferred(log types.Log) (*RarimarketAccountFactoryOwnershipTransferred, error) {
+	event := new(RarimarketAccountFactoryOwnershipTransferred)
+	if err := _RarimarketAccountFactory.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// AbstractionAccountFactoryAbstractionAccountDeployedIterator is returned from FilterAbstractionAccountDeployed and is used to iterate over the raw logs and unpacked data for AbstractionAccountDeployed events raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryAbstractionAccountDeployedIterator struct {
-	Event *AbstractionAccountFactoryAbstractionAccountDeployed // Event containing the contract specifics and raw log
+// RarimarketAccountFactoryRarimarketAccountDeployedIterator is returned from FilterRarimarketAccountDeployed and is used to iterate over the raw logs and unpacked data for RarimarketAccountDeployed events raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryRarimarketAccountDeployedIterator struct {
+	Event *RarimarketAccountFactoryRarimarketAccountDeployed // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1250,7 +1250,7 @@ type AbstractionAccountFactoryAbstractionAccountDeployedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AbstractionAccountFactoryAbstractionAccountDeployedIterator) Next() bool {
+func (it *RarimarketAccountFactoryRarimarketAccountDeployedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1259,7 +1259,7 @@ func (it *AbstractionAccountFactoryAbstractionAccountDeployedIterator) Next() bo
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AbstractionAccountFactoryAbstractionAccountDeployed)
+			it.Event = new(RarimarketAccountFactoryRarimarketAccountDeployed)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1274,7 +1274,7 @@ func (it *AbstractionAccountFactoryAbstractionAccountDeployedIterator) Next() bo
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AbstractionAccountFactoryAbstractionAccountDeployed)
+		it.Event = new(RarimarketAccountFactoryRarimarketAccountDeployed)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1290,51 +1290,51 @@ func (it *AbstractionAccountFactoryAbstractionAccountDeployedIterator) Next() bo
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbstractionAccountFactoryAbstractionAccountDeployedIterator) Error() error {
+func (it *RarimarketAccountFactoryRarimarketAccountDeployedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AbstractionAccountFactoryAbstractionAccountDeployedIterator) Close() error {
+func (it *RarimarketAccountFactoryRarimarketAccountDeployedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AbstractionAccountFactoryAbstractionAccountDeployed represents a AbstractionAccountDeployed event raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryAbstractionAccountDeployed struct {
+// RarimarketAccountFactoryRarimarketAccountDeployed represents a RarimarketAccountDeployed event raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryRarimarketAccountDeployed struct {
 	Account common.Address
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterAbstractionAccountDeployed is a free log retrieval operation binding the contract event 0xf8078a05821fe3a0f57304f01a507627f803be4212ef8a593a28a395b43763de.
+// FilterRarimarketAccountDeployed is a free log retrieval operation binding the contract event 0xf8078a05821fe3a0f57304f01a507627f803be4212ef8a593a28a395b43763de.
 //
-// Solidity: event AbstractionAccountDeployed(address indexed account)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) FilterAbstractionAccountDeployed(opts *bind.FilterOpts, account []common.Address) (*AbstractionAccountFactoryAbstractionAccountDeployedIterator, error) {
+// Solidity: event RarimarketAccountDeployed(address indexed account)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) FilterRarimarketAccountDeployed(opts *bind.FilterOpts, account []common.Address) (*RarimarketAccountFactoryRarimarketAccountDeployedIterator, error) {
 
 	var accountRule []interface{}
 	for _, accountItem := range account {
 		accountRule = append(accountRule, accountItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.FilterLogs(opts, "AbstractionAccountDeployed", accountRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.FilterLogs(opts, "RarimarketAccountDeployed", accountRule)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryAbstractionAccountDeployedIterator{contract: _AbstractionAccountFactory.contract, event: "AbstractionAccountDeployed", logs: logs, sub: sub}, nil
+	return &RarimarketAccountFactoryRarimarketAccountDeployedIterator{contract: _RarimarketAccountFactory.contract, event: "RarimarketAccountDeployed", logs: logs, sub: sub}, nil
 }
 
-// WatchAbstractionAccountDeployed is a free log subscription operation binding the contract event 0xf8078a05821fe3a0f57304f01a507627f803be4212ef8a593a28a395b43763de.
+// WatchRarimarketAccountDeployed is a free log subscription operation binding the contract event 0xf8078a05821fe3a0f57304f01a507627f803be4212ef8a593a28a395b43763de.
 //
-// Solidity: event AbstractionAccountDeployed(address indexed account)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchAbstractionAccountDeployed(opts *bind.WatchOpts, sink chan<- *AbstractionAccountFactoryAbstractionAccountDeployed, account []common.Address) (event.Subscription, error) {
+// Solidity: event RarimarketAccountDeployed(address indexed account)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) WatchRarimarketAccountDeployed(opts *bind.WatchOpts, sink chan<- *RarimarketAccountFactoryRarimarketAccountDeployed, account []common.Address) (event.Subscription, error) {
 
 	var accountRule []interface{}
 	for _, accountItem := range account {
 		accountRule = append(accountRule, accountItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.WatchLogs(opts, "AbstractionAccountDeployed", accountRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.WatchLogs(opts, "RarimarketAccountDeployed", accountRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1344,8 +1344,8 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchAbstra
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AbstractionAccountFactoryAbstractionAccountDeployed)
-				if err := _AbstractionAccountFactory.contract.UnpackLog(event, "AbstractionAccountDeployed", log); err != nil {
+				event := new(RarimarketAccountFactoryRarimarketAccountDeployed)
+				if err := _RarimarketAccountFactory.contract.UnpackLog(event, "RarimarketAccountDeployed", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1366,21 +1366,21 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchAbstra
 	}), nil
 }
 
-// ParseAbstractionAccountDeployed is a log parse operation binding the contract event 0xf8078a05821fe3a0f57304f01a507627f803be4212ef8a593a28a395b43763de.
+// ParseRarimarketAccountDeployed is a log parse operation binding the contract event 0xf8078a05821fe3a0f57304f01a507627f803be4212ef8a593a28a395b43763de.
 //
-// Solidity: event AbstractionAccountDeployed(address indexed account)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) ParseAbstractionAccountDeployed(log types.Log) (*AbstractionAccountFactoryAbstractionAccountDeployed, error) {
-	event := new(AbstractionAccountFactoryAbstractionAccountDeployed)
-	if err := _AbstractionAccountFactory.contract.UnpackLog(event, "AbstractionAccountDeployed", log); err != nil {
+// Solidity: event RarimarketAccountDeployed(address indexed account)
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) ParseRarimarketAccountDeployed(log types.Log) (*RarimarketAccountFactoryRarimarketAccountDeployed, error) {
+	event := new(RarimarketAccountFactoryRarimarketAccountDeployed)
+	if err := _RarimarketAccountFactory.contract.UnpackLog(event, "RarimarketAccountDeployed", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// AbstractionAccountFactoryUpgradedIterator is returned from FilterUpgraded and is used to iterate over the raw logs and unpacked data for Upgraded events raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryUpgradedIterator struct {
-	Event *AbstractionAccountFactoryUpgraded // Event containing the contract specifics and raw log
+// RarimarketAccountFactoryUpgradedIterator is returned from FilterUpgraded and is used to iterate over the raw logs and unpacked data for Upgraded events raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryUpgradedIterator struct {
+	Event *RarimarketAccountFactoryUpgraded // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1394,7 +1394,7 @@ type AbstractionAccountFactoryUpgradedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AbstractionAccountFactoryUpgradedIterator) Next() bool {
+func (it *RarimarketAccountFactoryUpgradedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1403,7 +1403,7 @@ func (it *AbstractionAccountFactoryUpgradedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AbstractionAccountFactoryUpgraded)
+			it.Event = new(RarimarketAccountFactoryUpgraded)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1418,7 +1418,7 @@ func (it *AbstractionAccountFactoryUpgradedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AbstractionAccountFactoryUpgraded)
+		it.Event = new(RarimarketAccountFactoryUpgraded)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1434,19 +1434,19 @@ func (it *AbstractionAccountFactoryUpgradedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbstractionAccountFactoryUpgradedIterator) Error() error {
+func (it *RarimarketAccountFactoryUpgradedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AbstractionAccountFactoryUpgradedIterator) Close() error {
+func (it *RarimarketAccountFactoryUpgradedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AbstractionAccountFactoryUpgraded represents a Upgraded event raised by the AbstractionAccountFactory contract.
-type AbstractionAccountFactoryUpgraded struct {
+// RarimarketAccountFactoryUpgraded represents a Upgraded event raised by the RarimarketAccountFactory contract.
+type RarimarketAccountFactoryUpgraded struct {
 	Implementation common.Address
 	Raw            types.Log // Blockchain specific contextual infos
 }
@@ -1454,31 +1454,31 @@ type AbstractionAccountFactoryUpgraded struct {
 // FilterUpgraded is a free log retrieval operation binding the contract event 0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b.
 //
 // Solidity: event Upgraded(address indexed implementation)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) FilterUpgraded(opts *bind.FilterOpts, implementation []common.Address) (*AbstractionAccountFactoryUpgradedIterator, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) FilterUpgraded(opts *bind.FilterOpts, implementation []common.Address) (*RarimarketAccountFactoryUpgradedIterator, error) {
 
 	var implementationRule []interface{}
 	for _, implementationItem := range implementation {
 		implementationRule = append(implementationRule, implementationItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.FilterLogs(opts, "Upgraded", implementationRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.FilterLogs(opts, "Upgraded", implementationRule)
 	if err != nil {
 		return nil, err
 	}
-	return &AbstractionAccountFactoryUpgradedIterator{contract: _AbstractionAccountFactory.contract, event: "Upgraded", logs: logs, sub: sub}, nil
+	return &RarimarketAccountFactoryUpgradedIterator{contract: _RarimarketAccountFactory.contract, event: "Upgraded", logs: logs, sub: sub}, nil
 }
 
 // WatchUpgraded is a free log subscription operation binding the contract event 0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b.
 //
 // Solidity: event Upgraded(address indexed implementation)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchUpgraded(opts *bind.WatchOpts, sink chan<- *AbstractionAccountFactoryUpgraded, implementation []common.Address) (event.Subscription, error) {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) WatchUpgraded(opts *bind.WatchOpts, sink chan<- *RarimarketAccountFactoryUpgraded, implementation []common.Address) (event.Subscription, error) {
 
 	var implementationRule []interface{}
 	for _, implementationItem := range implementation {
 		implementationRule = append(implementationRule, implementationItem)
 	}
 
-	logs, sub, err := _AbstractionAccountFactory.contract.WatchLogs(opts, "Upgraded", implementationRule)
+	logs, sub, err := _RarimarketAccountFactory.contract.WatchLogs(opts, "Upgraded", implementationRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1488,8 +1488,8 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchUpgrad
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AbstractionAccountFactoryUpgraded)
-				if err := _AbstractionAccountFactory.contract.UnpackLog(event, "Upgraded", log); err != nil {
+				event := new(RarimarketAccountFactoryUpgraded)
+				if err := _RarimarketAccountFactory.contract.UnpackLog(event, "Upgraded", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1513,9 +1513,9 @@ func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) WatchUpgrad
 // ParseUpgraded is a log parse operation binding the contract event 0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b.
 //
 // Solidity: event Upgraded(address indexed implementation)
-func (_AbstractionAccountFactory *AbstractionAccountFactoryFilterer) ParseUpgraded(log types.Log) (*AbstractionAccountFactoryUpgraded, error) {
-	event := new(AbstractionAccountFactoryUpgraded)
-	if err := _AbstractionAccountFactory.contract.UnpackLog(event, "Upgraded", log); err != nil {
+func (_RarimarketAccountFactory *RarimarketAccountFactoryFilterer) ParseUpgraded(log types.Log) (*RarimarketAccountFactoryUpgraded, error) {
+	event := new(RarimarketAccountFactoryUpgraded)
+	if err := _RarimarketAccountFactory.contract.UnpackLog(event, "Upgraded", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
