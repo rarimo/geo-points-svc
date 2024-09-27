@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"math/big"
 	"net/http"
 
@@ -75,6 +76,11 @@ func CreateAbstractionAccount(w http.ResponseWriter, r *http.Request) {
 
 	addr, err = Abstraction(r).CreateAccount(r.Context(), nullifierBytes)
 	if err != nil {
+		errData := ErrorData(err)
+		if errData != nil {
+			log = log.WithField("data", fmt.Sprintf("%+v", errData))
+		}
+
 		log.WithError(err).Error("Failed to create abstraction account")
 		ape.RenderErr(w, problems.InternalError())
 		return

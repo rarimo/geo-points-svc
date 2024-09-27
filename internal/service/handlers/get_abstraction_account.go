@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -54,4 +55,28 @@ func GetAbstractionAccount(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	})
+}
+
+type EthJsonRpcErrorI interface {
+	Error() string
+	ErrorCode() int
+	ErrorData() interface{}
+}
+
+func ErrorData(err error) interface{} {
+	for err != nil {
+		uerr := errors.Unwrap(err)
+		if uerr == nil {
+			break
+		}
+
+		err = uerr
+	}
+	var cerr EthJsonRpcErrorI
+	ok := errors.As(err, &cerr)
+	if ok {
+		return cerr.ErrorData()
+	}
+
+	return nil
 }
