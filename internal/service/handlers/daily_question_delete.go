@@ -55,6 +55,10 @@ func DeleteDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !timeReq.After(time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, location).Add(time.Hour * 24)) {
+		DailyQuestions(r).ClearDeadlines()
+	}
+
 	_, err = DailyQuestionsQ(r).New().FilterByID(ID).Delete()
 	if err != nil {
 		Log(r).WithError(err).Error("Error deleting daily question")
