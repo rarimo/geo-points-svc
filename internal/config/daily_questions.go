@@ -19,6 +19,7 @@ type NotificationConfig struct {
 	Body  string
 	// offset from location time
 	SendAt int
+	Topic  string
 
 	creds []byte
 }
@@ -50,6 +51,7 @@ func (c *config) DailyQuestions() *DailyQuestions {
 				Body   string `fig:"body"`
 				SendAt int    `fig:"send_at"`
 				Creds  string `fig:"creds_file,required"`
+				Topic  string `fig:"topic,required"`
 			} `fig:"notifications,required"`
 		}
 
@@ -70,6 +72,7 @@ func (c *config) DailyQuestions() *DailyQuestions {
 		notificationsConfig.Title = cfg.Notifications.Title
 		notificationsConfig.Body = cfg.Notifications.Body
 		notificationsConfig.SendAt = cfg.Notifications.SendAt
+		notificationsConfig.Topic = cfg.Notifications.Topic
 
 		notificationsConfig.creds, err = os.ReadFile(cfg.Notifications.Creds)
 		if err != nil {
@@ -109,7 +112,7 @@ func (q *DailyQuestions) SendNotification() error {
 
 func (q *DailyQuestions) Notification() *messaging.Message {
 	return &messaging.Message{
-		Topic: "mokalake-rewardable-stage",
+		Topic: q.Notifications.Topic,
 		APNS: &messaging.APNSConfig{
 			Headers: map[string]string{
 				"apns-priority": "10",
@@ -129,10 +132,6 @@ func (q *DailyQuestions) Notification() *messaging.Message {
 		},
 		Android: &messaging.AndroidConfig{
 			Priority: "high",
-			Notification: &messaging.AndroidNotification{
-				Title: q.Notifications.Title,
-				Body:  q.Notifications.Body,
-			},
 			Data: map[string]string{
 				"type":        "daily_question",
 				"title":       q.Notifications.Title,
