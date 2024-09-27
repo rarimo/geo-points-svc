@@ -1,16 +1,34 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
+	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/messaging"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
+	"google.golang.org/api/option"
 )
 
+type NotificationConfig struct {
+	Title string
+	Body  string
+	// offset from location time
+	SendAt int
+	Topic  string
+
+	creds []byte
+}
+
 type DailyQuestions struct {
-	Location *time.Location
+	Location    *time.Location
+	RawLocation int
+
+	Notifications *NotificationConfig
 
 	deadlines    map[string]Deadline
 	lastDeadline *time.Time
@@ -27,7 +45,14 @@ type Deadline struct {
 func (c *config) DailyQuestions() *DailyQuestions {
 	return c.DailyQuestion.Do(func() interface{} {
 		var cfg struct {
-			Timezone int `fig:"timezone"`
+			Timezone      int `fig:"timezone"`
+			Notifications struct {
+				Title  string `fig:"title,required"`
+				Body   string `fig:"body"`
+				SendAt int    `fig:"send_at"`
+				Creds  string `fig:"creds_file,required"`
+				Topic  string `fig:"topic,required"`
+			} `fig:"notifications,required"`
 		}
 
 		err := figure.Out(&cfg).
@@ -43,13 +68,77 @@ func (c *config) DailyQuestions() *DailyQuestions {
 
 		location := time.FixedZone(fmt.Sprint(cfg.Timezone), cfg.Timezone*3600)
 
-		return &DailyQuestions{
-			Location:  location,
-			deadlines: make(map[string]Deadline),
-			mu:        sync.Mutex{},
+		var notificationsConfig NotificationConfig
+		notificationsConfig.Title = cfg.Notifications.Title
+		notificationsConfig.Body = cfg.Notifications.Body
+		notificationsConfig.SendAt = cfg.Notifications.SendAt
+		notificationsConfig.Topic = cfg.Notifications.Topic
+
+		notificationsConfig.creds, err = os.ReadFile(cfg.Notifications.Creds)
+		if err != nil {
+			panic(fmt.Errorf("failed to read firebase creds: %w", err))
 		}
 
+		return &DailyQuestions{
+			Location:      location,
+			RawLocation:   cfg.Timezone,
+			Notifications: &notificationsConfig,
+			deadlines:     make(map[string]Deadline),
+			mu:            sync.Mutex{},
+		}
 	}).(*DailyQuestions)
+}
+
+func (q *DailyQuestions) SendNotification() error {
+	ctx := context.Background()
+	app, err := firebase.NewApp(ctx, nil, option.WithCredentialsJSON(q.Notifications.creds))
+	if err != nil {
+		return fmt.Errorf("failed to initialize app: %w", err)
+	}
+
+	msg := q.Notification()
+
+	client, err := app.Messaging(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get Messaging client: %w", err)
+	}
+
+	if _, err = client.Send(ctx, msg); err != nil {
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+
+	return nil
+}
+
+func (q *DailyQuestions) Notification() *messaging.Message {
+	return &messaging.Message{
+		Topic: q.Notifications.Topic,
+		APNS: &messaging.APNSConfig{
+			Headers: map[string]string{
+				"apns-priority": "10",
+			},
+			Payload: &messaging.APNSPayload{
+				Aps: &messaging.Aps{
+					MutableContent: true,
+					Alert: &messaging.ApsAlert{
+						Title: q.Notifications.Title,
+						Body:  q.Notifications.Body,
+					},
+				},
+				CustomData: map[string]interface{}{
+					"type": "daily_question",
+				},
+			},
+		},
+		Android: &messaging.AndroidConfig{
+			Priority: "high",
+			Data: map[string]string{
+				"type":        "daily_question",
+				"title":       q.Notifications.Title,
+				"description": q.Notifications.Body,
+			},
+		},
+	}
 }
 
 func (q *DailyQuestions) LocalTime(date time.Time) time.Time {

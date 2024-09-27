@@ -96,6 +96,7 @@ func (q *dailyQuestionsQ) Select() ([]data.DailyQuestion, error) {
 
 func (q *dailyQuestionsQ) Get() (*data.DailyQuestion, error) {
 	var res data.DailyQuestion
+
 	if err := q.db.Get(&res, q.selector.OrderBy("starts_at ASC")); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -144,8 +145,8 @@ func (q *dailyQuestionsQ) FilterDayQuestions(day time.Time) data.DailyQuestionsQ
 	dayEnd := day.Add(24 * time.Hour)
 
 	return q.applyCondition(squirrel.And{
-		squirrel.GtOrEq{"starts_at": day},
-		squirrel.Lt{"starts_at": dayEnd},
+		squirrel.GtOrEq{"starts_at": fmt.Sprintf("'%s'", day.Format("2006-01-02 15:04:05"))},
+		squirrel.Lt{"starts_at": fmt.Sprintf("'%s'", dayEnd.Format("2006-01-02 15:04:05"))},
 	})
 }
 

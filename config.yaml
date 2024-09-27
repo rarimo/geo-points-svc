@@ -110,6 +110,12 @@ event_types:
 
 daily_questions:
   timezone: 4
+  notifications:
+    title: "Daily question!"
+    body: "Participate in Quiz and earn points"
+    send_at: 0
+    creds_file: "./cred_file"
+    topic: "some_topic"
 
 levels:
   downgradeable: false
@@ -137,3 +143,15 @@ poll_verifier:
 
 sig_verifier:
   verification_key: "37bc75afc97f8bdcd21cda85ae7b2885b5f1205ae3d79942e56457230f1636a037cc7ebfe42998d66a3dd3446b9d29366271b4f2bd8e0d307db1d320b38fc02f"
+
+abstraction:
+  rpc: "https://rpc"
+  account_factory: "0x123..."
+  point_tokens: "0x123..."
+  point_price: "1000000000"
+  vault_address: "https://vault.example.com"
+  vault_mount_path: "secret/rarimarket"
+  private_key: "abcd..."
+
+creds:
+  path: "path/to/creds"
