@@ -121,6 +121,8 @@ func CheckDailyQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dq.ZeroDeadline(nullifier)
+
 	ape.Render(w, newDailyAnswer(question))
 }
 
