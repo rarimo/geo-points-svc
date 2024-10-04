@@ -169,6 +169,20 @@ func (q *DailyQuestions) SetDeadline(nullifier string, id int, duration time.Dur
 	return true
 }
 
+func (q *DailyQuestions) ZeroDeadline(nullifier string) *Deadline {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	deadline, ok := q.deadlines[nullifier]
+	if !ok {
+		return nil
+	}
+	deadline.At = time.Unix(0, 0)
+	q.deadlines[nullifier] = deadline
+
+	return &deadline
+}
+
 func (q *DailyQuestions) ClearDeadlines() map[int]int {
 	q.mu.Lock()
 	defer q.mu.Unlock()
