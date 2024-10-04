@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	vaultapi "github.com/hashicorp/vault/api"
-	accountFactory "github.com/rarimo/geo-points-svc/internal/contracts/abstractionaccountfactory"
+	accountFactory "github.com/rarimo/geo-points-svc/internal/contracts/extendedaccountfactory"
 	pointTokens "github.com/rarimo/geo-points-svc/internal/contracts/points"
 
 	"gitlab.com/distributed_lab/dig"
@@ -107,12 +107,12 @@ func (r *AbstractionConfig) CreateAccount(ctx context.Context, nullifier [32]byt
 		return common.Address{}, fmt.Errorf("failed to get keyed transactor: %w", err)
 	}
 
-	accountFactoryInstance, err := accountFactory.NewAbstractionAccountFactory(r.AccountFactory, r.RPC)
+	accountFactoryInstance, err := accountFactory.NewExtendedAccountFactory(r.AccountFactory, r.RPC)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get account factory: %w", err)
 	}
 
-	tx, err := accountFactoryInstance.DeployAbstractionAccount(signerOpts, nullifier)
+	tx, err := accountFactoryInstance.DeployAbstractAccount(signerOpts, nullifier)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to deploy abstraction account: %w", err)
 	}
@@ -125,20 +125,20 @@ func (r *AbstractionConfig) CreateAccount(ctx context.Context, nullifier [32]byt
 		return common.Address{}, fmt.Errorf("failed to wait mined transaction: %w", err)
 	}
 
-	abi, err := accountFactory.AbstractionAccountFactoryMetaData.GetAbi()
+	abi, err := accountFactory.ExtendedAccountFactoryMetaData.GetAbi()
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get contract abi: %w", err)
 	}
 
-	abstractionAccountDeployedTopic := abi.Events["AbstractionAccountDeployed"].ID
+	abstractionAccountDeployedTopic := abi.Events["AbstractAccountDeployed"].ID
 
-	var event *accountFactory.AbstractionAccountFactoryAbstractionAccountDeployed
+	var event *accountFactory.ExtendedAccountFactoryAbstractAccountDeployed
 	for _, log := range rec.Logs {
 		if !bytes.Equal(log.Topics[0][:], abstractionAccountDeployedTopic[:]) {
 			continue
 		}
 
-		event, err = accountFactoryInstance.ParseAbstractionAccountDeployed(*log)
+		event, err = accountFactoryInstance.ParseAbstractAccountDeployed(*log)
 		if err != nil {
 			return common.Address{}, fmt.Errorf("failed to unpack log: %w", err)
 		}
@@ -149,12 +149,12 @@ func (r *AbstractionConfig) CreateAccount(ctx context.Context, nullifier [32]byt
 }
 
 func (r *AbstractionConfig) GetAccount(nullifier [32]byte) (common.Address, error) {
-	accountFactoryInstance, err := accountFactory.NewAbstractionAccountFactory(r.AccountFactory, r.RPC)
+	accountFactoryInstance, err := accountFactory.NewExtendedAccountFactory(r.AccountFactory, r.RPC)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get account factory: %w", err)
 	}
 
-	accountAddress, err := accountFactoryInstance.GetAbstractionAccount(nil, nullifier)
+	accountAddress, err := accountFactoryInstance.GetAbstractAccount(nil, nullifier)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("failed to get abstraction account: %w", err)
 	}
