@@ -1,0 +1,12 @@
+type: object
+required:
+  - id
+  - type
+properties:
+  id:
+    type: string
+    description: QR code value
+    example: "one_time_abcdefg..xyz"
+  type:
+    type: string
+    enum: [ qr_code ]
