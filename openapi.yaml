@@ -1340,6 +1340,58 @@ paths:
                 $ref: '#/components/schemas/Errors'
         '500':
           $ref: '#/components/responses/internalError'
+  /integrations/geo-points-svc/v2/public/qrcodes:
+    post:
+      tags:
+        - QRCodes
+      summary: Send QR code
+      description: Send a QR code and get a reward
+      operationId: sendQRCode
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/QRCodeKey'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EventClaimingState'
+        '400':
+          $ref: '#/components/responses/invalidParameter'
+        '401':
+          $ref: '#/components/responses/invalidAuth'
+        '403':
+          description: May be user haven't verified passport
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '404':
+          $ref: '#/components/responses/notFound'
+        '409':
+          description: QR code already submited
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        '500':
+          $ref: '#/components/responses/internalError'
 components:
   schemas:
     AbstractionAccount:
@@ -2233,6 +2285,20 @@ components:
           type: string
           enum:
             - fulfill_qr_event
+    QRCodeKey:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          description: QR code value
+          example: one_time_abcdefg..xyz
+        type:
+          type: string
+          enum:
+            - qr_code
     ReferralCode:
       type: object
       required:
