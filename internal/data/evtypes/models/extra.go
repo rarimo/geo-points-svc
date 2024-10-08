@@ -23,6 +23,7 @@ const (
 	TypePollParticipation    = "poll_participation"
 	TypeEarlyTest            = "early_test"
 	TypeDailyQuestion        = "daily_question"
+	TypeQRCode               = "qr_code"
 )
 
 const (

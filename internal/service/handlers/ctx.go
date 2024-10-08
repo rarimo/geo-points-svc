@@ -30,6 +30,7 @@ const (
 	dailyQuestionsCtxKey
 	dailyQuestionsCfgCtxKey
 	abstractionCtxKey
+	qrCodesQCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -110,6 +111,16 @@ func CtxWithdrawalsQ(q data.WithdrawalsQ) func(context.Context) context.Context 
 
 func WithdrawalsQ(r *http.Request) data.WithdrawalsQ {
 	return r.Context().Value(withdrawalsQCtxKey).(data.WithdrawalsQ).New()
+}
+
+func CtxQRCodesQ(q data.QRCodesQ) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, qrCodesQCtxKey, q)
+	}
+}
+
+func QRCodesQ(r *http.Request) data.QRCodesQ {
+	return r.Context().Value(qrCodesQCtxKey).(data.QRCodesQ).New()
 }
 
 func CtxUserClaims(claim []resources.Claim) func(context.Context) context.Context {
