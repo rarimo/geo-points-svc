@@ -11,6 +11,7 @@ const (
 	ABSTRACTION_ACCOUNT    ResourceType = "abstraction_account"
 	ACTIVATE_BALANCE       ResourceType = "activate_balance"
 	BALANCE                ResourceType = "balance"
+	BONUS_CODE             ResourceType = "bonus_code"
 	CLAIM_EVENT            ResourceType = "claim_event"
 	CREATE_BALANCE         ResourceType = "create_balance"
 	DAILY_QUESTIONS        ResourceType = "daily_questions"
@@ -20,7 +21,6 @@ const (
 	EVENT_TYPE             ResourceType = "event_type"
 	FULFILL_POLL_EVENT     ResourceType = "fulfill_poll_event"
 	FULFILL_QR_EVENT       ResourceType = "fulfill_qr_event"
-	QR_CODE                ResourceType = "qr_code"
 	VERIFY_PASSPORT        ResourceType = "verify_passport"
 	WITHDRAW               ResourceType = "withdraw"
 )

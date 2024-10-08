@@ -15,13 +15,13 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
-var qrCodeRegexp = regexp.MustCompile("[0-9A-Za-z_]+")
+var bonusCodeRegexp = regexp.MustCompile("[0-9A-Za-z_]+")
 
-func SubmitQRCode(w http.ResponseWriter, r *http.Request) {
-	qrCode := chi.URLParam(r, "qr_code")
-	if !qrCodeRegexp.MatchString(qrCode) {
+func SubmitBonusCode(w http.ResponseWriter, r *http.Request) {
+	bonusCode := chi.URLParam(r, "bonus_code")
+	if !bonusCodeRegexp.MatchString(bonusCode) {
 		ape.RenderErr(w, problems.BadRequest(validation.Errors{
-			"path": fmt.Errorf("invalid qr_code format"),
+			"path": fmt.Errorf("invalid bonus_code format"),
 		})...)
 		return
 	}
@@ -30,8 +30,8 @@ func SubmitQRCode(w http.ResponseWriter, r *http.Request) {
 	nullifier := UserClaims(r)[0].Nullifier
 
 	log := Log(r).WithFields(map[string]any{
-		"nullifier": nullifier,
-		"qr_code":   qrCode,
+		"nullifier":  nullifier,
+		"bonus_code": bonusCode,
 	})
 
 	balance, err := BalancesQ(r).FilterDisabled().FilterByNullifier(nullifier).Get()
@@ -51,72 +51,72 @@ func SubmitQRCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qr, err := QRCodesQ(r).FilterByID(qrCode).Get()
+	bonus, err := BonusCodesQ(r).FilterByID(bonusCode).Get()
 	if err != nil {
-		log.WithError(err).Error("Failed to get qr code")
+		log.WithError(err).Error("Failed to get bonus code")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	if qr == nil || (!qr.Infinity && qr.UsageCount <= 0) {
-		if qr == nil {
-			log.Debug("QR code absent in db")
+	if bonus == nil || (!bonus.Infinity && bonus.UsageCount <= 0) {
+		if bonus == nil {
+			log.Debug("Bonus code absent in db")
 			ape.RenderErr(w, problems.NotFound())
 			return
 		}
-		log.Debug("QR code usage count exceed")
+		log.Debug("Bonus code usage count exceed")
 		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
-	ev, err := EventsQ(r).FilterByNullifier(nullifier).FilterByType(qrCode).Get()
+	ev, err := EventsQ(r).FilterByNullifier(nullifier).FilterByType(bonusCode).Get()
 	if err != nil {
 		log.WithError(err).Error("Failed to get event by type")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if ev != nil {
-		log.Debug("User already scan old qr code")
+		log.Debug("User already scan old bonus code")
 		ape.RenderErr(w, problems.Conflict())
 		return
 	}
 
-	ev, err = EventsQ(r).FilterByNullifier(nullifier).FilterByType(models.TypeQRCode).FilterByQRCode(qrCode).Get()
+	ev, err = EventsQ(r).FilterByNullifier(nullifier).FilterByType(models.TypeBonusCode).FilterByBonusCode(bonusCode).Get()
 	if err != nil {
-		log.WithError(err).Error("Failed to get event by qrcode")
+		log.WithError(err).Error("Failed to get event by bonuscode")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if ev != nil {
-		log.Debug("User already scan qr code")
+		log.Debug("User already scan bonus code")
 		ape.RenderErr(w, problems.Conflict())
 		return
 	}
 
-	evType := EventTypes(r).Get(models.TypeQRCode, evtypes.FilterInactive)
+	evType := EventTypes(r).Get(models.TypeBonusCode, evtypes.FilterInactive)
 	if evType == nil {
-		log.Debug("Event QR code absent or inactive")
+		log.Debug("Event Bonus code absent or inactive")
 		ape.RenderErr(w, problems.Forbidden())
 		return
 	}
 
-	reward := int64(qr.Reward)
+	reward := int64(bonus.Reward)
 	err = EventsQ(r).Transaction(func() error {
 		if !evType.AutoClaim {
 			return EventsQ(r).Insert(data.Event{
 				Nullifier:    nullifier,
-				Type:         models.TypeQRCode,
+				Type:         models.TypeBonusCode,
 				Status:       data.EventFulfilled,
 				PointsAmount: &reward,
-				Meta:         data.Jsonb(fmt.Sprintf(`{"qr_code": "%s"}`, qr.ID)),
+				Meta:         data.Jsonb(fmt.Sprintf(`{"bonus_code": "%s"}`, bonus.ID)),
 			})
 		}
 
 		err = EventsQ(r).Insert(data.Event{
 			Nullifier:    nullifier,
-			Type:         models.TypeQRCode,
+			Type:         models.TypeBonusCode,
 			Status:       data.EventClaimed,
 			PointsAmount: &reward,
-			Meta:         data.Jsonb(fmt.Sprintf(`{"qr_code": "%s"}`, qr.ID)),
+			Meta:         data.Jsonb(fmt.Sprintf(`{"bonus_code": "%s"}`, bonus.ID)),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to insert event: %w", err)
@@ -135,12 +135,12 @@ func SubmitQRCode(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("update balance amount and level: %w", err)
 		}
 
-		if !qr.Infinity {
-			err = QRCodesQ(r).FilterByID(qrCode).Update(map[string]any{
-				data.ColUsageCount: qr.UsageCount - 1,
+		if !bonus.Infinity {
+			err = BonusCodesQ(r).FilterByID(bonusCode).Update(map[string]any{
+				data.ColUsageCount: bonus.UsageCount - 1,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to update qr code: %w", err)
+				return fmt.Errorf("failed to update bonus code: %w", err)
 			}
 		}
 

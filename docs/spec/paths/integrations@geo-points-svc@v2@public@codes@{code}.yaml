@@ -1,9 +1,9 @@
 post:
   tags:
-    - QRCodes
-  summary: Send QR code
-  description: Send a QR code and get a reward
-  operationId: submitQRCode
+    - Bonus Codes
+  summary: Send code
+  description: Send a code and get a reward
+  operationId: submitCode
   security:
     - BearerAuth: []
   requestBody:
@@ -16,7 +16,7 @@ post:
             - data
           properties:
             data:
-              $ref: '#/components/schemas/QRCodeKey'
+              $ref: '#/components/schemas/BonusCodeKey'
   responses:
     200:
       description: Success

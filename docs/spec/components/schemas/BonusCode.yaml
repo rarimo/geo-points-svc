@@ -1,5 +1,5 @@
 allOf:
-  - $ref: '#/components/schemas/QRCodeKey'
+  - $ref: '#/components/schemas/BonusCodeKey'
   - type: object
     x-go-is-request: true
     required:
@@ -11,15 +11,15 @@ allOf:
           reward:
             type: integer
             format: int
-            description: Reward for this qr-code
+            description: Reward for this bonus code
             default: 10
             example: 10
           usage_count:
             type: integer
             format: int
-            description: Specify how many times qr-code can be scaned. Omit if qr-code must have infinity usage count
+            description: Specify how many times bonus code can be scaned. Omit if bonus code must have infinity usage count
             example: 1
           nullifier:
             type: string
-            description: For creating personal qr-codes
+            description: For creating personal bonus codes
             example: "0xabc...123"

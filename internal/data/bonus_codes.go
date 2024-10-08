@@ -13,7 +13,7 @@ const (
 	ColInfinity   = "infinity"
 )
 
-type QRCode struct {
+type BonusCode struct {
 	ID         string         `db:"id"`
 	Nullifier  sql.NullString `db:"nullifier"`
 	Reward     int            `db:"reward"`
@@ -24,17 +24,17 @@ type QRCode struct {
 	CreatedAt time.Time `db:"created_at"`
 }
 
-type QRCodesQ interface {
-	New() QRCodesQ
-	Insert(...QRCode) error
+type BonusCodesQ interface {
+	New() BonusCodesQ
+	Insert(...BonusCode) error
 	Update(map[string]any) error
 
-	Page(*pgdb.OffsetPageParams) QRCodesQ
+	Page(*pgdb.OffsetPageParams) BonusCodesQ
 
-	Get() (*QRCode, error)
-	Select() ([]QRCode, error)
+	Get() (*BonusCode, error)
+	Select() ([]BonusCode, error)
 	Count() (uint64, error)
 
-	FilterByID(...string) QRCodesQ
-	FilterByNullifier(...string) QRCodesQ
+	FilterByID(...string) BonusCodesQ
+	FilterByNullifier(...string) BonusCodesQ
 }

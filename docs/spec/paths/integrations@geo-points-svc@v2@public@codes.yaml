@@ -1,9 +1,9 @@
 post:
   tags:
-    - QRCodes
-  summary: Create QR code
-  description: Create custom qr code
-  operationId: createQRCode
+    - Bonus Codes
+  summary: Createbonus code
+  description: Create custom bonus code
+  operationId: createCode
   security:
     - BearerAuth: []
   requestBody:
@@ -16,7 +16,7 @@ post:
             - data
           properties:
             data:
-              $ref: '#/components/schemas/QRCode'
+              $ref: '#/components/schemas/BonusCode'
   responses:
     200:
       description: Success
@@ -28,7 +28,7 @@ post:
               - data
             properties:
               data:
-                $ref: '#/components/schemas/QRCode'
+                $ref: '#/components/schemas/BonusCode'
     400:
       $ref: '#/components/responses/invalidParameter'
     401:

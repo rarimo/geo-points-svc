@@ -34,10 +34,10 @@ func Run(ctx context.Context, cfg config.Config) {
 	r.Route("/integrations/geo-points-svc", func(r chi.Router) {
 		r.Route("/v2", func(r chi.Router) {
 			r.Route("/public", func(r chi.Router) {
-				r.Route("/qrcodes", func(r chi.Router) {
+				r.Route("/codes", func(r chi.Router) {
 					r.Use(authMW)
-					r.Post("/", handlers.CreateQRCode)
-					r.Post("/{qr_code}", handlers.SubmitQRCode)
+					r.Post("/", handlers.CreateBonusCode)
+					r.Post("/{bonus_code}", handlers.SubmitBonusCode)
 				})
 			})
 		})

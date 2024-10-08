@@ -5,8 +5,8 @@ required:
 properties:
   id:
     type: string
-    description: QR code value
+    description: Bonus code value
     example: "one_time_abcdefg..xyz"
   type:
     type: string
-    enum: [ qr_code ]
+    enum: [ bonus_code ]

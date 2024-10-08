@@ -14,8 +14,8 @@ import (
 	"gitlab.com/distributed_lab/ape/problems"
 )
 
-func CreateQRCode(w http.ResponseWriter, r *http.Request) {
-	req, err := requests.NewCreateQRCode(r)
+func CreateBonusCode(w http.ResponseWriter, r *http.Request) {
+	req, err := requests.NewCreateBonusCode(r)
 	if err != nil {
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
@@ -34,8 +34,8 @@ func CreateQRCode(w http.ResponseWriter, r *http.Request) {
 		reward         = 10
 	)
 
-	qrValue := make([]byte, 10)
-	_, err = rand.Read(qrValue[:])
+	bonusValue := make([]byte, 10)
+	_, err = rand.Read(bonusValue[:])
 	if err != nil {
 		Log(r).WithError(err).Error("Failed to get rand bytes")
 		ape.RenderErr(w, problems.InternalError())
@@ -50,26 +50,26 @@ func CreateQRCode(w http.ResponseWriter, r *http.Request) {
 		reward = *dataReward
 	}
 
-	qr := data.QRCode{
-		ID:         "one_time_" + hex.EncodeToString(qrValue),
+	bonus := data.BonusCode{
+		ID:         "one_time_" + hex.EncodeToString(bonusValue),
 		Nullifier:  sql.NullString{},
 		UsageCount: usageCount,
 		Reward:     reward,
 	}
 
-	if err = QRCodesQ(r).Insert(qr); err != nil {
-		Log(r).WithError(err).Error("Failed to insert qr code")
+	if err = BonusCodesQ(r).Insert(bonus); err != nil {
+		Log(r).WithError(err).Error("Failed to insert bonus code")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	ape.Render(w, resources.QrCodeRequest{
-		Data: resources.QrCode{
+	ape.Render(w, resources.BonusCodeRequest{
+		Data: resources.BonusCode{
 			Key: resources.Key{
-				ID:   qr.ID,
-				Type: resources.QR_CODE,
+				ID:   bonus.ID,
+				Type: resources.BONUS_CODE,
 			},
-			Attributes: resources.QrCodeAttributes{
+			Attributes: resources.BonusCodeAttributes{
 				Reward:     &reward,
 				UsageCount: &usageCount,
 			},
