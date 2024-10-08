@@ -26,6 +26,8 @@ func SubmitBonusCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var bonus *data.BonusCode
+
 	// never panic because of auth validation
 	nullifier := UserClaims(r)[0].Nullifier
 
@@ -51,16 +53,35 @@ func SubmitBonusCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bonus, err := BonusCodesQ(r).FilterByID(bonusCode).Get()
+	bonus, err = BonusCodesQ(r).FilterByID(bonusCode).Get()
 	if err != nil {
 		log.WithError(err).Error("Failed to get bonus code")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if bonus == nil {
-		log.Debug("Bonus code absent in db")
-		ape.RenderErr(w, problems.NotFound())
-		return
+		evTypes := EventTypes(r).List(func(ev models.EventType) bool {
+			return ev.QRCodeValue == nil || *ev.QRCodeValue != bonusCode
+		})
+		if len(evTypes) == 0 {
+			log.Debugf("Bonus code absent and old event also")
+			ape.RenderErr(w, problems.NotFound())
+			return
+		}
+
+		bonus = &data.BonusCode{
+			ID:         *evTypes[0].QRCodeValue,
+			Reward:     int(evTypes[0].Reward),
+			UsageCount: 0,
+			Infinity:   true,
+		}
+
+		err = BonusCodesQ(r).Insert(*bonus)
+		if err != nil {
+			log.WithError(err).Error("Failed to get insert bonus code")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
 	}
 	if !bonus.Infinity && bonus.UsageCount <= 0 {
 		log.Debug("Bonus code usage count exceed")
