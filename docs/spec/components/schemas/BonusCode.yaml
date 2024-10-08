@@ -1,0 +1,25 @@
+allOf:
+  - $ref: '#/components/schemas/BonusCodeKey'
+  - type: object
+    x-go-is-request: true
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        properties:
+          reward:
+            type: integer
+            format: int
+            description: Reward for this bonus code
+            default: 10
+            example: 10
+          usage_count:
+            type: integer
+            format: int
+            description: Specify how many times bonus code can be scaned. Omit if bonus code must have infinity usage count
+            example: 1
+          nullifier:
+            type: string
+            description: For creating personal bonus codes
+            example: "0xabc...123"

@@ -11,6 +11,7 @@ const (
 	ABSTRACTION_ACCOUNT    ResourceType = "abstraction_account"
 	ACTIVATE_BALANCE       ResourceType = "activate_balance"
 	BALANCE                ResourceType = "balance"
+	BONUS_CODE             ResourceType = "bonus_code"
 	CLAIM_EVENT            ResourceType = "claim_event"
 	CREATE_BALANCE         ResourceType = "create_balance"
 	DAILY_QUESTIONS        ResourceType = "daily_questions"

@@ -260,6 +260,10 @@ func (q *events) FilterByQuestionID(id int) data.EventsQ {
 	return q.applyCondition(squirrel.Eq{"meta->>'question_id'": id})
 }
 
+func (q *events) FilterByBonusCode(bonusCode string) data.EventsQ {
+	return q.applyCondition(squirrel.Eq{"meta->>'bonus_code'": bonusCode})
+}
+
 func (q *events) FilterInactiveNotClaimed(types ...string) data.EventsQ {
 	if len(types) == 0 {
 		return q

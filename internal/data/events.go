@@ -66,6 +66,7 @@ type EventsQ interface {
 	FilterByType(...string) EventsQ
 	FilterByNotType(types ...string) EventsQ
 	FilterByUpdatedAtBefore(int64) EventsQ
+	FilterByBonusCode(string) EventsQ
 
 	FilterTodayEvents(offset int) EventsQ
 

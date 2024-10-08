@@ -23,6 +23,7 @@ const (
 	TypePollParticipation    = "poll_participation"
 	TypeEarlyTest            = "early_test"
 	TypeDailyQuestion        = "daily_question"
+	TypeBonusCode            = "bonus_code"
 )
 
 const (

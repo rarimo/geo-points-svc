@@ -52,6 +52,7 @@ func DBCloneMiddleware(db *pgdb.DB) func(http.Handler) http.Handler {
 				CtxEventTypesQ(pg.NewEventTypes(clone)),
 				CtxDailyQuestionsQ(pg.NewDailyQuestionsQ(clone)),
 				CtxWithdrawalsQ(pg.NewWithdrawals(clone)),
+				CtxBonusCodesQ(pg.NewBonusCodesQ(clone)),
 			}
 
 			for _, extender := range extenders {
