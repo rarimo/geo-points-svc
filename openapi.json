@@ -2029,14 +2029,14 @@
         }
       }
     },
-    "/integrations/geo-points-svc/v2/public/qrcodes": {
+    "/integrations/geo-points-svc/v2/public/codes": {
       "post": {
         "tags": [
-          "QRCodes"
+          "Bonus Codes"
         ],
-        "summary": "Create QR code",
-        "description": "Create custom qr code",
-        "operationId": "createQRCode",
+        "summary": "Createbonus code",
+        "description": "Create custom bonus code",
+        "operationId": "createCode",
         "security": [
           {
             "BearerAuth": []
@@ -2053,7 +2053,7 @@
                 ],
                 "properties": {
                   "data": {
-                    "$ref": "#/components/schemas/QRCode"
+                    "$ref": "#/components/schemas/BonusCode"
                   }
                 }
               }
@@ -2072,7 +2072,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/QRCode"
+                      "$ref": "#/components/schemas/BonusCode"
                     }
                   }
                 }
@@ -2091,14 +2091,14 @@
         }
       }
     },
-    "/integrations/geo-points-svc/v2/public/qrcodes/{qr_code}": {
+    "/integrations/geo-points-svc/v2/public/codes/{code}": {
       "post": {
         "tags": [
-          "QRCodes"
+          "Bonus Codes"
         ],
-        "summary": "Send QR code",
-        "description": "Send a QR code and get a reward",
-        "operationId": "submitQRCode",
+        "summary": "Send code",
+        "description": "Send a code and get a reward",
+        "operationId": "submitCode",
         "security": [
           {
             "BearerAuth": []
@@ -2115,7 +2115,7 @@
                 ],
                 "properties": {
                   "data": {
-                    "$ref": "#/components/schemas/QRCodeKey"
+                    "$ref": "#/components/schemas/BonusCodeKey"
                   }
                 }
               }
@@ -2378,6 +2378,65 @@
             "type": "string",
             "enum": [
               "balance"
+            ]
+          }
+        }
+      },
+      "BonusCode": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BonusCodeKey"
+          },
+          {
+            "type": "object",
+            "x-go-is-request": true,
+            "required": [
+              "attributes"
+            ],
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "properties": {
+                  "reward": {
+                    "type": "integer",
+                    "format": "int",
+                    "description": "Reward for this bonus code",
+                    "default": 10,
+                    "example": 10
+                  },
+                  "usage_count": {
+                    "type": "integer",
+                    "format": "int",
+                    "description": "Specify how many times bonus code can be scaned. Omit if bonus code must have infinity usage count",
+                    "example": 1
+                  },
+                  "nullifier": {
+                    "type": "string",
+                    "description": "For creating personal bonus codes",
+                    "example": "0xabc...123"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "BonusCodeKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Bonus code value",
+            "example": "one_time_abcdefg..xyz"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "bonus_code"
             ]
           }
         }
@@ -3126,7 +3185,8 @@
             "properties": {
               "attributes": {
                 "required": [
-                  "claimed"
+                  "claimed",
+                  "reward"
                 ],
                 "type": "object",
                 "properties": {
@@ -3134,6 +3194,12 @@
                     "type": "bool",
                     "example": true,
                     "description": "If passport scan event was automatically claimed"
+                  },
+                  "reward": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Reward amount in points",
+                    "example": 50
                   }
                 }
               }
@@ -3447,65 +3513,6 @@
             "type": "string",
             "enum": [
               "fulfill_qr_event"
-            ]
-          }
-        }
-      },
-      "QRCode": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/QRCodeKey"
-          },
-          {
-            "type": "object",
-            "x-go-is-request": true,
-            "required": [
-              "attributes"
-            ],
-            "properties": {
-              "attributes": {
-                "type": "object",
-                "properties": {
-                  "reward": {
-                    "type": "integer",
-                    "format": "int",
-                    "description": "Reward for this qr-code",
-                    "default": 10,
-                    "example": 10
-                  },
-                  "usage_count": {
-                    "type": "integer",
-                    "format": "int",
-                    "description": "Specify how many times qr-code can be scaned. Omit if qr-code must have infinity usage count",
-                    "example": 1
-                  },
-                  "nullifier": {
-                    "type": "string",
-                    "description": "For creating personal qr-codes",
-                    "example": "0xabc...123"
-                  }
-                }
-              }
-            }
-          }
-        ]
-      },
-      "QRCodeKey": {
-        "type": "object",
-        "required": [
-          "id",
-          "type"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "QR code value",
-            "example": "one_time_abcdefg..xyz"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "qr_code"
             ]
           }
         }
