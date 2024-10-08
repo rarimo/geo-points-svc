@@ -57,12 +57,12 @@ func SubmitBonusCode(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	if bonus == nil || (!bonus.Infinity && bonus.UsageCount <= 0) {
-		if bonus == nil {
-			log.Debug("Bonus code absent in db")
-			ape.RenderErr(w, problems.NotFound())
-			return
-		}
+	if bonus == nil {
+		log.Debug("Bonus code absent in db")
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+	if !bonus.Infinity && bonus.UsageCount <= 0 {
 		log.Debug("Bonus code usage count exceed")
 		ape.RenderErr(w, problems.NotFound())
 		return
