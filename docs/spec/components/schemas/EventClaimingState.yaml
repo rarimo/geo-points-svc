@@ -7,9 +7,15 @@ allOf:
       attributes:
         required:
           - claimed
+          - reward
         type: object
         properties:
           claimed:
             type: bool
             example: true
             description: If passport scan event was automatically claimed
+          reward:
+            type: integer
+            format: int64
+            description: Reward amount in points
+            example: 50

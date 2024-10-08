@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"math/big"
 	"net/http"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/rarimo/geo-auth-svc/pkg/auth"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rarimo/geo-points-svc/internal/config"
@@ -127,7 +128,7 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 
 	if !evType.AutoClaim {
 		log.Debug("Event fulfilled due to disabled auto-claim")
-		ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, false))
+		ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, false, 0))
 		return
 	}
 
@@ -140,5 +141,5 @@ func FulfillPollEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true))
+	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true, evType.Reward))
 }

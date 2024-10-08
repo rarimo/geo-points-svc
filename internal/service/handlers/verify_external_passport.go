@@ -154,7 +154,7 @@ func VerifyExternalPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newEventClaimingStateResponse(req.Data.ID, event != nil))
+	ape.Render(w, newEventClaimingStateResponse(req.Data.ID, event != nil, 0))
 
 }
 

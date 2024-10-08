@@ -73,7 +73,7 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, false))
+		ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, false, 0))
 		return
 	}
 
@@ -88,5 +88,5 @@ func FulfillQREvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true))
+	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true, evType.Reward))
 }

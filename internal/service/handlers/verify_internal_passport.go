@@ -41,7 +41,6 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 			"balance.nullifier":    req.Data.ID,
 			"balance.internal_aid": internalAID,
 		})
-
 		gotSig = r.Header.Get("Signature")
 	)
 
@@ -145,7 +144,7 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ape.Render(w, newEventClaimingStateResponse(req.Data.ID, false))
+		ape.Render(w, newEventClaimingStateResponse(req.Data.ID, false, 0))
 		return
 	}
 
@@ -198,14 +197,15 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newEventClaimingStateResponse(req.Data.ID, event != nil))
+	ape.Render(w, newEventClaimingStateResponse(req.Data.ID, event != nil, 0))
 }
 
-func newEventClaimingStateResponse(id string, isClaimed bool) resources.EventClaimingStateResponse {
+func newEventClaimingStateResponse(id string, isClaimed bool, reward int64) resources.EventClaimingStateResponse {
 	var res resources.EventClaimingStateResponse
 	res.Data.ID = id
 	res.Data.Type = resources.EVENT_CLAIMING_STATE
 	res.Data.Attributes.Claimed = isClaimed
+	res.Data.Attributes.Reward = reward
 	return res
 }
 

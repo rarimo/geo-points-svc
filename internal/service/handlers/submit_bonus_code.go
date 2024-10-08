@@ -152,5 +152,5 @@ func SubmitBonusCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true))
+	ape.Render(w, newEventClaimingStateResponse(balance.Nullifier, true, reward))
 }
