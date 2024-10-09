@@ -26,8 +26,6 @@ func SubmitBonusCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var bonus *data.BonusCode
-
 	// never panic because of auth validation
 	nullifier := UserClaims(r)[0].Nullifier
 
@@ -53,7 +51,7 @@ func SubmitBonusCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bonus, err = BonusCodesQ(r).FilterByID(bonusCode).Get()
+	bonus, err := BonusCodesQ(r).FilterByID(bonusCode).Get()
 	if err != nil {
 		log.WithError(err).Error("Failed to get bonus code")
 		ape.RenderErr(w, problems.InternalError())
