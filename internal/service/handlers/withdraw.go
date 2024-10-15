@@ -12,6 +12,7 @@ import (
 	"github.com/rarimo/geo-auth-svc/pkg/auth"
 	"github.com/rarimo/geo-points-svc/internal/config"
 	"github.com/rarimo/geo-points-svc/internal/data"
+	"github.com/rarimo/geo-points-svc/internal/data/evtypes/models"
 	"github.com/rarimo/geo-points-svc/internal/data/pg"
 	"github.com/rarimo/geo-points-svc/internal/service/requests"
 	"github.com/rarimo/geo-points-svc/resources"
@@ -95,13 +96,35 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = WithdrawalsQ(r).Insert(data.Withdrawal{
-		TxHash:    txHash[:],
-		Nullifier: nullifier,
-		Amount:    req.Data.Attributes.Amount,
+	err = EventsQ(r).Transaction(func() error {
+		_, err = WithdrawalsQ(r).Insert(data.Withdrawal{
+			TxHash:    txHash[:],
+			Nullifier: nullifier,
+			Amount:    req.Data.Attributes.Amount,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to insert withdraw entry: %w", err)
+		}
+
+		if evType := EventTypes(r).Get(models.TypeWithdraw); evType == nil {
+			return fmt.Errorf("event type %s absent", models.TypeWithdraw)
+		}
+
+		pAmount := -req.Data.Attributes.Amount
+		err = EventsQ(r).Insert(data.Event{
+			Nullifier:    nullifier,
+			Type:         models.TypeWithdraw,
+			Status:       data.EventClaimed,
+			PointsAmount: &pAmount,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to insert withdraw event: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
-		log.WithError(err).Error("Failed to insert withdraw")
+		log.WithError(err).Error("Failed to insert withdraw and event")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}

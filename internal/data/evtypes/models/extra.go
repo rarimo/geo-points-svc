@@ -24,6 +24,7 @@ const (
 	TypeEarlyTest            = "early_test"
 	TypeDailyQuestion        = "daily_question"
 	TypeBonusCode            = "bonus_code"
+	TypeWithdraw             = "withdraw"
 )
 
 const (
