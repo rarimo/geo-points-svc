@@ -103,9 +103,25 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if bySharedHash != nil && bySharedHash.Nullifier != balance.Nullifier {
-		log.Warn("Balance with the same shared hash already exists")
-		ape.RenderErr(w, problems.Forbidden())
-		return
+		if proof == nil {
+			log.Warn("Balance with the same shared hash already exists")
+			ape.RenderErr(w, problems.Forbidden())
+			return
+		}
+
+		// transfer bySharedHash balance to current balance
+		// because we have proof that user is registered on smart contract
+		// it is main user account, so just remove shared hash and external id from unverified balance
+		// it allows user to attach external passport to his verified balance
+		err = BalancesQ(r).FilterBySharedHash(*sharedHash).Update(map[string]any{
+			data.ColSharedHash:  nil,
+			data.ColExternalAID: nil,
+		})
+		if err != nil {
+			log.WithError(err).Error("Failed to remove shared hash from unverified balance")
+			ape.RenderErr(w, problems.InternalError())
+			return
+		}
 	}
 
 	if byAnonymousID != nil {
