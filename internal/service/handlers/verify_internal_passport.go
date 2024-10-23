@@ -113,7 +113,7 @@ func VerifyInternalPassport(w http.ResponseWriter, r *http.Request) {
 		// because we have proof that user is registered on smart contract
 		// it is main user account, so just remove shared hash and external id from unverified balance
 		// it allows user to attach external passport to his verified balance
-		err = BalancesQ(r).FilterBySharedHash(*sharedHash).Update(map[string]any{
+		err = BalancesQ(r).FilterByNullifier(bySharedHash.Nullifier).Update(map[string]any{
 			data.ColSharedHash:  nil,
 			data.ColExternalAID: nil,
 		})
